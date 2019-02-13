@@ -94,12 +94,15 @@ void Convert_file(const std::string in_name, TTree *tree, HistogramManager *mgr,
 
 
     int barWidth = 50;
+    int shown = 0;
 
-    std::cout << "Reading from file '" << in_name << "'" << std::endl;
+    std::cout << "[";
+    for (int p = 0 ; p < barWidth ; ++p){
+        std::cout << " ";
+    }
+    std::cout << "] " << 0 << "% Reading from file '" << in_name << "'" << "\r";
+    std::cout.flush();
     std::vector<word_t> full_file = ReadFileToMemory(in_name.c_str());
-    std::cout << "Building events from file '" << in_name << "'" << std::endl;
-
-    int shown = 1;
 
     // Build events
     for (i = 0 ; i < full_file.size() ; ++i){
@@ -170,7 +173,7 @@ void Convert_file(const std::string in_name, TTree *tree, HistogramManager *mgr,
                 else if (p == pos) std::cout << ">";
                 else std::cout << " ";
             }
-            std::cout << "] " << int(100 * (i / double(full_file.size()) )) << "%\r";
+            std::cout << "] " << int(100 * (i / double(full_file.size()) )) << "% Processing file '" << in_name << "'\r";
             std::cout.flush();
         }
         if (tree != nullptr) tree->Fill();
@@ -179,7 +182,7 @@ void Convert_file(const std::string in_name, TTree *tree, HistogramManager *mgr,
     for (int p = 0 ; p < barWidth ; ++p){
         std::cout << "=";
     }
-    std::cout << "] " << int(100 * (i / double(full_file.size()) )) << "%" << std::endl;
+    std::cout << "] " << int(100 * (i / double(full_file.size()) )) << "% Done processing file '" << in_name << "'" << std::endl;
 }
 
 void Convert_to_ROOT(const std::vector<std::string> &in_names, const char *out_name, const bool &build_tree)
@@ -208,7 +211,6 @@ void Convert_to_ROOT(const std::vector<std::string> &in_names, const char *out_n
         } else {
             Convert_file(in_names[i].c_str(), nullptr, &hmg, &eventstr);
         }
-        std::cout << "Done converting '" << in_names[i] << "'" << std::endl;
     }
     fout->Write();
     fout->Close();
