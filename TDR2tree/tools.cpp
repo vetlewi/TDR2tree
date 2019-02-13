@@ -76,70 +76,11 @@ void SetupBranches(Event &eventstr, TTree *tree)
     // Setup clover
     tree->Branch("clover_mult",&eventstr.clover_mult, "clover_mult/S");
     tree->Branch("cloverID",&eventstr.cloverID, "cloverID[clover_mult]/S");
+    tree->Branch("clover_crystal",&eventstr.clover_crystal, "clover_crystal[clover_mult]/S");
     tree->Branch("clover_energy", &eventstr.clover_energy, "clover_energy[clover_mult]/D");
     tree->Branch("clover_t_fine", &eventstr.clover_t_fine, "clover_t_fine[clover_mult]/D");
     tree->Branch("clover_t_course", &eventstr.clover_t_course, "clover_t_course[clover_mult]/L");
     tree->BranchRef();
-}
-
-void OldCode(TTree *tree)
-{
-    int16_t ringID;
-    double ring_energy, ring_t_fine;
-    int64_t ring_t_course;
-    //tree->Branch("ring_mult", &deDet_ring_mult, "deDet_ring_mult/S");
-    tree->Branch("ringID", &ringID, "ringID/S");
-    tree->Branch("ring_energy", &ring_energy, "ring_energy/D");
-    tree->Branch("ring_t_fine", &ring_t_fine, "ring_t_fine/D");
-    tree->Branch("ring_t_course",&ring_t_course, "ring_t_course/L");
-
-    int16_t sect_mult, sectID[NUM_MAX];
-    double sect_energy[NUM_MAX], sect_t_fine[NUM_MAX];
-    int64_t sect_t_course[NUM_MAX];
-    tree->Branch("sect_mult", &sect_mult, "sect_mult/S");
-    tree->Branch("sectID", &sectID, "sectID[sect_mult]/S");
-    tree->Branch("sect_energy", &sect_energy, "sect_energy[sect_mult]/D");
-    tree->Branch("sect_t_fine", &sect_t_fine, "sect_t_fine[sect_mult]/D");
-    tree->Branch("sect_t_course", &sect_t_course, "sect_t_course[sect_mult]/L");
-
-    int16_t back_mult, backID[NUM_MAX];
-    double back_energy[NUM_MAX], back_t_fine[NUM_MAX];
-    int64_t back_t_course[NUM_MAX];
-    tree->Branch("back_mult", &back_mult, "back_mult/S");
-    tree->Branch("backID", &backID, "backID[back_mult]/S");
-    tree->Branch("back_energy", &back_energy, "back_energy[back_mult]/D");
-    tree->Branch("back_t_fine", &back_t_fine, "back_t_fine[back_mult]/D");
-    tree->Branch("back_t_course", &back_t_course, "back_t_course[back_mult]/L");
-
-    int16_t labrL_mult, labrLID[NUM_MAX];
-    double labrL_energy[NUM_MAX], labrL_t_fine[NUM_MAX];
-    int64_t labrL_t_course[NUM_MAX];
-    tree->Branch("labrL_mult", &labrL_mult, "labrL_mult/S");
-    tree->Branch("labrLID", &labrLID, "labrLID[labrL_mult]/S");
-    tree->Branch("labrL_energy", &labrL_energy, "labrL_energy[labrL_mult]/D");
-    tree->Branch("labrL_t_fine", &labrL_t_fine, "labrL_t_fine[labrL_mult]/D");
-    tree->Branch("labrL_t_course", &labrL_t_course, "labrL_t_course[labrL_mult]/L");
-
-    int16_t labrS_mult, labrSID[NUM_MAX];
-    double labrS_energy[NUM_MAX], labrS_t_fine[NUM_MAX];
-    int64_t labrS_t_course[NUM_MAX];
-    tree->Branch("labrS_mult", &labrS_mult, "labrS_mult/S");
-    tree->Branch("labrSID", &labrSID, "labrSID[labrS_mult]/S");
-    tree->Branch("labrS_energy", &labrS_energy, "labrS_energy[labrS_mult]/D");
-    tree->Branch("labrS_t_fine", &labrS_t_fine, "labrS_t_fine[labrS_mult]/D");
-    tree->Branch("labrS_t_course", &labrS_t_course, "labrS_t_course[labrS_mult]/L");
-
-    int16_t clover_mult, cloverID[NUM_MAX];
-    char clover_crystal[NUM_MAX]; // We need to know which crystal is hit first.
-    double clover_energy[NUM_MAX], clover_t_fine[NUM_MAX];
-    int64_t clover_t_course[NUM_MAX];
-    tree->Branch("clover_mult",&clover_mult, "clover_mult/S");
-    tree->Branch("cloverID",&cloverID, "cloverID[clover_mult]/S");
-    tree->Branch("clover_crystal",&clover_crystal, "clover_crystal[clover_mult]/B");
-    tree->Branch("clover_energy", &clover_energy, "clover_energy[clover_mult]/D");
-    tree->Branch("clover_t_fine", &clover_t_fine, "clover_t_fine[clover_mult]/D");
-    tree->Branch("clover_t_course", &clover_t_course, "clover_t_course[clover_mult]/L");
-
 }
 
 

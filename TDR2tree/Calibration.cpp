@@ -42,40 +42,6 @@ static Parameter shift_t_back(calParam, "shift_t_back", NUM_SI_BACK, 0);
 //! Time gate for addback in clover detectors
 static Parameter clover_addback_gate(calParam, "clover_addback_gate", 2, 0);
 
-//! From the input parameters we will construct TimeType calibration.
-/*static Event_time_t timecal_labrL[NUM_LABR_3X8_DETECTORS];
-static Event_time_t timecal_labrS[NUM_LABR_2X2_DETECTORS];
-static Event_time_t timecal_clover[NUM_CLOVER_DETECTORS][NUM_CLOVER_CRYSTALS];
-static Event_time_t timecal_ring[NUM_SI_RING];
-static Event_time_t timecal_sect[NUM_SI_SECT];
-static Event_time_t timecal_back[NUM_SI_BACK];
-static bool timecal_set = false;
-
-void SetTimeCal(Event_time_t *dest, Parameter &orig, size_t length)
-{
-    double frac, whole;
-    for (size_t i = 0 ; i < length ; ++i){
-        frac = std::modf(orig[i], &whole);
-        dest[i] = {static_cast<int64_t>(whole), frac};
-    }
-}
-
-void BuildTimeCal()
-{
-    double frac, whole;
-    SetTimeCal(timecal_labrL, shift_t_labrL, NUM_LABR_3X8_DETECTORS);
-    SetTimeCal(timecal_labrS, shift_t_labrS, NUM_LABR_2X2_DETECTORS);
-    SetTimeCal(timecal_ring, shift_t_ring, NUM_SI_RING);
-    SetTimeCal(timecal_sect, shift_t_sect, NUM_SI_RING);
-    SetTimeCal(timecal_back, shift_t_back, NUM_SI_RING);
-    for (int i = 0 ; i < NUM_CLOVER_DETECTORS ; ++i){
-        for (int j = 0 ; j < NUM_CLOVER_CRYSTALS ; ++j){
-            frac = std::modf(shift_t_clover[i*NUM_CLOVER_CRYSTALS + j], &whole);
-            timecal_clover[i][j] = Event_time_t(static_cast<int64_t>(whole), frac);
-        }
-    }
-    timecal_set = true;
-}*/
 
 bool NextLine(std::istream &in, std::string &outline, int &lineno)
 {
@@ -159,36 +125,6 @@ double CalibrateTime(const word_t &detector)
             return detector.cfdcorr;
     }
 }
-
-/*Event_time_t CalibrateTime(const word_t &detector)
-{   
-    Event_time_t timestamp = {detector.timestamp, detector.cfdcorr};
-    DetectorInfo_t dinfo = GetDetector(detector.address);
-    switch (dinfo.type) {
-        case labr_3x8 :
-            timestamp -= timecal_labrL[dinfo.detectorNum];
-            break;
-        case labr_2x2 :
-            timestamp -= timecal_labrS[dinfo.detectorNum];
-            break;
-        case clover :
-            timestamp -= timecal_clover[dinfo.detectorNum][dinfo.telNum];
-            break;
-        case de_ring :
-            timestamp -= timecal_ring[dinfo.detectorNum];
-            break;
-        case de_sect :
-            timestamp -= timecal_sect[dinfo.detectorNum];
-            break;
-        case eDet :
-            timestamp -= timecal_back[dinfo.detectorNum];
-            break;
-        default :
-            break;
-    }
-    return timestamp;
-}*/
-
 
 bool CheckTimeGateAddback(const double &timediff)
 {
