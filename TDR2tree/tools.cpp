@@ -22,7 +22,8 @@ std::vector<word_t> ReadFileToMemory(const char *filename)
     FileReader freader;
     freader.Open(filename);
     int i;
-    std::vector<word_t> data(buf_size);
+    std::vector<word_t> data;
+    data.reserve(128876544);
 
     // We read 32k at the time
     word_t buf[buf_size];
