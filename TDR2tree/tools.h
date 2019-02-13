@@ -4,7 +4,9 @@
 #include <vector>
 #include <string>
 
-void Convert_to_ROOT(const std::vector<std::string> &in_names, const char *out_name, const bool &build_tree);
+#include "BasicStruct.h"
+
+void Convert_to_ROOT(const std::vector<std::string> &in_names, const char *out_name, const Options &opt);
 
 
 #endif // TOOLS_H

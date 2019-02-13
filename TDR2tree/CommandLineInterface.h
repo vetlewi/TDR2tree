@@ -37,12 +37,12 @@ public:
   friend ostream& operator <<(ostream &,const CommandLineInterface &);
 
 private:
-  int fMaximumFlagLength;
+  size_t fMaximumFlagLength;
   vector<string> fFlags;
   vector<void*>  fValues;
-  int fMaximumTypeLength;
+  size_t fMaximumTypeLength;
   vector<string> fTypes;
-  int fMaximumCommentLength;
+  size_t fMaximumCommentLength;
   vector<string> fComments;
   vector<double> fFactors;
 };

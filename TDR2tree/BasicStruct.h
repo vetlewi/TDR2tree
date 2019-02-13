@@ -23,6 +23,12 @@ typedef struct {
     double cfdcorr;         //!< Correction from the CFD.
 } word_t;
 
+struct Options {
+    bool make_tree;
+    bool use_addback;
+    bool use_all_labrS;
+};
+
 struct Event {
 
     // Fields for the ring
@@ -136,7 +142,7 @@ public:
     HistogramManager();
     virtual ~HistogramManager();
 
-    void Fill(const Event *event);
+    void Fill(const Event *event, const Options &opt);
 
     TH2 *GetAB(){ return time_self_clover; } /*!< Return Addback time spectrum */
 

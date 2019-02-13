@@ -70,11 +70,11 @@ HistogramManager::~HistogramManager()
    // in which tey are stored is closed.
 }
 
-void HistogramManager::Fill(const Event *event)
+void HistogramManager::Fill(const Event *event, const Options &opt)
 {
     double tdiff;
     for (int i = 0 ; i < event->labrS_mult ; ++i){
-        if (event->labrSID[i] != 0) // Skip unless det. 0 (our ref.)
+        if ( (!opt.use_all_labrS) && event->labrSID[i] != 0) // Skip unless det. 0 (our ref.)
             continue;
 
         for (int j = 0 ;j < event->ring_mult ; ++j){

@@ -15,11 +15,13 @@ int main(int argc, char *argv[])
     CommandLineInterface interface;
     std::vector<std::string> input_file;
     std::string output_file, cal_file;
-    bool make_tree;
+    Options opt;
     interface.Add("-i", "Input file", &input_file);
     interface.Add("-o", "Output file", &output_file);
     interface.Add("-c", "Calibration file", &cal_file);
-    interface.Add("-mt", "Build tree", &make_tree);
+    interface.Add("-mt", "Build tree", &opt.make_tree);
+    interface.Add("-ab", "Add-back; If addback should be applied on clovers", &opt.use_addback);
+    interface.Add("-ar", "Indicate if all small LaBr detectors should be used as reference", &opt.use_all_labrS);
     interface.CheckFlags(argc, argv);
 
 
@@ -35,9 +37,7 @@ int main(int argc, char *argv[])
         }
     }
 
-
-    Convert_to_ROOT(input_file, output_file.c_str(), make_tree);
-    //std::cout << "Done converting to ROOT" << std::endl;
+    Convert_to_ROOT(input_file, output_file.c_str(), opt);
     return 0;
 
 }

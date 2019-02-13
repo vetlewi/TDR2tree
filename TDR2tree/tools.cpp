@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <forward_list>
 
 #include <TROOT.h>
 #include <TFile.h>
@@ -85,7 +86,7 @@ void SetupBranches(Event &eventstr, TTree *tree)
 }
 
 
-void Convert_file(const std::string in_name, TTree *tree, HistogramManager *mgr, Event *eventstr)
+void Convert_file(const std::string in_name, TTree *tree, HistogramManager *mgr, Event *eventstr, const Options &opt)
 {
     int64_t timediff;
     size_t start=0,stop=0;
@@ -161,8 +162,9 @@ void Convert_file(const std::string in_name, TTree *tree, HistogramManager *mgr,
                     break;
             }
         }
-        mgr->Fill(eventstr);
-        eventstr->RunAddback(mgr->GetAB());
+        mgr->Fill(eventstr, opt);
+        if (opt.use_addback)
+            eventstr->RunAddback(mgr->GetAB());
         if( (i / double(full_file.size())) - shown*0.02 > 0 ){
             if ( tree != nullptr) tree->OptimizeBaskets();
             ++shown;
@@ -185,13 +187,13 @@ void Convert_file(const std::string in_name, TTree *tree, HistogramManager *mgr,
     std::cout << "] " << int(100 * (i / double(full_file.size()) )) << "% Done processing file '" << in_name << "'" << std::endl;
 }
 
-void Convert_to_ROOT(const std::vector<std::string> &in_names, const char *out_name, const bool &build_tree)
+void Convert_to_ROOT(const std::vector<std::string> &in_names, const char *out_name,  const Options &opt)
 {
     TFile *fout = new TFile(out_name, "RECREATE");
     TTree *tree = nullptr;
     Event eventstr;
 
-    if (build_tree){
+    if (opt.make_tree){
         tree = new TTree("events","events");
         SetupBranches(eventstr, tree);
     }
@@ -206,10 +208,10 @@ void Convert_to_ROOT(const std::vector<std::string> &in_names, const char *out_n
     }
 
     for (size_t i = 0 ; i < in_names.size() ; ++i){
-        if (build_tree) {
-            Convert_file(in_names[i].c_str(), tree, &hmg, &eventstr);
+        if (opt.make_tree) {
+            Convert_file(in_names[i].c_str(), tree, &hmg, &eventstr, opt);
         } else {
-            Convert_file(in_names[i].c_str(), nullptr, &hmg, &eventstr);
+            Convert_file(in_names[i].c_str(), nullptr, &hmg, &eventstr, opt);
         }
     }
     fout->Write();

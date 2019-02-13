@@ -15,17 +15,16 @@ CommandLineInterface::CommandLineInterface()
 
 bool CommandLineInterface::CheckFlags(int argc, char* argv[], const bool& Debug)
 {
-  int i,j;
-
+  size_t found=0;
   if(argc == 1)
     {
-      for(i = 0; i < fFlags.size(); i++)
+      for(size_t i = 0; i < fFlags.size(); i++)
 	{
 	  if(fTypes[i].empty())
 	    cout<<fComments[i]<<endl<<endl;
 	}
       cout<<"use "<<argv[0]<<" with following flags:"<<endl;
-      for(i = 0; i < fFlags.size(); i++)
+      for(size_t i = 0; i < fFlags.size(); i++)
 	{
 	  if(fTypes[i] == "bool")
 	    cout<<"        ["<<setw(fMaximumFlagLength+fMaximumTypeLength)<<left<<fFlags[i]<<"   : "<<fComments[i]<<"]"<<endl;
@@ -36,16 +35,17 @@ bool CommandLineInterface::CheckFlags(int argc, char* argv[], const bool& Debug)
       return true;
     }
 
-  for(i = 1; i < argc; i++)
+  for(int i = 1; i < argc; i++)
     {
-      for(j = 0; j < fFlags.size(); j++)
+      for(size_t j = 0; j < fFlags.size(); j++)
 	{
+      found = j;
 	  if(argv[i] == fFlags[j])
 	    {
 	      //bool doesn't need any value to be read
 	      if(fTypes[j] == "bool")
 		{
-		  *((bool*) fValues[j]) = true;
+          *(static_cast<bool*>(fValues[j])) = true;
 		  break;//found the right flag for this argument so the flag loop can be stopped
 		}
 	      //if not bool check whether there are more arguments (with values) coming
@@ -56,37 +56,37 @@ bool CommandLineInterface::CheckFlags(int argc, char* argv[], const bool& Debug)
 		}
 	      else if(fTypes[j] == "char*")
 		{
-		  *((char**) fValues[j]) = argv[i+1];
+          *(static_cast<char**>(fValues[j])) = argv[i+1];
 		  i++;
 		  break;//found the right flag for this argument so the flag loop can be stopped
 		}
 	      else if(fTypes[j] == "string")
 		{
-		  *((string*) fValues[j]) = argv[i+1];
+          *(static_cast<string*>(fValues[j])) = argv[i+1];
 		  i++;
 		  break;//found the right flag for this argument so the flag loop can be stopped
 		}
 	      else if(fTypes[j] == "int")
 		{
-		  *((int*) fValues[j]) = atoi(argv[i+1]);
+          *(static_cast<int*>(fValues[j])) = atoi(argv[i+1]);
 		  i++;
 		  break;//found the right flag for this argument so the flag loop can be stopped
 		}
 	      else if(fTypes[j] == "size_t")
 		{
-		  *((size_t*) fValues[j]) = atoi(argv[i+1]);
+          *(static_cast<size_t*>(fValues[j])) = size_t(atoll(argv[i+1]));
 		  i++;
 		  break;//found the right flag for this argument so the flag loop can be stopped
 		}
 	      else if(fTypes[j] == "long long")
 		{
-		  *((long long*) fValues[j]) = atoi(argv[i+1]);
+          *(static_cast<long long*>(fValues[j])) = atoll(argv[i+1]);
 		  i++;
 		  break;//found the right flag for this argument so the flag loop can be stopped
 		}
 	      else if(fTypes[j] == "double")
 		{
-		  *((double*) fValues[j]) = atof(argv[i+1])*fFactors[j];
+          *(static_cast<double*>(fValues[j])) = atof(argv[i+1])*fFactors[j];
 		  i++;
 		  break;//found the right flag for this argument so the flag loop can be stopped
 		}
@@ -98,7 +98,7 @@ bool CommandLineInterface::CheckFlags(int argc, char* argv[], const bool& Debug)
 		    {
 		      if(argv[i][0] != '-')
 			{
-			  (*((vector<char*>*)fValues[j])).push_back(argv[i]);
+              (*(static_cast<vector<char*>*>(fValues[j]))).push_back(argv[i]);
 			  i++;
 			}
 		      else
@@ -118,7 +118,7 @@ bool CommandLineInterface::CheckFlags(int argc, char* argv[], const bool& Debug)
 		    {
 		      if(argv[i][0] != '-')
 			{
-			  (*((vector<string>*)fValues[j])).push_back(argv[i]);
+              (*(static_cast<vector<string>*>(fValues[j]))).push_back(argv[i]);
 			  i++;
 			}
 		      else
@@ -138,7 +138,7 @@ bool CommandLineInterface::CheckFlags(int argc, char* argv[], const bool& Debug)
 		    {
 		      if(argv[i][0] != '-')
 			{
-			  (*((vector<int>*)fValues[j])).push_back(atoi(argv[i]));
+              (*(static_cast<vector<int>*>(fValues[j]))).push_back(atoi(argv[i]));
 			  i++;
 			}
 		      else
@@ -158,7 +158,7 @@ bool CommandLineInterface::CheckFlags(int argc, char* argv[], const bool& Debug)
 		    {
 		      if(argv[i][0] != '-')
 			{
-			  (*((vector<long long>*)fValues[j])).push_back(atoi(argv[i]));
+              (*(static_cast<vector<long long>*>(fValues[j]))).push_back(atoll(argv[i]));
 			  i++;
 			}
 		      else
@@ -178,7 +178,7 @@ bool CommandLineInterface::CheckFlags(int argc, char* argv[], const bool& Debug)
 		    {
 		      if(argv[i][0] != '-')
 			{
-			  (*((vector<double>*)fValues[j])).push_back(atof(argv[i])*fFactors[j]);
+              (*(static_cast<vector<double>*>(fValues[j]))).push_back(atof(argv[i])*fFactors[j]);
 			  i++;
 			}
 		      else
@@ -193,7 +193,7 @@ bool CommandLineInterface::CheckFlags(int argc, char* argv[], const bool& Debug)
 	    }//if(argv[i] == flags[j])
 	}//for(j = 0; j < flags.size(); j++)
 
-      if(j == fFlags.size())//this means no matching flag was found
+      if(found == fFlags.size())//this means no matching flag was found
 	{
 	  cerr<<"flag "<<argv[i]<<" unknown"<<endl;
 	}
@@ -214,74 +214,74 @@ bool CommandLineInterface::CheckFlags(int argc, char* argv[], const bool& Debug)
 ostream& operator <<(ostream &os,const CommandLineInterface &obj)
 {
   os<<"command line flags are:"<<endl;
-  for(int i = 0; i < obj.fValues.size(); i++)
+  for(size_t i = 0; i < obj.fValues.size(); i++)
     {
       if(obj.fTypes[i] == "bool")
 	{
-	  cout<<obj.fFlags[i]<<": "<<*((bool*) obj.fValues[i])<<endl;
+      cout<<obj.fFlags[i]<<": "<<*(static_cast<bool*>(obj.fValues[i]))<<endl;
 	}
       else if(obj.fTypes[i] == "char*")
 	{
-	  cout<<obj.fFlags[i]<<": "<<*((char**) obj.fValues[i])<<endl;
+      cout<<obj.fFlags[i]<<": "<<*(static_cast<char**>(obj.fValues[i]))<<endl;
 	}
       else if(obj.fTypes[i] == "string")
 	{
-	  cout<<obj.fFlags[i]<<": "<<*((string*) obj.fValues[i])<<endl;
+      cout<<obj.fFlags[i]<<": "<<*(static_cast<string*>(obj.fValues[i]))<<endl;
 	}
       else if(obj.fTypes[i] == "int")
 	{
-	  cout<<obj.fFlags[i]<<": "<<*((int*) obj.fValues[i])<<endl;
+      cout<<obj.fFlags[i]<<": "<<*(static_cast<int*>(obj.fValues[i]))<<endl;
 	}
       else if(obj.fTypes[i] == "long long")
 	{
-	  cout<<obj.fFlags[i]<<": "<<*((long*) obj.fValues[i])<<endl;
+      cout<<obj.fFlags[i]<<": "<<*(static_cast<long*>(obj.fValues[i]))<<endl;
 	}
       else if(obj.fTypes[i] == "double")
 	{
-	  cout<<obj.fFlags[i]<<": "<<*((double*) obj.fValues[i])<<endl;
+      cout<<obj.fFlags[i]<<": "<<*(static_cast<double*>(obj.fValues[i]))<<endl;
 	}
       else if(obj.fTypes[i] == "vector<char*>")
 	{
 	  cout<<obj.fFlags[i]<<": ";
-	  for(int j = 0; j < ((vector<char*>*) obj.fValues[i])->size(); j++)
-	    {
-	      cout<<(*((vector<char*>*) obj.fValues[i]))[j]<<" ";
-	    }
+      for (size_t j = 0 ; j < static_cast<vector<char*>*>(obj.fValues[i])->size() ; ++j)
+        {
+          cout<< (*static_cast<vector<char*>*>(obj.fValues[i]))[j] << " ";
+        }
 	  cout<<endl;
 	}
       else if(obj.fTypes[i] == "vector<string>")
 	{
 	  cout<<obj.fFlags[i]<<": ";
-	  for(int j = 0; j < ((vector<string>*) obj.fValues[i])->size(); j++)
-	    {
-	      cout<<(*((vector<string>*) obj.fValues[i]))[j]<<" ";
-	    }
+      for (size_t j = 0 ; j < static_cast<vector<string>*>(obj.fValues[i])->size() ; ++j)
+        {
+          cout<< (*static_cast<vector<string>*>(obj.fValues[i]))[j] << " ";
+        }
 	  cout<<endl;
 	}
       else if(obj.fTypes[i] == "vector<int>")
 	{
 	  cout<<obj.fFlags[i]<<": ";
-	  for(int j = 0; j < ((vector<int>*) obj.fValues[i])->size(); j++)
-	    {
-	      cout<<(*((vector<int>*) obj.fValues[i]))[j]<<" ";
-	    }
+      for (size_t j = 0 ; j < static_cast<vector<int>*>(obj.fValues[i])->size() ; ++j)
+        {
+          cout<< (*static_cast<vector<int>*>(obj.fValues[i]))[j] << " ";
+        }
 	  cout<<endl;
 	}
       else if(obj.fTypes[i] == "vector<long long>")
 	{
 	  cout<<obj.fFlags[i]<<": ";
-	  for(int j = 0; j < ((vector<long long>*) obj.fValues[i])->size(); j++)
-	    {
-	      cout<<(*((vector<long long>*) obj.fValues[i]))[j]<<" ";
-	    }
+      for (size_t j = 0 ; j < static_cast<vector<long long>*>(obj.fValues[i])->size() ; ++j)
+        {
+          cout<< (*static_cast<vector<long long>*>(obj.fValues[i]))[j] << " ";
+        }
 	  cout<<endl;
 	}
       else if(obj.fTypes[i] == "vector<double>")
 	{
 	  cout<<obj.fFlags[i]<<": ";
-	  for(int j = 0; j < ((vector<double>*) obj.fValues[i])->size(); j++)
+      for (size_t j = 0 ; j < static_cast<vector<double>*>(obj.fValues[i])->size() ; ++j)
 	    {
-	      cout<<(*((vector<double>*) obj.fValues[i]))[j]<<" ";
+          cout<< (*static_cast<vector<double>*>(obj.fValues[i]))[j] << " ";
 	    }
 	  cout<<endl;
 	}
@@ -293,7 +293,7 @@ ostream& operator <<(ostream &os,const CommandLineInterface &obj)
 void CommandLineInterface::Add(const char* comment)
 {
   fFlags.push_back(string());
-  fValues.push_back((void*) NULL);
+  fValues.push_back(static_cast<void*>(nullptr));
   fTypes.push_back(string());
   if(strlen(comment) > fMaximumCommentLength)
     fMaximumCommentLength = strlen(comment);
@@ -306,7 +306,7 @@ void CommandLineInterface::Add(const char* flag, const char* comment, bool* valu
   if(strlen(flag) > fMaximumFlagLength)
     fMaximumFlagLength = strlen(flag);
   fFlags.push_back(string(flag));
-  fValues.push_back((void*) value);
+  fValues.push_back(static_cast<void*>(value));
   if(strlen("bool") > fMaximumTypeLength)
     fMaximumTypeLength = strlen("bool");
   fTypes.push_back(string("bool"));
@@ -321,7 +321,7 @@ void CommandLineInterface::Add(const char* flag, const char* comment, char** val
   if(strlen(flag) > fMaximumFlagLength)
     fMaximumFlagLength = strlen(flag);
   fFlags.push_back(string(flag));
-  fValues.push_back((void*) value);
+  fValues.push_back(static_cast<void*>(value));
   if(strlen("char*") > fMaximumTypeLength)
     fMaximumTypeLength = strlen("char*");
   fTypes.push_back(string("char*"));
@@ -336,7 +336,7 @@ void CommandLineInterface::Add(const char* flag, const char* comment, string* va
   if(strlen(flag) > fMaximumFlagLength)
     fMaximumFlagLength = strlen(flag);
   fFlags.push_back(string(flag));
-  fValues.push_back((void*) value);
+  fValues.push_back(static_cast<void*>(value));
   if(strlen("string") > fMaximumTypeLength)
     fMaximumTypeLength = strlen("string");
   fTypes.push_back(string("string"));
@@ -351,7 +351,7 @@ void CommandLineInterface::Add(const char* flag, const char* comment, int* value
   if(strlen(flag) > fMaximumFlagLength)
     fMaximumFlagLength = strlen(flag);
   fFlags.push_back(string(flag));
-  fValues.push_back((void*) value);
+  fValues.push_back(static_cast<void*>(value));
   if(strlen("int") > fMaximumTypeLength)
     fMaximumTypeLength = strlen("int");
   fTypes.push_back(string("int"));
@@ -366,7 +366,7 @@ void CommandLineInterface::Add(const char* flag, const char* comment, size_t* va
   if(strlen(flag) > fMaximumFlagLength)
     fMaximumFlagLength = strlen(flag);
   fFlags.push_back(string(flag));
-  fValues.push_back((void*) value);
+  fValues.push_back(static_cast<void*>(value));
   if(strlen("int") > fMaximumTypeLength)
     fMaximumTypeLength = strlen("size_t");
   fTypes.push_back(string("size_t"));
@@ -381,7 +381,7 @@ void CommandLineInterface::Add(const char* flag, const char* comment, long long*
   if(strlen(flag) > fMaximumFlagLength)
     fMaximumFlagLength = strlen(flag);
   fFlags.push_back(string(flag));
-  fValues.push_back((void*) value);
+  fValues.push_back(static_cast<void*>(value));
   if(strlen("long long") > fMaximumTypeLength)
     fMaximumTypeLength = strlen("long long");
   fTypes.push_back(string("long long"));
@@ -396,7 +396,7 @@ void CommandLineInterface::Add(const char* flag, const char* comment, double* va
   if(strlen(flag) > fMaximumFlagLength)
     fMaximumFlagLength = strlen(flag);
   fFlags.push_back(string(flag));
-  fValues.push_back((void*) value);
+  fValues.push_back(static_cast<void*>(value));
   if(strlen("double") > fMaximumTypeLength)
     fMaximumTypeLength = strlen("double");
   fTypes.push_back(string("double"));
@@ -411,7 +411,7 @@ void CommandLineInterface::Add(const char* flag, const char* comment, vector<cha
   if(strlen(flag) > fMaximumFlagLength)
     fMaximumFlagLength = strlen(flag);
   fFlags.push_back(string(flag));
-  fValues.push_back((void*) value);
+  fValues.push_back(static_cast<void*>(value));
   if(strlen("vector<char*>") > fMaximumTypeLength)
     fMaximumTypeLength = strlen("vector<char*>");
   fTypes.push_back(string("vector<char*>"));
@@ -426,7 +426,7 @@ void CommandLineInterface::Add(const char* flag, const char* comment, vector<str
   if(strlen(flag) > fMaximumFlagLength)
     fMaximumFlagLength = strlen(flag);
   fFlags.push_back(string(flag));
-  fValues.push_back((void*) value);
+  fValues.push_back(static_cast<void*>(value));
   if(strlen("vector<string>") > fMaximumTypeLength)
     fMaximumTypeLength = strlen("vector<string>");
   fTypes.push_back(string("vector<string>"));
@@ -441,7 +441,7 @@ void CommandLineInterface::Add(const char* flag, const char* comment, vector<int
   if(strlen(flag) > fMaximumFlagLength)
     fMaximumFlagLength = strlen(flag);
   fFlags.push_back(string(flag));
-  fValues.push_back((void*) value);
+  fValues.push_back(static_cast<void*>(value));
   if(strlen("vector<int>") > fMaximumTypeLength)
     fMaximumTypeLength = strlen("vector<int>");
   fTypes.push_back(string("vector<int>"));
@@ -456,7 +456,7 @@ void CommandLineInterface::Add(const char* flag, const char* comment, vector<lon
   if(strlen(flag) > fMaximumFlagLength)
     fMaximumFlagLength = strlen(flag);
   fFlags.push_back(string(flag));
-  fValues.push_back((void*) value);
+  fValues.push_back(static_cast<void*>(value));
   if(strlen("vector<long long>") > fMaximumTypeLength)
     fMaximumTypeLength = strlen("vector<long long>");
   fTypes.push_back(string("vector<long long>"));
@@ -471,7 +471,7 @@ void CommandLineInterface::Add(const char* flag, const char* comment, vector<dou
   if(strlen(flag) > fMaximumFlagLength)
     fMaximumFlagLength = strlen(flag);
   fFlags.push_back(string(flag));
-  fValues.push_back((void*) value);
+  fValues.push_back(static_cast<void*>(value));
   if(strlen("vector<double>") > fMaximumTypeLength)
     fMaximumTypeLength = strlen("vector<double>");
   fTypes.push_back(string("vector<double>"));
