@@ -76,7 +76,6 @@ void SetupBranches(Event &eventstr, TTree *tree)
     // Setup clover
     tree->Branch("clover_mult",&eventstr.clover_mult, "clover_mult/S");
     tree->Branch("cloverID",&eventstr.cloverID, "cloverID[clover_mult]/S");
-    tree->Branch("clover_crystal",&eventstr.clover_crystal, "clover_crystal[clover_mult]/S");
     tree->Branch("clover_energy", &eventstr.clover_energy, "clover_energy[clover_mult]/D");
     tree->Branch("clover_t_fine", &eventstr.clover_t_fine, "clover_t_fine[clover_mult]/D");
     tree->Branch("clover_t_course", &eventstr.clover_t_course, "clover_t_course[clover_mult]/L");

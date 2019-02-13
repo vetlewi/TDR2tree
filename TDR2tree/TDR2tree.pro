@@ -21,7 +21,6 @@ SOURCES += main.cpp \
     XIA_CFD.c \
     Calibration.cpp \
     tools.cpp \
-    event.cpp \
     Parameters.cpp \
     CommandLineInterface.cpp \
     BasicStruct.cpp
@@ -32,7 +31,6 @@ HEADERS += \
     XIA_CFD.h \
     Calibration.h \
     tools.h \
-    event.h \
     RootLinkDef.h \
     Parameters.h \
     CommandLineInterface.h \
