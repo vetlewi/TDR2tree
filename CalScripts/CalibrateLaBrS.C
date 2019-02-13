@@ -11,9 +11,9 @@ void CalibrateTime(const char *rname)
 
 	double peakPos[1024];
 
-	const int num_labrL = 6;
+	const int num_labrS = 6;
 
-	for (int i = 0 ; i < num_labrL ; ++i ){
+	for (int i = 0 ; i < num_labrS ; ++i ){
 		sprintf(tmp, "px_%d", i);
 		TH1 *h = m->ProjectionX(tmp, i+1, i+1);
 		//h->Rebin(5);
@@ -34,8 +34,8 @@ void CalibrateTime(const char *rname)
 		fit->Draw("same");
 
 	}
-	printf("shift_t_labrS =\t");
-	for (int i = 0 ; i < num_labrL ; ++i){
+	//printf("%2.6f\t", 0.0);
+	for (int i = 0 ; i < num_labrS ; ++i){
 		printf("%2.6f\t", -peakPos[i]);
 	}
 
