@@ -1,4 +1,4 @@
-afrom multiprocessing import Pool
+from multiprocessing import Pool
 import os
 import numpy as np
 
