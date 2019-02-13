@@ -3,7 +3,7 @@ void CalibrateTime(const char *rname)
 {
 	TFile *file = TFile::Open(rname);
 
-	TH2 *m = (TH2 *)file->Get("time_labrS");
+	TH2 *m = (TH2 *)file->Get("time_labrL");
 
 	TSpectrum spec;
 
@@ -23,7 +23,7 @@ void CalibrateTime(const char *rname)
 		cout << i << ": " << n_peaks << endl;
 
 		double param[3] = {200., spec.GetPositionX()[0], 1.0};
-		TF1 *fit = new TF1("total","gaus(0)",spec.GetPositionX()[0]-1.0,spec.GetPositionX()[0]+1.0);
+		TF1 *fit = new TF1("total","gaus(0)",spec.GetPositionX()[0]-1.5,spec.GetPositionX()[0]+1.5);
 		
 		for (Int_t k=0; k<3; k++) {
         fit->SetParameter(k, param[k]);
