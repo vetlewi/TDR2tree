@@ -148,6 +148,10 @@ private:
     TH2 *time_labrS;    //!< Alignment spectra of small LaBr detectors.
     TH2 *time_clover;   //!< Alignment spectra of clover crystals.
     TH2 *time_self_clover;  //!< Self time difference (for addback).
+
+    TH1 *Spec(const char *name, const char *title, const int &nbins, const double &xmin, const double &xmax, const char *xtitle, const char *ytitle);
+    TH2 *Mat(const char *name, const char *title, const int &xbins, const double &xmin, const double &xmax, const char *xtitle,
+                                                  const int &ybins, const double &ymin, const double &ymac, const char *ytitle);
 };
 
 #endif // BASICSTRUCT_H

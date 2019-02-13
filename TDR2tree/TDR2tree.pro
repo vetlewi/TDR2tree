@@ -9,8 +9,8 @@ QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.14
 ROOTFLAGS = $$system( root-config --cflags )
 ROOTLIBS = $$system( root-config --glibs )
 
-QMAKE_CXXFLAGS = $$ROOTFLAGS -Wall -W -std=c++11 -fPIC -m64 -O3 -march=native
-QMAKE_CFLAGS += -Wall -W -fPIC -m64 -O3 -march=native
+QMAKE_CXXFLAGS = $$ROOTFLAGS -Wall -W -std=c++11 -fPIC -m64 #-O3 -march=native
+QMAKE_CFLAGS += -Wall -W -fPIC -m64 #-O3 -march=native
 LIBS += $$ROOTLIBS
 
 INCLUDEPATH += ./

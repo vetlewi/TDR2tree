@@ -55,47 +55,13 @@ void Event::RunAddback(TH2 *ab_t_clover)
 
 HistogramManager::HistogramManager()
 {
-    time_ring = new TH2D("time_ring", "Time alignment spectra, rings", 3000, -1500, 1500, NUM_SI_RING, 0, NUM_SI_RING);
-    time_ring->GetXaxis()->SetTitle("Time ring [ns]");
-    time_ring->GetYaxis()->SetTitle("Ring ID");
-    time_ring->GetZaxis()->SetTitle("Counts/1 ns");
-    time_ring->SetOption( "colz" );
-
-    time_sect = new TH2D("time_sect", "Time alignment spectra, sectors", 3000, -1500, 1000, NUM_SI_SECT, 0, NUM_SI_SECT);
-    time_sect->GetXaxis()->SetTitle("Time sector [ns]");
-    time_sect->GetYaxis()->SetTitle("Sector ID");
-    time_sect->GetZaxis()->SetTitle("Counts/1 ns");
-    time_sect->SetOption( "colz" );
-
-    time_back = new TH2D("time_back", "Time alignment spectra, back", 3000, -1500, 1500, NUM_SI_BACK, 0, NUM_SI_BACK);
-    time_back->GetXaxis()->SetTitle("Time back [ns]");
-    time_back->GetYaxis()->SetTitle("Back ID");
-    time_back->GetZaxis()->SetTitle("Counts/1 ns");
-    time_back->SetOption( "colz" );
-
-    time_labrL = new TH2D("time_labrL", "Time alignment spectra, large LaBr", 30000, -1500, 1500, NUM_LABR_3X8_DETECTORS, 0, NUM_LABR_3X8_DETECTORS);
-    time_labrL->GetXaxis()->SetTitle("Time LaBr [ns]");
-    time_labrL->GetYaxis()->SetTitle("LaBr ID");
-    time_labrL->GetZaxis()->SetTitle("Counts/0.1 ns");
-    time_labrL->SetOption( "colz" );
-
-    time_labrS = new TH2D("time_labrS", "Time alignment spectra, small LaBr", 30000, -1500, 1500, NUM_LABR_2X2_DETECTORS, 0, NUM_LABR_2X2_DETECTORS);
-    time_labrS->GetXaxis()->SetTitle("Time LaBr [ns]");
-    time_labrS->GetYaxis()->SetTitle("LaBr ID");
-    time_labrS->GetZaxis()->SetTitle("Counts/0.1 ns");
-    time_labrS->SetOption( "colz" );
-
-    time_clover = new TH2D("time_clover", "Time alignment spectra, clover", 3000, -1500, 1500, NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, 0, NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS);
-    time_clover->GetXaxis()->SetTitle("Time clover [ns]");
-    time_clover->GetYaxis()->SetTitle("Clover ID");
-    time_clover->GetZaxis()->SetTitle("Counts/1 ns");
-    time_clover->SetOption( "colz" );
-
-    time_self_clover = new TH2D("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS);
-    time_self_clover->GetXaxis()->SetTitle("Time clover [ns]");
-    time_self_clover->GetYaxis()->SetTitle("Clover ID");
-    time_self_clover->GetZaxis()->SetTitle("Counts/1 ns");
-    time_self_clover->SetOption( "colz" );
+    time_ring = Mat("time_ring", "Time alignment spectra, rings", 3000, -1500, 1500, "Time [ns]", NUM_SI_RING, 0, NUM_SI_RING, "Ring ID");
+    time_sect = Mat("time_sect", "Time alignment spectra, sectors", 3000, -1500, 1500, "Time [ns]", NUM_SI_SECT, 0, NUM_SI_SECT, "Sector ID");
+    time_back = Mat("time_back", "Time alignment spectra, E detector", 3000, -1500, 1500, "Time [ns]", NUM_SI_BACK, 0, NUM_SI_BACK, "Sector ID");
+    time_labrL = Mat("time_labrL", "Time alignment spectra, large LaBr", 30000, -1500, 1500, "Time [ns]", NUM_LABR_3X8_DETECTORS, 0, NUM_LABR_3X8_DETECTORS, "Large LaBr ID");
+    time_labrS = Mat("time_labrS", "Time alignment spectra, small LaBr", 30000, -1500, 1500, "Time [ns]", NUM_LABR_2X2_DETECTORS, 0, NUM_LABR_2X2_DETECTORS, "Small LaBr ID");
+    time_clover = Mat("time_clover", "Time alignment spectra, clover", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, 0, NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, "Clover ID");
+    time_self_clover = Mat("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector");
 }
 
 HistogramManager::~HistogramManager()
@@ -147,4 +113,22 @@ void HistogramManager::Fill(const Event *event)
             time_clover->Fill(tdiff, event->cloverID[j]);
         }
     }
+}
+
+TH1 *HistogramManager::Spec(const char *name, const char *title, const int &nbins, const double &xmin, const double &xmax, const char *xtitle, const char *ytitle)
+{
+    TH1 *h = new TH1D(name, title, nbins, xmin, xmax);
+    h->GetXaxis()->SetTitle(xtitle);
+    h->GetYaxis()->SetTitle(ytitle);
+    return h;
+}
+
+TH2 *HistogramManager::Mat(const char *name, const char *title, const int &xbins, const double &xmin, const double &xmax, const char *xtitle, const int &ybins, const double &ymin, const double &ymax, const char *ytitle)
+{
+    TH2 *m = new TH2D(name, title, xbins, xmin, xmax, ybins, ymin, ymax);
+    m->GetXaxis()->SetTitle(xtitle);
+    m->GetYaxis()->SetTitle(ytitle);
+    m->SetOption("colz");
+    m->SetContour(64);
+    return m;
 }
