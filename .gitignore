@@ -141,7 +141,7 @@ CMakeLists.txt.user*
 *.pcm
 
 # We also do not want the binary targets
-TDR2tree
+#TDR2tree
 
 .DS_Store
 .DS_Store?
