@@ -1,6 +1,7 @@
 
-void CalibrateTime(const char *rname)
+vector<double> CalibrateClover(const char *rname)
 {
+	vector<double> result;
 	TFile *file = TFile::Open(rname);
 
 	TH2 *m = (TH2 *)file->Get("time_clover");
@@ -17,7 +18,7 @@ void CalibrateTime(const char *rname)
 		sprintf(tmp, "px_%d", i);
 		TH1 *h = m->ProjectionX(tmp, i+1, i+1);
 		h->Rebin(5);
-		h->Draw();
+		//h->Draw();
 		spec.Search(h);
 		int n_peaks = spec.GetNPeaks();
 		cout << i << ": " << n_peaks << endl;
@@ -31,7 +32,7 @@ void CalibrateTime(const char *rname)
 
 		h->Fit("total", "bR");
 		peakPos[i] = fit->GetParameter(1);
-		fit->Draw("same");
+		//fit->Draw("same");
 
 	}
 	printf("shift_t_clover =\t");
@@ -39,10 +40,11 @@ void CalibrateTime(const char *rname)
 		if ( i % 4 == 0)
 			printf("\\\n");	
 		printf("%2.6f\t", -peakPos[i]);
+		result.push_back(-peakPos[i]);
 	}
 
 	cout << endl;
 
-	//file->Close();
-
+	file->Close();
+	return result;
 }

@@ -147,6 +147,8 @@ public:
     TH2 *GetAB(){ return time_self_clover; } /*!< Return Addback time spectrum */
 
 private:
+
+    //! Time spectra for each detector
     TH2 *time_ring;     //!< Alignment spectra of dE rings.
     TH2 *time_sect;     //!< Alignment spectra of dE sectors.
     TH2 *time_back;     //!< Alignment spectra of dE back detectors.
@@ -154,6 +156,14 @@ private:
     TH2 *time_labrS;    //!< Alignment spectra of small LaBr detectors.
     TH2 *time_clover;   //!< Alignment spectra of clover crystals.
     TH2 *time_self_clover;  //!< Self time difference (for addback).
+
+    //! Time-energy spectra
+    TH2 *time_energy_ring;
+    TH2 *time_energy_sect;
+    TH2 *time_energy_back;
+    TH2 *time_energy_labrL;
+    TH2 *time_energy_labrS;
+    TH2 *time_energy_clover;
 
     TH1 *Spec(const char *name, const char *title, const int &nbins, const double &xmin, const double &xmax, const char *xtitle, const char *ytitle);
     TH2 *Mat(const char *name, const char *title, const int &xbins, const double &xmin, const double &xmax, const char *xtitle,
