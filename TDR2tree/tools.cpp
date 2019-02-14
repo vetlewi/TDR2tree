@@ -109,7 +109,7 @@ void Convert_file(const std::string in_name, TTree *tree, HistogramManager *mgr,
     for (i = 0 ; i < full_file.size() ; ++i){
         trigger = GetDetector(full_file[i].address);
 
-        if ( trigger.type != de_ring ) // Skip to next word.
+        if ( trigger.type != eDet ) // Skip to next word.
             continue;
 
         for (j = i ; j > 0 ; --j){
@@ -130,13 +130,18 @@ void Convert_file(const std::string in_name, TTree *tree, HistogramManager *mgr,
 
         eventstr->Reset();
 
-        eventstr->AddRing(trigger.detectorNum, CalibrateEnergy(full_file[i]), full_file[i].timestamp, CalibrateTime(full_file[i]));
+        //eventstr->AddRing(trigger.detectorNum, CalibrateEnergy(full_file[i]), full_file[i].timestamp, CalibrateTime(full_file[i]));
+        eventstr->AddBack(trigger.detectorNum, CalibrateEnergy(full_file[i]), full_file[i].timestamp, CalibrateTime(full_file[i]));
 
         for (j = start ; j < stop ; ++j){
             if ( j == i )
                 continue;
             channel = GetDetector(full_file[j].address);
             switch (channel.type) {
+                case de_ring : {
+                    eventstr->AddRing(channel.detectorNum, CalibrateEnergy(full_file[j]), full_file[j].timestamp, CalibrateTime(full_file[j]));
+                    break;
+                }
                 case de_sect : {
                     eventstr->AddSect(channel.detectorNum, CalibrateEnergy(full_file[j]), full_file[j].timestamp, CalibrateTime(full_file[j]));
                     break;
@@ -166,7 +171,7 @@ void Convert_file(const std::string in_name, TTree *tree, HistogramManager *mgr,
         if (opt.use_addback)
             eventstr->RunAddback(mgr->GetAB());
         if( (i / double(full_file.size())) - shown*0.02 > 0 ){
-            if ( tree != nullptr) tree->OptimizeBaskets();
+            if ( opt.make_tree ) tree->OptimizeBaskets();
             ++shown;
             std::cout << "[";
             int pos = barWidth * i / double(full_file.size());
@@ -178,7 +183,7 @@ void Convert_file(const std::string in_name, TTree *tree, HistogramManager *mgr,
             std::cout << "] " << int(100 * (i / double(full_file.size()) )) << "% Processing file '" << in_name << "'\r";
             std::cout.flush();
         }
-        if (tree != nullptr) tree->Fill();
+        if ( opt.make_tree ) tree->Fill();
     }
     std::cout << "[";
     for (int p = 0 ; p < barWidth ; ++p){
