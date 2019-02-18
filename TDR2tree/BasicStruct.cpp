@@ -24,7 +24,7 @@ void Event::RunAddback(TH2 *ab_t_clover)
     // We set up a vector for each clover.
     std::vector<SEvent_t> cevent[NUM_CLOVER_DETECTORS];
     for (int16_t n = 0 ; n < clover_mult ; ++n){
-        cevent[cloverID[n]/4].push_back({cloverID[n], clover_energy[n], clover_t_course[n], clover_t_fine[n]});
+        cevent[cloverID[n]/4].push_back({cloverID[n], clover_energy[n], clover_t_coarse[n], clover_t_fine[n]});
     }
 
     clover_mult = 0;
@@ -78,37 +78,39 @@ void HistogramManager::Fill(const Event *event, const Options &opt)
             continue;
 
         for (int j = 0 ;j < event->ring_mult ; ++j){
-            tdiff = event->ring_t_course[j] - event->labrS_t_course[i];
+            tdiff = event->ring_t_coarse[j] - event->labrS_t_coarse[i];
             tdiff += (event->ring_t_fine[j] - event->labrS_t_fine[i]);
             time_ring->Fill(tdiff, event->ringID[j]);
         }
 
         for (int j = 0 ; j < event->sect_mult ; ++j){
-            tdiff = event->sect_t_course[j] - event->labrS_t_course[i];
+            tdiff = event->sect_t_coarse[j] - event->labrS_t_coarse[i];
             tdiff += (event->sect_t_fine[j] - event->labrS_t_fine[i]);
             time_sect->Fill(tdiff, event->sectID[j]);
         }
 
         for (int j = 0 ; j < event->back_mult ; ++j){
-            tdiff = event->back_t_course[j] - event->labrS_t_course[i];
+            tdiff = event->back_t_coarse[j] - event->labrS_t_coarse[i];
             tdiff += (event->back_t_fine[j] - event->labrS_t_fine[i]);
             time_back->Fill(tdiff, event->backID[j]);
         }
 
         for (int j = 0 ; j < event->labrL_mult ; ++j){
-            tdiff = event->labrL_t_course[j] - event->labrS_t_course[i];
+            tdiff = event->labrL_t_coarse[j] - event->labrS_t_coarse[i];
             tdiff += (event->labrL_t_fine[j] - event->labrS_t_fine[i]);
             time_labrL->Fill(tdiff, event->labrLID[j]);
         }
 
         for (int j = 0 ; j < event->labrS_mult ; ++j){
-            tdiff = event->labrS_t_course[j] - event->labrS_t_course[i];
+            if ( i == j )
+                continue;
+            tdiff = event->labrS_t_coarse[j] - event->labrS_t_coarse[i];
             tdiff += (event->labrS_t_fine[j] - event->labrS_t_fine[i]);
             time_labrS->Fill(tdiff, event->labrSID[j]);
         }
 
         for (int j = 0 ; j < event->clover_mult ; ++j){
-            tdiff = event->clover_t_course[j] - event->labrS_t_course[i];
+            tdiff = event->clover_t_coarse[j] - event->labrS_t_coarse[i];
             tdiff += (event->clover_t_fine[j] - event->labrS_t_fine[i]);
             time_clover->Fill(tdiff, event->cloverID[j]);
         }
