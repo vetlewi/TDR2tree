@@ -41,42 +41,42 @@ std::vector<word_t> ReadFileToMemory(const char *filename)
 void SetupBranches(Event &eventstr, TTree *tree)
 {
     // Setup rings
-    tree->Branch("ring_mult", &eventstr.ring_mult, "ring_mult/S");
+    tree->Branch("ring_mult", &eventstr.ring_mult, "ring_mult/I");
     tree->Branch("ringID", &eventstr.ringID, "ringID[ring_mult]/S");
     tree->Branch("ring_energy", &eventstr.ring_energy, "ring_energy[ring_mult]/D");
     tree->Branch("ring_t_fine", &eventstr.ring_t_fine, "ring_t_fine[ring_mult]/D");
     tree->Branch("ring_t_coarse",&eventstr.ring_t_coarse, "ring_t_coarse[ring_mult]/L");
 
     // Setup sectors
-    tree->Branch("sect_mult", &eventstr.sect_mult, "sect_mult/S");
+    tree->Branch("sect_mult", &eventstr.sect_mult, "sect_mult/I");
     tree->Branch("sectID", &eventstr.sectID, "sectID[sect_mult]/S");
     tree->Branch("sect_energy", &eventstr.sect_energy, "sect_energy[sect_mult]/D");
     tree->Branch("sect_t_fine", &eventstr.sect_t_fine, "sect_t_fine[sect_mult]/D");
     tree->Branch("sect_t_coarse", &eventstr.sect_t_coarse, "sect_t_coarse[sect_mult]/L");
 
     // Setup back
-    tree->Branch("back_mult", &eventstr.back_mult, "back_mult/S");
+    tree->Branch("back_mult", &eventstr.back_mult, "back_mult/I");
     tree->Branch("backID", &eventstr.backID, "backID[back_mult]/S");
     tree->Branch("back_energy", &eventstr.back_energy, "back_energy[back_mult]/D");
     tree->Branch("back_t_fine", &eventstr.back_t_fine, "back_t_fine[back_mult]/D");
     tree->Branch("back_t_coarse", &eventstr.back_t_coarse, "back_t_coarse[back_mult]/L");
 
     // Setup labr L
-    tree->Branch("labrL_mult", &eventstr.labrL_mult, "labrL_mult/S");
+    tree->Branch("labrL_mult", &eventstr.labrL_mult, "labrL_mult/I");
     tree->Branch("labrLID", &eventstr.labrLID, "labrLID[labrL_mult]/S");
     tree->Branch("labrL_energy", &eventstr.labrL_energy, "labrL_energy[labrL_mult]/D");
     tree->Branch("labrL_t_fine", &eventstr.labrL_t_fine, "labrL_t_fine[labrL_mult]/D");
     tree->Branch("labrL_t_coarse", &eventstr.labrL_t_coarse, "labrL_t_coarse[labrL_mult]/L");
 
     // Setup labr S
-    tree->Branch("labrS_mult", &eventstr.labrS_mult, "labrS_mult/S");
+    tree->Branch("labrS_mult", &eventstr.labrS_mult, "labrS_mult/I");
     tree->Branch("labrSID", &eventstr.labrSID, "labrSID[labrS_mult]/S");
     tree->Branch("labrS_energy", &eventstr.labrS_energy, "labrS_energy[labrS_mult]/D");
     tree->Branch("labrS_t_fine", &eventstr.labrS_t_fine, "labrS_t_fine[labrS_mult]/D");
     tree->Branch("labrS_t_coarse", &eventstr.labrS_t_coarse, "labrS_t_coarse[labrS_mult]/L");
 
     // Setup clover
-    tree->Branch("clover_mult",&eventstr.clover_mult, "clover_mult/S");
+    tree->Branch("clover_mult",&eventstr.clover_mult, "clover_mult/I");
     tree->Branch("cloverID",&eventstr.cloverID, "cloverID[clover_mult]/S");
     tree->Branch("clover_crystal",&eventstr.clover_crystal, "clover_crystal[clover_mult]/S");
     tree->Branch("clover_energy", &eventstr.clover_energy, "clover_energy[clover_mult]/D");
