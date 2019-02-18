@@ -32,32 +32,38 @@ struct Options {
 struct Event {
 
     // Fields for the ring
-    int16_t ring_mult, ringID[NUM_MAX];
+    int ring_mult;
+    int16_t ringID[NUM_MAX];
     double ring_energy[NUM_MAX], ring_t_fine[NUM_MAX];
     int64_t ring_t_coarse[NUM_MAX];
 
     // Fields for the sectors
-    int16_t sect_mult, sectID[NUM_MAX];
+    int sect_mult;
+    int16_t sectID[NUM_MAX];
     double sect_energy[NUM_MAX], sect_t_fine[NUM_MAX];
     int64_t sect_t_coarse[NUM_MAX];
 
     // Fields for the back detector
-    int16_t back_mult, backID[NUM_MAX];
+    int back_mult;
+    int16_t backID[NUM_MAX];
     double back_energy[NUM_MAX], back_t_fine[NUM_MAX];
     int64_t back_t_coarse[NUM_MAX];
 
     // Fields for the labr L
-    int16_t labrL_mult, labrLID[NUM_MAX];
+    int labrL_mult;
+    int16_t labrLID[NUM_MAX];
     double labrL_energy[NUM_MAX], labrL_t_fine[NUM_MAX];
     int64_t labrL_t_coarse[NUM_MAX];
 
     // Fields for the labr S
-    int16_t labrS_mult, labrSID[NUM_MAX];
+    int labrS_mult;
+    int16_t labrSID[NUM_MAX];
     double labrS_energy[NUM_MAX], labrS_t_fine[NUM_MAX];
     int64_t labrS_t_coarse[NUM_MAX];
 
     // Fields for the clover
-    int16_t clover_mult, cloverID[NUM_MAX];
+    int clover_mult;
+    int16_t cloverID[NUM_MAX];
     int16_t clover_crystal[NUM_MAX]; // We need to know which crystal is hit first.
     double clover_energy[NUM_MAX], clover_t_fine[NUM_MAX];
     int64_t clover_t_coarse[NUM_MAX];
