@@ -10,6 +10,7 @@
 
 class TH1;
 class TH2;
+class TTree;
 class TDirectory;
 class HistogramManager;
 
@@ -67,6 +68,9 @@ struct Event {
     int16_t clover_crystal[NUM_MAX]; // We need to know which crystal is hit first.
     double clover_energy[NUM_MAX], clover_t_fine[NUM_MAX];
     int64_t clover_t_coarse[NUM_MAX];
+
+    void SetupBranches(TTree *tree);
+
 
     inline void Reset()
     {

@@ -4,6 +4,7 @@
 #include <TDirectory.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TTree.h>
 
 #include <algorithm>
 
@@ -18,6 +19,54 @@ struct SEvent_t {
     int64_t tc;
     double tf;
 };
+
+void Event::SetupBranches(TTree *tree)
+{
+
+    tree->Branch("ring_mult", &ring_mult, "ring_mult/I");
+    tree->Branch("ringID", &ringID, "ringID[ring_mult]/S");
+    tree->Branch("ring_energy", &ring_energy, "ring_energy[ring_mult]/D");
+    tree->Branch("ring_t_fine", &ring_t_fine, "ring_t_fine[ring_mult]/D");
+    tree->Branch("ring_t_coarse",&ring_t_coarse, "ring_t_coarse[ring_mult]/L");
+
+    // Setup sectors
+    tree->Branch("sect_mult", &sect_mult, "sect_mult/I");
+    tree->Branch("sectID", &sectID, "sectID[sect_mult]/S");
+    tree->Branch("sect_energy", &sect_energy, "sect_energy[sect_mult]/D");
+    tree->Branch("sect_t_fine", &sect_t_fine, "sect_t_fine[sect_mult]/D");
+    tree->Branch("sect_t_coarse", &sect_t_coarse, "sect_t_coarse[sect_mult]/L");
+
+    // Setup back
+    tree->Branch("back_mult", &back_mult, "back_mult/I");
+    tree->Branch("backID", &backID, "backID[back_mult]/S");
+    tree->Branch("back_energy", &back_energy, "back_energy[back_mult]/D");
+    tree->Branch("back_t_fine", &back_t_fine, "back_t_fine[back_mult]/D");
+    tree->Branch("back_t_coarse", &back_t_coarse, "back_t_coarse[back_mult]/L");
+
+    // Setup labr L
+    tree->Branch("labrL_mult", &labrL_mult, "labrL_mult/I");
+    tree->Branch("labrLID", &labrLID, "labrLID[labrL_mult]/S");
+    tree->Branch("labrL_energy", &labrL_energy, "labrL_energy[labrL_mult]/D");
+    tree->Branch("labrL_t_fine", &labrL_t_fine, "labrL_t_fine[labrL_mult]/D");
+    tree->Branch("labrL_t_coarse", &labrL_t_coarse, "labrL_t_coarse[labrL_mult]/L");
+
+    // Setup labr S
+    tree->Branch("labrS_mult", &labrS_mult, "labrS_mult/I");
+    tree->Branch("labrSID", &labrSID, "labrSID[labrS_mult]/S");
+    tree->Branch("labrS_energy", &labrS_energy, "labrS_energy[labrS_mult]/D");
+    tree->Branch("labrS_t_fine", &labrS_t_fine, "labrS_t_fine[labrS_mult]/D");
+    tree->Branch("labrS_t_coarse", &labrS_t_coarse, "labrS_t_coarse[labrS_mult]/L");
+
+    // Setup clover
+    tree->Branch("clover_mult",&clover_mult, "clover_mult/I");
+    tree->Branch("cloverID",&cloverID, "cloverID[clover_mult]/S");
+    tree->Branch("clover_crystal",&clover_crystal, "clover_crystal[clover_mult]/S");
+    tree->Branch("clover_energy", &clover_energy, "clover_energy[clover_mult]/D");
+    tree->Branch("clover_t_fine", &clover_t_fine, "clover_t_fine[clover_mult]/D");
+    tree->Branch("clover_t_coarse", &clover_t_coarse, "clover_t_coarse[clover_mult]/L");
+    tree->BranchRef();
+
+}
 
 void Event::RunAddback(TH2 *ab_t_clover)
 {
