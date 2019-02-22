@@ -65,7 +65,6 @@ struct Event {
     // Fields for the clover
     int clover_mult;
     int16_t cloverID[NUM_MAX];
-    int16_t clover_crystal[NUM_MAX]; // We need to know which crystal is hit first.
     double clover_energy[NUM_MAX], clover_t_fine[NUM_MAX];
     int64_t clover_t_coarse[NUM_MAX];
 
