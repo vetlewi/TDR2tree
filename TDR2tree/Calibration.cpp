@@ -17,7 +17,9 @@ static Parameters calParam;
 static Parameter gain_labrL(calParam, "gain_labrL", NUM_LABR_3X8_DETECTORS, 1);
 static Parameter shift_labrL(calParam, "shift_labrL", NUM_LABR_3X8_DETECTORS, 0);
 static Parameter gain_labrS(calParam, "gain_labrS", NUM_LABR_2X2_DETECTORS, 1);
-static Parameter shift_labrS(calParam, "shift_labrS", NUM_LABR_3X8_DETECTORS, 0);
+static Parameter shift_labrS(calParam, "shift_labrS", NUM_LABR_2X2_DETECTORS, 0);
+static Parameter gain_labrF(calParam, "gain_labrF", NUM_LABR_2X2_DETECTORS, 1);
+static Parameter shift_labrF(calParam, "shift_labrF", NUM_LABR_2X2_DETECTORS, 0);
 
 //! Parameters for energy calibration of the CLOVER detectors
 static Parameter gain_clover(calParam, "gain_clover", NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, 1);
@@ -34,6 +36,7 @@ static Parameter shift_back(calParam, "shift_back", NUM_SI_BACK, 1);
 //! Alignment parameters for time
 static Parameter shift_t_labrL(calParam, "shift_t_labrL", NUM_LABR_3X8_DETECTORS, 0);
 static Parameter shift_t_labrS(calParam, "shift_t_labrS", NUM_LABR_2X2_DETECTORS, 0);
+static Parameter shift_t_labrF(calParam, "shift_t_labrF", NUM_LABR_2X2_DETECTORS, 0);
 static Parameter shift_t_clover(calParam, "shift_t_clover", NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, 0);
 static Parameter shift_t_ring(calParam, "shift_t_ring", NUM_SI_RING, 0);
 static Parameter shift_t_sect(calParam, "shift_t_sect", NUM_SI_SECT, 0);
@@ -90,8 +93,10 @@ double CalibrateEnergy(const word_t &detector)
     switch (dinfo.type) {
         case labr_3x8 :
             return gain_labrL[dinfo.detectorNum]*detector.adcdata + shift_labrL[dinfo.detectorNum];
-        case labr_2x2 :
+        case labr_2x2_ss :
             return gain_labrS[dinfo.detectorNum]*detector.adcdata + shift_labrS[dinfo.detectorNum];
+        case labr_2x2_fs :
+        return gain_labrF[dinfo.detectorNum]*detector.adcdata + shift_labrF[dinfo.detectorNum];
         case clover :
             return gain_clover[dinfo.detectorNum*NUM_CLOVER_CRYSTALS+dinfo.telNum]*detector.adcdata + shift_clover[dinfo.detectorNum*NUM_CLOVER_CRYSTALS+dinfo.telNum];
         case de_ring :
@@ -111,7 +116,9 @@ double CalibrateTime(const word_t &detector)
     switch (dinfo.type) {
         case labr_3x8 :
             return detector.cfdcorr + shift_t_labrL[dinfo.detectorNum];
-        case labr_2x2 :
+        case labr_2x2_ss :
+            return detector.cfdcorr + shift_t_labrS[dinfo.detectorNum];
+        case labr_2x2_fs :
             return detector.cfdcorr + shift_t_labrS[dinfo.detectorNum];
         case clover :
             return detector.cfdcorr + shift_t_clover[dinfo.detectorNum*NUM_CLOVER_CRYSTALS + dinfo.telNum];

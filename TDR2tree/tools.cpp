@@ -37,54 +37,6 @@ std::vector<word_t> ReadFileToMemory(const char *filename)
 }
 
 
-//! Function to setup branches in the tree. Maybe this should be moved to the event structure?
-void SetupBranches(Event &eventstr, TTree *tree)
-{
-    // Setup rings
-    tree->Branch("ring_mult", &eventstr.ring_mult, "ring_mult/I");
-    tree->Branch("ringID", &eventstr.ringID, "ringID[ring_mult]/S");
-    tree->Branch("ring_energy", &eventstr.ring_energy, "ring_energy[ring_mult]/D");
-    tree->Branch("ring_t_fine", &eventstr.ring_t_fine, "ring_t_fine[ring_mult]/D");
-    tree->Branch("ring_t_coarse",&eventstr.ring_t_coarse, "ring_t_coarse[ring_mult]/L");
-
-    // Setup sectors
-    tree->Branch("sect_mult", &eventstr.sect_mult, "sect_mult/I");
-    tree->Branch("sectID", &eventstr.sectID, "sectID[sect_mult]/S");
-    tree->Branch("sect_energy", &eventstr.sect_energy, "sect_energy[sect_mult]/D");
-    tree->Branch("sect_t_fine", &eventstr.sect_t_fine, "sect_t_fine[sect_mult]/D");
-    tree->Branch("sect_t_coarse", &eventstr.sect_t_coarse, "sect_t_coarse[sect_mult]/L");
-
-    // Setup back
-    tree->Branch("back_mult", &eventstr.back_mult, "back_mult/I");
-    tree->Branch("backID", &eventstr.backID, "backID[back_mult]/S");
-    tree->Branch("back_energy", &eventstr.back_energy, "back_energy[back_mult]/D");
-    tree->Branch("back_t_fine", &eventstr.back_t_fine, "back_t_fine[back_mult]/D");
-    tree->Branch("back_t_coarse", &eventstr.back_t_coarse, "back_t_coarse[back_mult]/L");
-
-    // Setup labr L
-    tree->Branch("labrL_mult", &eventstr.labrL_mult, "labrL_mult/I");
-    tree->Branch("labrLID", &eventstr.labrLID, "labrLID[labrL_mult]/S");
-    tree->Branch("labrL_energy", &eventstr.labrL_energy, "labrL_energy[labrL_mult]/D");
-    tree->Branch("labrL_t_fine", &eventstr.labrL_t_fine, "labrL_t_fine[labrL_mult]/D");
-    tree->Branch("labrL_t_coarse", &eventstr.labrL_t_coarse, "labrL_t_coarse[labrL_mult]/L");
-
-    // Setup labr S
-    tree->Branch("labrS_mult", &eventstr.labrS_mult, "labrS_mult/I");
-    tree->Branch("labrSID", &eventstr.labrSID, "labrSID[labrS_mult]/S");
-    tree->Branch("labrS_energy", &eventstr.labrS_energy, "labrS_energy[labrS_mult]/D");
-    tree->Branch("labrS_t_fine", &eventstr.labrS_t_fine, "labrS_t_fine[labrS_mult]/D");
-    tree->Branch("labrS_t_coarse", &eventstr.labrS_t_coarse, "labrS_t_coarse[labrS_mult]/L");
-
-    // Setup clover
-    tree->Branch("clover_mult",&eventstr.clover_mult, "clover_mult/I");
-    tree->Branch("cloverID",&eventstr.cloverID, "cloverID[clover_mult]/S");
-    tree->Branch("clover_energy", &eventstr.clover_energy, "clover_energy[clover_mult]/D");
-    tree->Branch("clover_t_fine", &eventstr.clover_t_fine, "clover_t_fine[clover_mult]/D");
-    tree->Branch("clover_t_coarse", &eventstr.clover_t_coarse, "clover_t_coarse[clover_mult]/L");
-    tree->BranchRef();
-}
-
-
 void Convert_file(const std::string in_name, TTree *tree, HistogramManager *mgr, Event *eventstr, const Options &opt)
 {
     int64_t timediff;
@@ -129,7 +81,6 @@ void Convert_file(const std::string in_name, TTree *tree, HistogramManager *mgr,
 
         eventstr->Reset();
 
-        //eventstr->AddRing(trigger.detectorNum, CalibrateEnergy(full_file[i]), full_file[i].timestamp, CalibrateTime(full_file[i]));
         eventstr->AddBack(trigger.detectorNum, CalibrateEnergy(full_file[i]), full_file[i].timestamp, CalibrateTime(full_file[i]));
 
         for (j = start ; j < stop ; ++j){
@@ -146,8 +97,6 @@ void Convert_file(const std::string in_name, TTree *tree, HistogramManager *mgr,
                     break;
                 }
                 case eDet : {
-                    // Actively remove pulser events.
-                    //if ( !( CalibrateEnergy(full_file[j]) >= 6400 && CalibrateEnergy(full_file[j]) <= 6800 && channel.detectorNum == 6 ) )
                     eventstr->AddBack(channel.detectorNum, CalibrateEnergy(full_file[j]), full_file[j].timestamp, CalibrateTime(full_file[j]));
                     break;
                 }
@@ -155,8 +104,16 @@ void Convert_file(const std::string in_name, TTree *tree, HistogramManager *mgr,
                     eventstr->AddLabrL(channel.detectorNum, CalibrateEnergy(full_file[j]), full_file[j].timestamp, CalibrateTime(full_file[j]));
                     break;
                 }
-                case labr_2x2 : {
+                case labr_2x2_ss : {
                     eventstr->AddLabrS(channel.detectorNum, CalibrateEnergy(full_file[j]), full_file[j].timestamp, CalibrateTime(full_file[j]));
+                    break;
+                }
+                case labr_2x2_fs : {
+                    eventstr->AddLabrF(channel.detectorNum, CalibrateEnergy(full_file[j]), full_file[j].timestamp, CalibrateTime(full_file[j]));
+                    break;
+                }
+                case rfchan : {
+                    eventstr->AddRF(full_file[j].timestamp, full_file[j].cfdcorr);
                     break;
                 }
                 case clover : {
@@ -175,7 +132,7 @@ void Convert_file(const std::string in_name, TTree *tree, HistogramManager *mgr,
             if ( opt.make_tree ) tree->OptimizeBaskets();
             ++shown;
             std::cout << "[";
-            int pos = barWidth * i / double(full_file.size());
+            int pos = int( barWidth * i / double(full_file.size()) );
             for (int p = 0 ; p < barWidth ; ++p){
                 if (p < pos) std::cout << "=";
                 else if (p == pos) std::cout << ">";
@@ -201,7 +158,7 @@ void Convert_to_ROOT(const std::vector<std::string> &in_names, const char *out_n
 
     if (opt.make_tree){
         tree = new TTree("events","events");
-        SetupBranches(eventstr, tree);
+        eventstr.SetupBranches(tree);
     }
 
     HistogramManager hmg;

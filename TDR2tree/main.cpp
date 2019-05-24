@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     interface.Add("-c", "Calibration file", &cal_file);
     interface.Add("-mt", "Build tree", &opt.make_tree);
     interface.Add("-ab", "Add-back; If addback should be applied on clovers", &opt.use_addback);
-    interface.Add("-ar", "Indicate if all small LaBr detectors should be used as reference", &opt.use_all_labrS);
+    interface.Add("-ar", "Indicate if all small LaBr detectors should be used as reference", &opt.use_all_labrF);
     interface.CheckFlags(argc, argv);
 
 

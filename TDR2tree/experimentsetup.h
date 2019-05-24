@@ -6,7 +6,7 @@
 
 #define NUM_CLOVER_DETECTORS 10     //!< Number of Clover detectors
 #define NUM_CLOVER_CRYSTALS 4       //!< Number of Clover crystals per detector
-#define NUM_LABR_3X8_DETECTORS 6    //!< Number of LaBr detectors
+#define NUM_LABR_3X8_DETECTORS 2    //!< Number of LaBr detectors
 #define NUM_LABR_2X2_DETECTORS 6    //!< Number of LaBr detectors
 #define NUM_SI_RING 48           //!< Number of Si dE rings
 #define NUM_SI_SECT 16           //!< Number of Si dE sector
@@ -26,11 +26,13 @@ extern "C" {
 enum DetectorType {
     invalid,        //!< Invalid address
     labr_3x8,       //!< Is a 3.5x8 inch labr detector
-    labr_2x2,    //!< Is a 2x2 labr detector, slow signal
+    labr_2x2_ss,    //!< Is a 2x2 labr detector, slow signal
+    labr_2x2_fs,    //! Is a 2x2 labr detector, fast signal
     clover,         //!< Is a clover crystal
-    de_ring,     //!< Is a Delta-E ring
-    de_sect,     //!< Is a Delta-E sector
+    de_ring,        //!< Is a Delta-E ring
+    de_sect,        //!< Is a Delta-E sector
     eDet,           //!< Is a E detector
+    rfchan,         //! The channel where the RF is connected
     unused          //!< Is a unused XIA channel
 };
 

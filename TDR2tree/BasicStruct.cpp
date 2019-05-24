@@ -57,6 +57,18 @@ void Event::SetupBranches(TTree *tree)
     tree->Branch("labrS_t_fine", &labrS_t_fine, "labrS_t_fine[labrS_mult]/D");
     tree->Branch("labrS_t_coarse", &labrS_t_coarse, "labrS_t_coarse[labrS_mult]/L");
 
+    // Setup labr F
+    tree->Branch("labrF_mult", &labrF_mult, "labrF_mult/I");
+    tree->Branch("labrFID", &labrFID, "labrFID[labrF_mult]/S");
+    tree->Branch("labrF_energy", &labrF_energy, "labrF_energy[labrF_mult]/D");
+    tree->Branch("labrF_t_fine", &labrF_t_fine, "labrF_t_fine[labrF_mult]/D");
+    tree->Branch("labrF_t_coarse", &labrF_t_coarse, "labrF_t_coarse[labrF_mult]/L");
+
+    // Setup RF
+    tree->Branch("rfMult", &rfMult, "rfMult/I");
+    tree->Branch("RF_t_coarse", &RF_t_coarse, "RF_t_coarse[rfMult]/L");
+    tree->Branch("RF_t_fine", &RF_t_fine, "RF_t_fine[rfMult]/D");
+
     // Setup clover
     tree->Branch("clover_mult",&clover_mult, "clover_mult/I");
     tree->Branch("cloverID",&cloverID, "cloverID[clover_mult]/S");
@@ -107,7 +119,8 @@ HistogramManager::HistogramManager()
     time_sect = Mat("time_sect", "Time alignment spectra, sectors", 3000, -1500, 1500, "Time [ns]", NUM_SI_SECT, 0, NUM_SI_SECT, "Sector ID");
     time_back = Mat("time_back", "Time alignment spectra, E detector", 3000, -1500, 1500, "Time [ns]", NUM_SI_BACK, 0, NUM_SI_BACK, "Sector ID");
     time_labrL = Mat("time_labrL", "Time alignment spectra, large LaBr", 30000, -1500, 1500, "Time [ns]", NUM_LABR_3X8_DETECTORS, 0, NUM_LABR_3X8_DETECTORS, "Large LaBr ID");
-    time_labrS = Mat("time_labrS", "Time alignment spectra, small LaBr", 30000, -1500, 1500, "Time [ns]", NUM_LABR_2X2_DETECTORS, 0, NUM_LABR_2X2_DETECTORS, "Small LaBr ID");
+    time_labrS = Mat("time_labrS", "Time alignment spectra, small LaBr (slow signal)", 30000, -1500, 1500, "Time [ns]", NUM_LABR_2X2_DETECTORS, 0, NUM_LABR_2X2_DETECTORS, "Small LaBr ID");
+    time_labrF = Mat("time_labrF", "Time alignment spectra, small LaBr (fast signal)", 30000, -1500, 1500, "Time [ns]", NUM_LABR_2X2_DETECTORS, 0, NUM_LABR_2X2_DETECTORS, "Small LaBr ID");
     time_clover = Mat("time_clover", "Time alignment spectra, clover", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, 0, NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, "Clover ID");
     time_self_clover = Mat("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector");
 }
@@ -121,45 +134,47 @@ HistogramManager::~HistogramManager()
 void HistogramManager::Fill(const Event *event, const Options &opt)
 {
     double tdiff;
-    for (int i = 0 ; i < event->labrS_mult ; ++i){
-        if ( (!opt.use_all_labrS) && event->labrSID[i] != 0) // Skip unless det. 0 (our ref.)
-            continue;
+    for (int i = 0 ; i < event->rfMult ; ++i){
 
         for (int j = 0 ;j < event->ring_mult ; ++j){
-            tdiff = event->ring_t_coarse[j] - event->labrS_t_coarse[i];
-            tdiff += (event->ring_t_fine[j] - event->labrS_t_fine[i]);
+            tdiff = event->ring_t_coarse[j] - event->RF_t_coarse[i];
+            tdiff += (event->ring_t_fine[j] - event->RF_t_fine[i]);
             time_ring->Fill(tdiff, event->ringID[j]);
         }
 
         for (int j = 0 ; j < event->sect_mult ; ++j){
-            tdiff = event->sect_t_coarse[j] - event->labrS_t_coarse[i];
-            tdiff += (event->sect_t_fine[j] - event->labrS_t_fine[i]);
+            tdiff = event->sect_t_coarse[j] - event->RF_t_coarse[i];
+            tdiff += (event->sect_t_fine[j] - event->RF_t_fine[i]);
             time_sect->Fill(tdiff, event->sectID[j]);
         }
 
         for (int j = 0 ; j < event->back_mult ; ++j){
-            tdiff = event->back_t_coarse[j] - event->labrS_t_coarse[i];
-            tdiff += (event->back_t_fine[j] - event->labrS_t_fine[i]);
+            tdiff = event->back_t_coarse[j] - event->RF_t_coarse[i];
+            tdiff += (event->back_t_fine[j] - event->RF_t_fine[i]);
             time_back->Fill(tdiff, event->backID[j]);
         }
 
         for (int j = 0 ; j < event->labrL_mult ; ++j){
-            tdiff = event->labrL_t_coarse[j] - event->labrS_t_coarse[i];
-            tdiff += (event->labrL_t_fine[j] - event->labrS_t_fine[i]);
+            tdiff = event->labrL_t_coarse[j] - event->RF_t_coarse[i];
+            tdiff += (event->labrL_t_fine[j] - event->RF_t_fine[i]);
             time_labrL->Fill(tdiff, event->labrLID[j]);
         }
 
         for (int j = 0 ; j < event->labrS_mult ; ++j){
-            if ( i == j )
-                continue;
-            tdiff = event->labrS_t_coarse[j] - event->labrS_t_coarse[i];
-            tdiff += (event->labrS_t_fine[j] - event->labrS_t_fine[i]);
+            tdiff = event->labrS_t_coarse[j] - event->RF_t_coarse[i];
+            tdiff += (event->labrS_t_fine[j] - event->RF_t_fine[i]);
             time_labrS->Fill(tdiff, event->labrSID[j]);
         }
 
+        for (int j = 0 ; j < event->labrF_mult ; ++j){
+            tdiff = event->labrF_t_coarse[j] - event->RF_t_coarse[i];
+            tdiff += (event->labrF_t_fine[j] - event->RF_t_fine[i]);
+            time_labrF->Fill(tdiff, event->labrFID[j]);
+        }
+
         for (int j = 0 ; j < event->clover_mult ; ++j){
-            tdiff = event->clover_t_coarse[j] - event->labrS_t_coarse[i];
-            tdiff += (event->clover_t_fine[j] - event->labrS_t_fine[i]);
+            tdiff = event->clover_t_coarse[j] - event->RF_t_coarse[i];
+            tdiff += (event->clover_t_fine[j] - event->RF_t_fine[i]);
             time_clover->Fill(tdiff, event->cloverID[j]);
         }
     }

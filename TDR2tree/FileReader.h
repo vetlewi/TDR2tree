@@ -60,7 +60,7 @@ public:
     int Read(word_t *buffer,    /*!< Buffer to put the data. 	*/
              int size           /*!< How many hits to read.     */);
 
-    //! Retrive the error flag.
+    //! Check the error flag.
     /*! \return The error flag.
      */
     bool IsError() const

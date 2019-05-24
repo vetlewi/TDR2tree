@@ -27,7 +27,7 @@ typedef struct {
 struct Options {
     bool make_tree;
     bool use_addback;
-    bool use_all_labrS;
+    bool use_all_labrF;
 };
 
 struct Event {
@@ -62,6 +62,17 @@ struct Event {
     double labrS_energy[NUM_MAX], labrS_t_fine[NUM_MAX];
     int64_t labrS_t_coarse[NUM_MAX];
 
+    // Fields for the labr F
+    int labrF_mult;
+    int16_t labrFID[NUM_MAX];
+    double labrF_energy[NUM_MAX], labrF_t_fine[NUM_MAX];
+    int64_t labrF_t_coarse[NUM_MAX];
+
+    // Fields for the RF
+    int rfMult;
+    int64_t RF_t_coarse[NUM_MAX];
+    double RF_t_fine[NUM_MAX];
+
     // Fields for the clover
     int clover_mult;
     int16_t cloverID[NUM_MAX];
@@ -78,6 +89,8 @@ struct Event {
         back_mult = 0;
         labrL_mult = 0;
         labrS_mult = 0;
+        labrF_mult = 0;
+        rfMult = 0;
         clover_mult = 0;
     }
 
@@ -131,6 +144,24 @@ struct Event {
         }
     }
 
+    inline void AddLabrF(const int16_t &id, const double &energy, const int64_t &coarse, const double &fine)
+    {
+        if (labrF_mult < NUM_MAX){
+            labrFID[labrF_mult] = id;
+            labrF_energy[labrF_mult] = energy;
+            labrF_t_coarse[labrF_mult] = coarse;
+            labrF_t_fine[labrF_mult++] = fine;
+        }
+    }
+
+    inline void AddRF(const int64_t &coarse, const double &fine)
+    {
+        if (rfMult < NUM_MAX){
+            RF_t_coarse[rfMult] = coarse;
+            RF_t_fine[rfMult++] = fine;
+        }
+    }
+
     inline void AddClover(const int16_t &id, const double &energy, const int64_t &coarse, const double &fine)
     {
         if (clover_mult < NUM_MAX){
@@ -162,7 +193,8 @@ private:
     TH2 *time_sect;     //!< Alignment spectra of dE sectors.
     TH2 *time_back;     //!< Alignment spectra of dE back detectors.
     TH2 *time_labrL;    //!< Alignment spectra of large LaBr detectors.
-    TH2 *time_labrS;    //!< Alignment spectra of small LaBr detectors.
+    TH2 *time_labrS;    //!< Alignment spectra of small LaBr detectors (slow signal).
+    TH2 *time_labrF;    //!< Alignment spectra of small LaBr detectors (fast signal).
     TH2 *time_clover;   //!< Alignment spectra of clover crystals.
     TH2 *time_self_clover;  //!< Self time difference (for addback).
 
