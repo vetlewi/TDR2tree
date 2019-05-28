@@ -37,7 +37,7 @@ std::vector<word_t> ReadFileToMemory(const char *filename)
 }
 
 
-void Convert_file(const std::string in_name, TTree *tree, HistogramManager *mgr, Event *eventstr, const Options &opt)
+/*void Convert_file(const std::string in_name, TTree *tree, HistogramManager *mgr, Event *eventstr, const Options &opt)
 {
     int64_t timediff;
     size_t start=0,stop=0;
@@ -148,10 +148,13 @@ void Convert_file(const std::string in_name, TTree *tree, HistogramManager *mgr,
         std::cout << "=";
     }
     std::cout << "] " << int(100 * (i / double(full_file.size()) )) << "% Done processing file '" << in_name << "'" << std::endl;
-}
+}*/
 
-void Convert_to_ROOT(const std::vector<std::string> &in_names, const char *out_name,  const Options &opt)
+void Convert_to_ROOT(const std::vector<std::string> &in_names, const char *out_name/*,  const Options &opt*/)
 {
+    return;
+}
+/*{
     TFile *fout = new TFile(out_name, "RECREATE");
     TTree *tree = nullptr;
     Event eventstr;
@@ -179,4 +182,4 @@ void Convert_to_ROOT(const std::vector<std::string> &in_names, const char *out_n
     }
     fout->Write();
     fout->Close();
-}
+}*/

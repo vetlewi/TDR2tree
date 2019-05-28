@@ -3,29 +3,31 @@ project(TDR2tree)
 
 set(CMAKE_CXX_STANDARD 11)
 
+# You need to tell CMake where to find the ROOT installation. This can be done in a number of ways:
+#   - ROOT built with classic configure/make use the provided $ROOTSYS/etc/cmake/FindROOT.cmake
+#   - ROOT built with CMake. Add in CMAKE_PREFIX_PATH the installation prefix for ROOT
+list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
+
+
+find_package(ROOT REQUIRED COMPONENTS RIO Net)
+include(${ROOT_USE_FILE})
+
+
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native")
-set(ROOT_stuff "-L/Users/vetlewi/prog/lib -lCore -lImt -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lROOTVecOps -lTree -lTreePlayer -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lMultiProc -lROOTDataFrame -lpthread -Wl,-rpath,/Users/vetlewi/prog/lib -stdlib=libc++ -lm -ldl")
 
-include_directories(./ RootInterface /Users/vetlewi/prog/include)
+include_directories(. Containers FileReader PhysicalParam RootInterface Tools)
 
-add_executable(TDR2tree
-        BasicStruct.cpp
-        Calibration.cpp
-        CommandLineInterface.cpp
-        experimentsetup.c
-        FileReader.cpp
-        main.cpp
-        Parameters.cpp
-        tools.cpp
-        XIA_CFD.c
-        BasicStruct.h
-        Calibration.h
-        CommandLineInterface.h
-        experimentsetup.h
-        FileReader.h
-        Parameters.h
-        tools.h
-        XIA_CFD.h Event.cpp Event.h)
+ROOT_GENERATE_DICTIONARY(TDRtools_dic Containers/Event.h LINKDEF LinkDef.h)
 
+#add_library(TDRtools SHARED main.cpp TDRtools_dic.cxx)
+add_executable(TDR2tree main.cpp TDRtools_dic.cxx)
+
+add_subdirectory(Containers)
+add_subdirectory(FileReader)
+add_subdirectory(PhysicalParam)
 add_subdirectory(RootInterface)
-target_link_libraries(TDR2tree ${ROOT_stuff})
+add_subdirectory(Tools)
+
+#target_link_libraries(TDRtools ${ROOT_LIBRARIES})
+target_link_libraries(TDR2tree ${ROOT_LIBRARIES})
+#target_link_libraries(TDR2tree TDRtools)
