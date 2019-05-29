@@ -73,8 +73,9 @@ RootFileManager::CreateTH2(const char *name, const char *title, int xbin, double
     m->GetYaxis()->SetTitle(ytitle);
     m->GetYaxis()->SetTitleSize(0.03);
     m->GetYaxis()->SetLabelSize(0.03);
-    m->GetYaxis()->SetLabelOffset(1.3);
+    m->GetYaxis()->SetTitleOffset(1.3);
     m->GetZaxis()->SetLabelSize(0.025);
+    m->SetOption("colz");
     m->SetContour(64);
     file.cd();
     list.push_back(m);

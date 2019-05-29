@@ -177,11 +177,10 @@ FileReader::~FileReader()
 }
 
 // #########################################################
-#include <stdio.h>
+
 bool FileReader::Open(const char *filename, int want)
 {
 	Close();
-    printf(filename);
 	file_stdio = std::fopen(filename, "rb");
 
     fseek(file_stdio, 0, SEEK_END);

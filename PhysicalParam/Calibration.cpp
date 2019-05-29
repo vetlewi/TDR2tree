@@ -119,7 +119,7 @@ double CalibrateTime(const word_t &detector)
         case labr_2x2_ss :
             return detector.cfdcorr + shift_t_labrS[dinfo.detectorNum];
         case labr_2x2_fs :
-            return detector.cfdcorr + shift_t_labrS[dinfo.detectorNum];
+            return detector.cfdcorr + shift_t_labrF[dinfo.detectorNum];
         case clover :
             return detector.cfdcorr + shift_t_clover[dinfo.detectorNum*NUM_CLOVER_CRYSTALS + dinfo.telNum];
         case de_ring :
