@@ -40,6 +40,7 @@ extern ProgressUI progress;
 
 EventEntry::EventEntry(const word_t &word)
     : ID(  (GetDetector(word.address).type != clover) ? GetDetector(word.address).detectorNum : GetDetector(word.address).detectorNum*NUM_CLOVER_CRYSTALS + GetDetector(word.address).telNum )
+    , e_raw( word.adcdata )
     , energy( CalibrateEnergy(word) )
     , tfine( word.cfdcorr )
     , tcoarse( word.timestamp )
@@ -60,7 +61,7 @@ bool EventData::Add(const word_t &w)
 }
 
 
-bool EventData::Add(const uint16_t &id, const uint16_t &raw, const double &e, const double &fine, const double &coarse)
+bool EventData::Add(const uint16_t &id, const uint16_t &raw, const double &e, const double &fine, const int64_t &coarse)
 {
     if ( mult < MAX_NUM ){
         ID[mult] = id;
@@ -260,6 +261,7 @@ Event &Event::operator=(const std::vector<word_t> &event)
                 break;
         }
     }
+    return *this;
 }
 
 
@@ -277,7 +279,7 @@ void Event::RunAddback(TH2 *ab_t_clover)
     for (size_t n = 0 ; n < NUM_CLOVER_DETECTORS ; ++n){
         v = cevent[n];
         std::sort(v.begin(), v.end(), [](EventEntry lhs, EventEntry rhs){ return lhs.energy > rhs.energy; });
-        while ( v.size() > 0 ){
+        while ( !v.empty() ){
             v_new.clear();
             e = v[0].energy;
             for (size_t m = 1 ; m < v.size() ; ++m){
@@ -363,11 +365,11 @@ std::vector<Event> Event::BuildEvent(const std::vector<word_t> &raw_data, TH2 *a
     return events;
 }
 
-void Event::BuildAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, TH2 *ab_hist, double coins_time)
+void Event::BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, TH2 *ab_hist, double coins_time)
 {
     DetectorInfo_t trigger;
     double timediff;
-    size_t i, j, start, stop;
+    size_t i, j, start=0, stop=0;
     progress.StartBuildingEvents(raw_data.size());
     for (i = 0 ; i < raw_data.size() ; ++i) {
         trigger = GetDetector(raw_data[i].address);
@@ -405,8 +407,33 @@ void Event::BuildAndFill(const std::vector<word_t> &raw_data, HistManager *hm, T
     }
 }
 
+void Event::BuildAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, TH2 *ab_hist, double coins_time)
+{
+    double timediff;
+    size_t i, j;
+    progress.StartBuildingEvents(raw_data.size());
+    for (i = 0 ; i < raw_data.size() ; ++i){
+        std::vector<word_t> event;
+        progress.UpdateEventBuildingProgress(i);
+        for (j = i ; j < raw_data.size() - 1 ; ++j){
+            timediff = abs(raw_data[j + 1].timestamp - raw_data[j].timestamp);
+            event.push_back(raw_data[j]);
+            if (timediff > coins_time) {
+                i = j + 1;
+                break;
+            }
+        }
+        Event evt(event);
+        if ( ab_hist != nullptr )
+            evt.RunAddback(ab_hist);
+        if ( hm ) hm->AddEntry(evt);
+        if ( tm ) tm->AddEntry(evt);
+    }
+}
+
 EventBuilder::EventBuilder(std::vector<word_t> data, TH2 *ab)
     : raw_data(std::move( data ))
+    , current_pos( 0 )
     , ab_hist( ab )
 {
     progress.StartBuildingEvents(raw_data.size());

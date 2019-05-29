@@ -21,7 +21,7 @@
 #ifndef EVENT_H
 #define EVENT_H
 
-#include <stdint.h>
+#include <cstdint>
 #include <vector>
 
 #include "BasicStruct.h"
@@ -86,7 +86,7 @@ private:
 public:
 
     //! Zero constructor.
-    Event(){}
+    Event() = default;
 
     //! Constructor.
     /*!
@@ -113,6 +113,7 @@ public:
     static std::vector<Event> BuildPGEvents(const std::vector<word_t> &raw_data, TH2 *ab_hist = nullptr, double coins_time = 3000.);
 
     //! Build and fill events.
+    static void BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, TH2 *ab_hist = nullptr, double coins_time = 3000.);
     static void BuildAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, TH2 *ab_hist = nullptr, double coins_time = 3000.);
 
     //! Set all events.
@@ -143,7 +144,7 @@ private:
     TH2 *ab_hist;
 
 public:
-    EventBuilder(std::vector<word_t> data, TH2 *ab = nullptr);// : raw_data( data ), current_pos( 0 ), ab_hist( ab ){}
+    explicit EventBuilder(std::vector<word_t> data, TH2 *ab = nullptr);// : raw_data( data ), current_pos( 0 ), ab_hist( ab ){}
 
     bool GetEvent(Event &evt);
 

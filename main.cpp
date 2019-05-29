@@ -55,7 +55,10 @@ void Convert_to_root(const std::vector<std::string> &in_files, const std::string
         //event_data = ( pg_event ) ? Event::BuildPGEvents(FileReader::GetFile(file.c_str()), ab_hist) : Event::BuildEvent(FileReader::GetFile(file.c_str()), ab_hist);
         //hm.AddEntries(event_data);
         //tm.AddEntries(event_data);
-        Event::BuildAndFill(FileReader::GetFile(file.c_str()), &hm, ( buildTree ) ? &tm : nullptr, ab_hist, coins_t);
+        if ( pg_event )
+            Event::BuildPGAndFill(FileReader::GetFile(file.c_str()), &hm, ( buildTree ) ? &tm : nullptr, ab_hist, coins_t);
+        else
+            Event::BuildAndFill(FileReader::GetFile(file.c_str()), &hm, ( buildTree ) ? &tm : nullptr, ab_hist, coins_t);
         progress.Finish();
     }
 }
@@ -68,7 +71,7 @@ int main(int argc, char *argv[])
     std::vector<std::string> input_file;
     std::string output_file, cal_file;
     bool npg, ab, bt;
-    int coins_time = 3000.;
+    int coins_time = 3000;
     interface.Add("-i", "Input file", &input_file);
     interface.Add("-o", "Output file", &output_file);
     interface.Add("-ct", "Coincidence time", &coins_time);
