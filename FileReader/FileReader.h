@@ -35,8 +35,6 @@
  * \author Vetle W. Ingeberg
  * \date 2015-2016
  * \copyright GNU Public License v. 3
- * \todo It should be created an interface class for FileReader and then this class should inherit its functionality. This will make it easier to implement
- * support for other file formats other than the TDR format.
  */
 class FileReader {
 
