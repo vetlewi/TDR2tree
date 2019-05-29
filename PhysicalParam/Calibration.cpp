@@ -92,19 +92,19 @@ double CalibrateEnergy(const word_t &detector)
     DetectorInfo_t dinfo = GetDetector(detector.address);
     switch (dinfo.type) {
         case labr_3x8 :
-            return gain_labrL[dinfo.detectorNum]*detector.adcdata + shift_labrL[dinfo.detectorNum];
+            return gain_labrL[dinfo.detectorNum]*(detector.adcdata + drand48() - 0.5) + shift_labrL[dinfo.detectorNum];
         case labr_2x2_ss :
-            return gain_labrS[dinfo.detectorNum]*detector.adcdata + shift_labrS[dinfo.detectorNum];
+            return gain_labrS[dinfo.detectorNum]*(detector.adcdata + drand48() - 0.5) + shift_labrS[dinfo.detectorNum];
         case labr_2x2_fs :
-        return gain_labrF[dinfo.detectorNum]*detector.adcdata + shift_labrF[dinfo.detectorNum];
+        return gain_labrF[dinfo.detectorNum]*(detector.adcdata + drand48() - 0.5) + shift_labrF[dinfo.detectorNum];
         case clover :
-            return gain_clover[dinfo.detectorNum*NUM_CLOVER_CRYSTALS+dinfo.telNum]*detector.adcdata + shift_clover[dinfo.detectorNum*NUM_CLOVER_CRYSTALS+dinfo.telNum];
+            return gain_clover[dinfo.detectorNum*NUM_CLOVER_CRYSTALS+dinfo.telNum]*(detector.adcdata + drand48() - 0.5) + shift_clover[dinfo.detectorNum*NUM_CLOVER_CRYSTALS+dinfo.telNum];
         case de_ring :
-            return gain_ring[dinfo.detectorNum]*detector.adcdata + shift_ring[dinfo.detectorNum];
+            return gain_ring[dinfo.detectorNum]*(detector.adcdata + drand48() - 0.5) + shift_ring[dinfo.detectorNum];
         case de_sect :
-            return gain_sect[dinfo.detectorNum]*detector.adcdata + shift_sect[dinfo.detectorNum];
+            return gain_sect[dinfo.detectorNum]*(detector.adcdata + drand48() - 0.5) + shift_sect[dinfo.detectorNum];
         case eDet :
-            return gain_back[dinfo.detectorNum]*detector.adcdata + shift_back[dinfo.detectorNum];
+            return gain_back[dinfo.detectorNum]*(detector.adcdata + drand48() - 0.5) + shift_back[dinfo.detectorNum];
         default :
             return detector.adcdata;
     }
