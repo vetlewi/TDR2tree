@@ -17,10 +17,10 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native")
 
 include_directories(. Containers FileReader PhysicalParam RootInterface Tools)
 
-ROOT_GENERATE_DICTIONARY(TDRtools_dic Containers/Event.h LINKDEF LinkDef.h)
+#ROOT_GENERATE_DICTIONARY(TDRtools_dic Containers/Event.h LINKDEF LinkDef.h)
 
 #add_library(TDRtools SHARED main.cpp TDRtools_dic.cxx)
-add_executable(TDR2tree main.cpp TDRtools_dic.cxx)
+add_executable(TDR2tree main.cpp)
 
 add_subdirectory(Containers)
 add_subdirectory(FileReader)
