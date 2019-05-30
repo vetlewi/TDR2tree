@@ -31,3 +31,6 @@ add_subdirectory(Tools)
 #target_link_libraries(TDRtools ${ROOT_LIBRARIES})
 target_link_libraries(TDR2tree ${ROOT_LIBRARIES})
 #target_link_libraries(TDR2tree TDRtools)
+
+
+install(TARGETS TDR2tree DESTINATION /Users/vetlewi/prog/bin)
