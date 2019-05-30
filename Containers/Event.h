@@ -56,7 +56,7 @@ struct EventData
     int64_t tcoarse[MAX_NUM];
 
     bool Add(const word_t &w);
-    bool Add(const uint16_t &id, const uint16_t &raw, const double &e, const double &fine, const double &coarse);
+    bool Add(const uint16_t &id, const uint16_t &raw, const double &e, const double &fine, const int64_t &coarse);
     void Reset(){ mult = 0; }
 
     void SetupBranch(TTree *tree, const char *baseName);
