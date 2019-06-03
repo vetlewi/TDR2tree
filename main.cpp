@@ -64,7 +64,6 @@ void Convert_to_root(const std::vector<std::string> &in_files, const std::string
 }
 
 
-
 int main(int argc, char *argv[])
 {
     CommandLineInterface interface;
@@ -72,6 +71,7 @@ int main(int argc, char *argv[])
     std::string output_file, cal_file;
     bool npg, ab, bt;
     int coins_time = 3000;
+
     interface.Add("-i", "Input file", &input_file);
     interface.Add("-o", "Output file", &output_file);
     interface.Add("-ct", "Coincidence time", &coins_time);
