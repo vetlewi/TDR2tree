@@ -47,6 +47,19 @@ EventEntry::EventEntry(const word_t &word)
 {
 }
 
+bool EventData::Add(const EventEntry &e)
+{
+    if ( mult < MAX_NUM ){
+        ID[mult] = e.ID;
+        e_raw[mult] = e.e_raw;
+        energy[mult] = e.energy;
+        tfine[mult] = e.tfine;
+        tcoarse[mult++] = e.tcoarse;
+        return true;
+    }
+    return false;
+}
+
 bool EventData::Add(const word_t &w)
 {
     if ( mult < MAX_NUM ){
@@ -403,7 +416,7 @@ void Event::BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm,
         if ( ab_hist != nullptr )
             evt.RunAddback(ab_hist);
         if ( hm ) hm->AddEntry(evt);
-        if ( tm ) tm->AddEntry(evt);
+        if ( tm && evt.IsGood() ) tm->AddEntry(evt);
     }
 }
 
@@ -429,6 +442,56 @@ void Event::BuildAndFill(const std::vector<word_t> &raw_data, HistManager *hm, T
         if ( hm ) hm->AddEntry(evt);
         if ( tm ) tm->AddEntry(evt);
     }
+}
+
+bool Event::IsGood()
+{
+    if ( ringData < 1 || sectData < 1 ){
+        return false;
+    }
+
+
+
+    // Second step is to check sectors to be within the time gate.
+    double tdiff;
+    std::vector<EventEntry> keep_sect;
+    for (int i = 0 ; i < sectData ; ++i){
+        tdiff = (backData[0].tcoarse - sectData[i].tcoarse);
+        tdiff += (backData[0].tfine - sectData[i].tfine);
+        if ( tdiff > -100 && tdiff < 300 )
+            keep_sect.emplace_back(sectData[i]);
+    }
+
+    if ( keep_sect.empty() ) // We need at least one sector event.
+        return false;
+
+    // Third step is to check if the time and energy of the rings and sectors are OK.
+    std::vector<EventEntry> keep_ring;
+    for (size_t i = 0 ; i < keep_sect.size() ; ++i){
+        for (int j = 0 ; j < ringData ; ++j){
+            tdiff = (ringData[j].tcoarse - keep_sect[i].tcoarse);
+            tdiff += (ringData[j].tfine - keep_sect[i].tfine);
+            if ( tdiff > -150 && tdiff < 75 && abs(ringData[j].energy - keep_sect[i].energy) < 500 )
+                keep_ring.emplace_back(ringData[i]);
+        }
+    }
+
+    if ( keep_ring.empty() )
+        return false;
+
+    // Now we can repopulate the event structure.
+    sectData.Reset();
+    for ( auto sevt : keep_sect){
+        sectData.Add(sevt);
+    }
+
+    ringData.Reset();
+    for ( auto revt : keep_ring){
+        ringData.Add(revt);
+    }
+
+    return true;
+
 }
 
 EventBuilder::EventBuilder(std::vector<word_t> data, TH2 *ab)

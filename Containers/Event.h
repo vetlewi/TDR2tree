@@ -55,6 +55,7 @@ struct EventData
     double tfine[MAX_NUM];
     int64_t tcoarse[MAX_NUM];
 
+    bool Add(const EventEntry &e);
     bool Add(const word_t &w);
     bool Add(const uint16_t &id, const uint16_t &raw, const double &e, const double &fine, const int64_t &coarse);
     void Reset(){ mult = 0; }
@@ -68,6 +69,7 @@ struct EventData
 };
 
 inline bool operator<(const int &lhs, const EventData &rhs){ return lhs < rhs.mult; }
+inline bool operator<(const EventData &lhs, const int &rhs){ return lhs.mult < rhs; }
 
 class Event
 {
@@ -108,6 +110,9 @@ public:
     inline void Reset(){ ringData.Reset(); sectData.Reset(); backData.Reset(); labrLData.Reset(); labrSData.Reset(); labrFData.Reset(); cloverData.Reset(); rfData.Reset(); }
 
     void RunAddback(TH2 *ab_t_clover /*!< Matrix to fill in order to set propper time gates for clover addback */);
+
+    //! Function to check if event is good. Also, only keep the sect/ring data that are acceptable.
+    bool IsGood();
 
     //! Set all events.
     static std::vector<Event> BuildPGEvents(const std::vector<word_t> &raw_data, TH2 *ab_hist = nullptr, double coins_time = 3000.);
