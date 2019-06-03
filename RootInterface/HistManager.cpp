@@ -39,6 +39,8 @@ HistManager::HistManager(RootFileManager *fm)
     , time_labrS( fm->CreateTH2("time_labrS", "Time spectra LaBr S", 3000, -1500, 1500, "Time [ns]", NUM_LABR_2X2_DETECTORS, 0, NUM_LABR_2X2_DETECTORS, "LaBr S ID") )
     , time_labrF( fm->CreateTH2("time_labrF", "Time spectra LaBr F", 30000, -1500, 1500, "Time [ns]", NUM_LABR_2X2_DETECTORS, 0, NUM_LABR_2X2_DETECTORS, "LaBr F ID") )
     , time_clover( fm->CreateTH2("time_clover", "Time spectra CLOVER", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, 0, NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, "CLOVER ID") )
+    , time_energy_sect_back( fm->CreateTH2("time_energy_sect_back", "Energy vs. sector/back time", 1000, 0, 30000, "E energy [keV]", 3000, -1500, 1500, "t_{back} - t_{sector} [ns]") )
+    , time_energy_ring_sect( fm->CreateTH2("time_energy_ring_sect", "Energy vs. sector/back time", 1000, 0, 30000, "Sector energy [keV]", 3000, -1500, 1500, "t_{ring} - t_{sector} [ns]") )
     , energy_ring( fm->CreateTH2("energy_ring", "Energy spectra rings", 16384, 0, 16384, "Energy [ch]", NUM_SI_RING, 0, NUM_SI_RING, "Ring ID") )
     , energy_sect( fm->CreateTH2("energy_sect", "Energy spectra sectors", 16384, 0, 16384, "Energy [ch]", NUM_SI_SECT, 0, NUM_SI_SECT, "Sector ID") )
     , energy_back( fm->CreateTH2("energy_back", "Energy spectra back detectors", 16384, 0, 16384, "Energy [ch]", NUM_SI_BACK, 0, NUM_SI_BACK, "Back ID") )
@@ -158,6 +160,23 @@ void HistManager::AddEntry(const Event &buffer)
         energy_cal_clover->Fill(evt.energy, evt.ID);
     }
 
+    for (i = 0 ; i < buffer.GetSectEvent() ; ++i){
+        rfEvt = buffer.GetSectEvent()[i];
+        for (j = 0 ; j < buffer.GetBackEvent() ; ++j){
+            evt = buffer.GetBackEvent()[i];
+            timediff = (evt.tcoarse - rfEvt.tcoarse);
+            timediff += (evt.tfine - rfEvt.tfine);
+            time_energy_sect_back->Fill(evt.energy, timediff);
+        }
+        for (j = 0 ; j < buffer.GetRingEvent() ; ++j) {
+            evt = buffer.GetRingEvent()[i];
+            if ( abs(rfEvt.energy - evt.energy) > 500 )
+                continue;
+            timediff = (evt.tcoarse - rfEvt.tcoarse);
+            timediff += (evt.tfine - rfEvt.tfine);
+            time_energy_ring_sect->Fill(evt.energy, timediff);
+        }
+    }
 }
 
 void HistManager::AddEntries(const std::vector<Event> &evts)

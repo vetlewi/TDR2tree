@@ -36,7 +36,11 @@ private:
     TH2 *time_labrL;    //!< Alignment spectra of large LaBr detectors.
     TH2 *time_labrS;    //!< Alignment spectra of small LaBr detectors (slow signal).
     TH2 *time_labrF;    //!< Alignment spectra of small LaBr detectors (fast signal).
-    TH2 *time_clover;        //!< Alignment spectra of clover crystals.
+    TH2 *time_clover;   //!< Alignment spectra of clover crystals.
+
+    //! Time energy spectra for particles.
+    TH2 *time_energy_sect_back;
+    TH2 *time_energy_ring_sect;
 
     //! Energy spectra for each detector.
     TH2 *energy_ring;
