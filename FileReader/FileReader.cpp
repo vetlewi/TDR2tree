@@ -75,21 +75,22 @@ int DecodeWords(word_t *data, uint64_t *buf, size_t length)
                 data[n_decoded].adcdata = adcdata_w1;
                 data[n_decoded].cfddata = adcdata_w2;
                 data[n_decoded].timestamp = timestamp_w1;
-                ++n_decoded;
+                if ( data[n_decoded].adcdata < 16384 ) // ADC data should never be larger than 16484. If, then COMPTON suppressed.
+                    ++n_decoded;
                 ++i;
             } else if ( ((address_w2&16)==0) && (address_w1 == address_w2+16) && (timestamp_w2 == timestamp_w1) ){
                 data[n_decoded].address = address_w2;
                 data[n_decoded].adcdata = adcdata_w2;
                 data[n_decoded].cfddata = adcdata_w1;
                 data[n_decoded].timestamp = timestamp_w2;
-                ++n_decoded;
+                if ( data[n_decoded].adcdata < 16384 ) // ADC data should never be larger than 16484. If, then COMPTON suppressed.
+                    ++n_decoded;
                 ++i;
             }
         }
     }
-
+    DetectorInfo_t dinfo;
     for (int i = 0 ; i < n_decoded ; ++i){
-
         switch ( GetSamplingFrequency(data[i].address) ) {
         case f100MHz :
             data[i].cfdcorr = XIA_CFD_Fraction_100MHz(data[i].cfddata, &data[i].cfdfail);
@@ -115,6 +116,7 @@ int DecodeWords(word_t *data, uint64_t *buf, size_t length)
             data[i].timestamp *= 10;
             break;
         }
+
 
         data[i].cfdcorr += CalibrateTime(data[i]);
 

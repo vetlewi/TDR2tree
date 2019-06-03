@@ -42,19 +42,25 @@ class TreeManager {
 private:
 
     TTree *tree;    //!< The tree object.
-    T entry_obj;      //!< Private event object.
+    T entry_obj;    //!< Private event object.
+    bool validate;  //!< Flag to tell if the events should be validated before filling or not.
 
 public:
 
     //! Constructor from RootTreeManager.
-    TreeManager(RootFileManager *FileManager, const char *name, const char *title)
+    TreeManager(RootFileManager *FileManager, const char *name, const char *title, bool validate_event = false)
         : tree( FileManager->CreateTree(name, title) )
-        , entry_obj( tree ) {}
+        , entry_obj( tree, validate_event )
+        , validate( validate_event ){}
 
     //! Add entry.
-    void AddEntry(const T &entry)
+    inline void AddEntry(const T &entry)
     {
         entry_obj = entry;
+        if ( validate ){
+            if ( !entry_obj.IsGood() )
+                return;
+        }
         tree->Fill();
     }
 
@@ -63,8 +69,7 @@ public:
     {
         progress.StartFillingTree(entries.size());
         for (int i = 0 ; i < entries.size() ; ++i){
-            entry_obj = entries[i];
-            tree->Fill();
+            AddEntry(entries[i]);
             progress.UpdateTreeFillProgress(i);
         }
     }

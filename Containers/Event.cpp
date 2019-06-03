@@ -89,7 +89,7 @@ bool EventData::Add(const uint16_t &id, const uint16_t &raw, const double &e, co
 
 
 
-void EventData::SetupBranch(TTree *tree, const char *baseName)
+void EventData::SetupBranch(TTree *tree, const char *baseName, bool validated)
 {
     char mult_name[2048], branch_name[2048], data_name[2048];
     sprintf(mult_name, "%sMult", baseName);
@@ -101,24 +101,45 @@ void EventData::SetupBranch(TTree *tree, const char *baseName)
     sprintf(branch_name, "%sEnergy", baseName);
     sprintf(data_name, "%s[%s]/D", branch_name, mult_name);
     tree->Branch(branch_name, &energy, data_name);
-    sprintf(branch_name, "%sTfine", baseName);
-    sprintf(data_name, "%s[%s]/D", branch_name, mult_name);
-    tree->Branch(branch_name, &tfine, data_name);
-    sprintf(branch_name, "%sTcoarse", baseName);
-    sprintf(data_name, "%s[%s]/L", branch_name, mult_name);
-    tree->Branch(branch_name, &tcoarse, data_name);
+    if ( !validated ) {
+        sprintf(branch_name, "%sTfine", baseName);
+        sprintf(data_name, "%s[%s]/D", branch_name, mult_name);
+        tree->Branch(branch_name, &tfine, data_name);
+        sprintf(branch_name, "%sTcoarse", baseName);
+        sprintf(data_name, "%s[%s]/L", branch_name, mult_name);
+        tree->Branch(branch_name, &tcoarse, data_name);
+    } else {
+        sprintf(branch_name, "%sTime", baseName);
+        sprintf(data_name, "%s[%s]/D", branch_name, mult_name);
+        tree->Branch(branch_name, &tfine, data_name);
+    }
 }
 
-Event::Event(TTree *tree)
+Event::Event(TTree *tree, bool val)
 {
-    ringData.SetupBranch(tree, "ring");
-    sectData.SetupBranch(tree, "sect");
-    backData.SetupBranch(tree, "back");
-    labrLData.SetupBranch(tree, "labrL");
-    labrSData.SetupBranch(tree, "labrS");
-    labrFData.SetupBranch(tree, "labrF");
-    cloverData.SetupBranch(tree, "clover");
-    rfData.SetupBranch(tree, "rf");
+    if ( !val ) {
+        ringData.SetupBranch(tree, "ring");
+        sectData.SetupBranch(tree, "sect");
+        backData.SetupBranch(tree, "back");
+        tree->Branch("rfMult", &rfData.mult, "rfMult/I");
+        tree->Branch("rfTcoarse", &rfData.tcoarse, "rfTcoarse[rfMult]/D");
+        tree->Branch("rfTfine", &rfData.tfine, "rfTfine[rfMult]/D");
+    } else {
+        tree->Branch("ringID", &ringData.ID[0], "ringID/s");
+        tree->Branch("ringEnergy", &ringData.energy[0], "ringEnergy/D");
+        tree->Branch("sectID", &sectData.ID[0], "sectID/s");
+        tree->Branch("sectEnergy", &sectData.energy[0], "sectEnergy/D");
+        tree->Branch("backID", &backData.ID[0], "backID/s");
+        tree->Branch("backEnergy", &backData.energy[0], "backEnergy/D");
+        tree->Branch("rfMult", &rfData.mult, "rfMult/I");
+        tree->Branch("rfTime", &rfData.tfine, "rfTime[rfMult]/D");
+    }
+    labrLData.SetupBranch(tree, "labrL", val);
+    labrSData.SetupBranch(tree, "labrS", val);
+    if ( !val )
+        labrFData.SetupBranch(tree, "labrF", val);
+    cloverData.SetupBranch(tree, "clover", val);
+
     tree->BranchRef();
 }
 
@@ -327,7 +348,7 @@ std::vector<Event> Event::BuildPGEvents(const std::vector<word_t> &raw_data, TH2
 
         for (size_t j = i; j > 0; --j) {
             timediff = abs(raw_data[i].timestamp - raw_data[j - 1].timestamp);
-            if (timediff > coins_time/2.) {
+            if (timediff > coins_time) {
                 start = j;
                 break;
             }
@@ -335,7 +356,7 @@ std::vector<Event> Event::BuildPGEvents(const std::vector<word_t> &raw_data, TH2
 
         for (j = i; j < raw_data.size() - 1; ++j) {
             timediff = abs(raw_data[i].timestamp - raw_data[j + 1].timestamp);
-            if (timediff > coins_time/2.) {
+            if (timediff > coins_time) {
                 stop = j + 1;
                 break;
             }
@@ -392,7 +413,7 @@ void Event::BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm,
 
         for (size_t j = i; j > 0; --j) {
             timediff = abs(raw_data[i].timestamp - raw_data[j - 1].timestamp);
-            if (timediff > coins_time/2.) {
+            if (timediff > coins_time) {
                 start = j;
                 break;
             }
@@ -400,7 +421,7 @@ void Event::BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm,
 
         for (j = i; j < raw_data.size() - 1; ++j) {
             timediff = abs(raw_data[i].timestamp - raw_data[j + 1].timestamp);
-            if (timediff > coins_time/2.) {
+            if (timediff > coins_time) {
                 stop = j + 1;
                 break;
             }
@@ -416,7 +437,7 @@ void Event::BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm,
         if ( ab_hist != nullptr )
             evt.RunAddback(ab_hist);
         if ( hm ) hm->AddEntry(evt);
-        if ( tm && evt.IsGood() ) tm->AddEntry(evt);
+        if ( tm ) tm->AddEntry(evt);
     }
 }
 
@@ -450,10 +471,23 @@ bool Event::IsGood()
         return false;
     }
 
+    double tdiff;
+
+    // Check if we don't have "pile-up" (ie. multiple events) in the E detector.
+    if ( backData > 1 ){
+        for (int i = 1 ; i < backData ; ++i){
+            tdiff = (backData[i].tcoarse - backData[0].tcoarse);
+            tdiff += (backData[i].tfine - backData[0].tfine);
+            if ( abs(tdiff) < 200 )
+                return false;
+        }
+        backData.mult = 1;
+    }
+
 
 
     // Second step is to check sectors to be within the time gate.
-    double tdiff;
+
     std::vector<EventEntry> keep_sect;
     for (int i = 0 ; i < sectData ; ++i){
         tdiff = (backData[0].tcoarse - sectData[i].tcoarse);
@@ -462,7 +496,7 @@ bool Event::IsGood()
             keep_sect.emplace_back(sectData[i]);
     }
 
-    if ( keep_sect.empty() ) // We need at least one sector event.
+    if ( keep_sect.size() != 1 ) // We need at least one sector event.
         return false;
 
     // Third step is to check if the time and energy of the rings and sectors are OK.
@@ -476,65 +510,77 @@ bool Event::IsGood()
         }
     }
 
-    if ( keep_ring.empty() )
+    if ( keep_ring.size() != 1 )
         return false;
 
     // Now we can repopulate the event structure.
     sectData.Reset();
-    for ( auto sevt : keep_sect){
-        sectData.Add(sevt);
+    sectData.Add(keep_sect.at(0));
+    ringData.Reset();
+    ringData.Add(keep_ring.at(0));
+
+    for (int i = 0 ; i < labrLData ; ++i){
+        tdiff = labrLData[i].tcoarse - sectData[0].tcoarse;
+        tdiff += labrLData[i].tfine - sectData[0].tfine;
+        labrLData.tfine[i] = tdiff;
     }
 
-    ringData.Reset();
-    for ( auto revt : keep_ring){
-        ringData.Add(revt);
+    std::vector<EventEntry> labrS[NUM_LABR_2X2_DETECTORS], labrF[NUM_LABR_2X2_DETECTORS];
+    for (int i = 0 ; i < labrSData ; ++i){
+        labrS[labrSData[i].ID].emplace_back(labrSData[i]);
+    }
+
+    for (int i = 0 ; i < labrFData ; ++i){
+        labrF[labrFData[i].ID].emplace_back(labrFData[i]);
+    }
+
+    std::vector<EventEntry> v, vnew, result;
+    labrSData.Reset();
+    labrFData.Reset();
+    for ( int i = 0 ; i < NUM_LABR_2X2_DETECTORS ; ++i ){
+        v = labrF[i];
+        for ( auto Sevt : labrS[i] ){
+            for ( auto Fevt : v ){
+                tdiff = Sevt.tcoarse - Fevt.tcoarse;
+                tdiff += Sevt.tfine - Fevt.tfine;
+                if ( abs(tdiff) < 150. && abs(Sevt.energy - Fevt.energy) < 200 ){
+                    result.emplace_back(Sevt);
+                    result.back().tcoarse = Fevt.tcoarse;
+                    result.back().tfine = Fevt.tfine;
+                } else {
+                    vnew.emplace_back(Fevt);
+                }
+            }
+            v = vnew;
+        }
+    }
+
+    for (auto res : result)
+        labrSData.Add(res);
+
+    for (int i = 0 ; i < labrSData ; ++i){
+        tdiff = labrSData[i].tcoarse - sectData[0].tcoarse;
+        tdiff += labrSData[i].tfine - sectData[0].tfine;
+        labrSData.tfine[i] = tdiff;
+    }
+
+    /*for (int i = 0 ; i < labrFData ; ++i){
+        tdiff = labrFData[i].tcoarse - sectData[0].tcoarse;
+        tdiff += labrFData[i].tfine - sectData[0].tfine;
+        labrFData.tfine[i] = tdiff;
+    }*/
+
+    for (int i = 0 ; i < cloverData ; ++i){
+        tdiff = cloverData[i].tcoarse - sectData[0].tcoarse;
+        tdiff += cloverData[i].tfine - sectData[0].tfine;
+        cloverData.tfine[i] = tdiff;
+    }
+
+    for (int i = 0 ; i < rfData ; ++i){
+        tdiff = rfData[i].tcoarse - sectData[0].tcoarse;
+        tdiff += rfData[i].tfine - sectData[0].tfine;
+        rfData.tfine[i] = tdiff;
     }
 
     return true;
-
-}
-
-EventBuilder::EventBuilder(std::vector<word_t> data, TH2 *ab)
-    : raw_data(std::move( data ))
-    , current_pos( 0 )
-    , ab_hist( ab )
-{
-    progress.StartBuildingEvents(raw_data.size());
-}
-
-bool EventBuilder::GetEvent(Event &evt)
-{
-    DetectorInfo_t trigger;
-    double timediff;
-    size_t i, j, start = current_pos, stop = current_pos+1;
-    for (i = current_pos ; i < raw_data.size() ; ++i){
-        trigger = GetDetector(raw_data[i].address);
-        progress.UpdateEventBuildingProgress(i);
-        if (trigger.type != eDet) // Skip to next word.
-            continue;
-        for (size_t j = i; j > 0; --j) {
-            timediff = abs(raw_data[i].timestamp - raw_data[j - 1].timestamp);
-            if (timediff > 1500) {
-                start = j;
-                break;
-            }
-        }
-
-        for (j = i; j < raw_data.size() - 1; ++j) {
-            timediff = abs(raw_data[i].timestamp - raw_data[j + 1].timestamp);
-            if (timediff > 1500) {
-                stop = j + 1;
-                break;
-            }
-        }
-        std::vector<word_t> ev;
-        for (j = start ; j < stop ; ++j){
-            ev.push_back(raw_data[j]);
-        }
-        evt = Event(ev);
-        if ( ab_hist != nullptr)
-            evt.RunAddback(ab_hist);
-        return true;
-    }
-    return false;
 }

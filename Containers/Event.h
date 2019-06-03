@@ -60,7 +60,7 @@ struct EventData
     bool Add(const uint16_t &id, const uint16_t &raw, const double &e, const double &fine, const int64_t &coarse);
     void Reset(){ mult = 0; }
 
-    void SetupBranch(TTree *tree, const char *baseName);
+    void SetupBranch(TTree *tree, const char *baseName, bool validated=false);
 
     EventData() : mult( 0 ), ID{ 0 }, e_raw{ 0 }, energy{ 0 }, tfine{ 0 }, tcoarse{ 0 }{}
 
@@ -69,7 +69,9 @@ struct EventData
 };
 
 inline bool operator<(const int &lhs, const EventData &rhs){ return lhs < rhs.mult; }
+inline bool operator>(const int &lhs, const EventData &rhs){ return lhs > rhs.mult; }
 inline bool operator<(const EventData &lhs, const int &rhs){ return lhs.mult < rhs; }
+inline bool operator>(const EventData &lhs, const int &rhs){ return lhs.mult > rhs; }
 
 class Event
 {
@@ -95,7 +97,7 @@ public:
      * This constructor is meant to use for the TreeManager. This will set the branches of the tree.
      * \param tree ROOT TTree to attach branches to.
      */
-    explicit Event(TTree *tree);
+    explicit Event(TTree *tree, bool validated=false);
 
     //! Constructor.
     explicit Event(const std::vector<word_t> &event);
