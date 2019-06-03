@@ -8,6 +8,7 @@
 
 #include <cstdint>
 #include <algorithm>
+#include <iostream>
 
 extern ProgressUI progress;
 
@@ -183,8 +184,13 @@ bool FileReader::Open(const char *filename, int want)
 	Close();
 	file_stdio = std::fopen(filename, "rb");
 
+	if ( !file_stdio ){
+	    std::cerr << __PRETTY_FUNCTION__ << ": Unable to open file '" << filename << "'" << std::endl;
+	    exit(EXIT_FAILURE);
+	}
+
     fseek(file_stdio, 0, SEEK_END);
-    size_t size = size_t(ftell(file_stdio));
+    auto size = size_t(ftell(file_stdio));
     fseek(file_stdio, 0, SEEK_SET);
     progress.StartNewFile(filename, size);
 
@@ -271,7 +277,7 @@ std::vector<word_t> FileReader::GetFile(const char *fname)
     data.reserve(128876544);
     word_t entries[READ_NUM];
     int read;
-    while ( 1 ){
+    while ( true ){
         read = freader.Read(entries, READ_NUM);
         data.insert(data.end(), entries, entries+read);
         if ( read < READ_NUM ){
