@@ -35,7 +35,11 @@
 #include <TH2.h>
 #include <iostream>
 
+#include "PolygonGate.h"
+
 extern ProgressUI progress;
+//extern PolygonGate sectBackGate;
+//extern PolygonGate ringSectGate;
 
 
 EventEntry::EventEntry(const word_t &word)
@@ -492,8 +496,13 @@ bool Event::IsGood()
     for (int i = 0 ; i < sectData ; ++i){
         tdiff = (backData[0].tcoarse - sectData[i].tcoarse);
         tdiff += (backData[0].tfine - sectData[i].tfine);
-        if ( tdiff > -100 && tdiff < 300 )
-            keep_sect.emplace_back(sectData[i]);
+        //if ( sectBackGate.IsSet() ){
+        //    if ( sectBackGate(backData[0].energy, tdiff) )
+        //        keep_sect.emplace_back(sectData[i]);
+        //} else {
+            if (tdiff > -100 && tdiff < 300)
+                keep_sect.emplace_back(sectData[i]);
+        //}
     }
 
     if ( keep_sect.size() != 1 ) // We need at least one sector event.
@@ -505,8 +514,13 @@ bool Event::IsGood()
         for (int j = 0 ; j < ringData ; ++j){
             tdiff = (ringData[j].tcoarse - keep_sect[i].tcoarse);
             tdiff += (ringData[j].tfine - keep_sect[i].tfine);
-            if ( tdiff > -150 && tdiff < 75 && abs(ringData[j].energy - keep_sect[i].energy) < 500 )
-                keep_ring.emplace_back(ringData[i]);
+            //if ( ringSectGate.IsSet() ){
+            //    if ( ringSectGate(keep_sect[i].energy, tdiff) )
+            //        keep_ring.emplace_back(ringData[i]);
+            //} else {
+                if (tdiff > -150 && tdiff < 75 && abs(ringData[j].energy - keep_sect[i].energy) < 500)
+                    keep_ring.emplace_back(ringData[i]);
+            //}
         }
     }
 

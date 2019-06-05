@@ -13,9 +13,13 @@
 #include "Event.h"
 #include "ProgressUI.h"
 
+#include "PolygonGate.h"
+
 #include <TROOT.h>
 
 ProgressUI progress;
+//PolygonGate sectBackGate;
+//PolygonGate ringSectGate;
 
 struct Options {
     int coincidence_time;
@@ -60,7 +64,7 @@ int main(int argc, char *argv[])
 {
     CommandLineInterface interface;
     std::vector<std::string> input_file;
-    std::string output_file, cal_file;
+    std::string output_file, cal_file;//, sectBack_file, ringSect_file;
     Options opt = {1500, false, false, false, false};
 
     interface.Add("-i", "Input file", &input_file);
@@ -70,10 +74,16 @@ int main(int argc, char *argv[])
     interface.Add("-ab", "Addback", &opt.addback);
     interface.Add("-t", "Build tree", &opt.build_tree);
     interface.Add("-v", "Validate events", &opt.validate);
+    //interface.Add("-sb", "SectBack gate", &sectBack_file);
+    //interface.Add("-rs", "RingSect gate", &ringSect_file);
     interface.Add("-npg", "Not particle gamma event builder", &opt.particle_gamma);
     interface.CheckFlags(argc, argv);
 
     opt.particle_gamma = !opt.particle_gamma;
+    /*if ( sectBack_file != "")
+        sectBackGate.Set(sectBack_file.c_str());
+    if ( ringSect_file != "")
+        ringSectGate.Set(ringSect_file.c_str());*/
 
     if (input_file.empty() || output_file.empty() ){
         std::cerr << "Input or output file missing." << std::endl;
