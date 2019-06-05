@@ -35,8 +35,6 @@
 #include <TH2.h>
 #include <iostream>
 
-#include "PolygonGate.h"
-
 extern ProgressUI progress;
 //extern PolygonGate sectBackGate;
 //extern PolygonGate ringSectGate;

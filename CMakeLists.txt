@@ -12,8 +12,8 @@ list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 find_package(ROOT REQUIRED COMPONENTS RIO Net)
 include(${ROOT_USE_FILE})
 
-find_package(CGAL)
-set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
+#find_package(CGAL)
+#set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native")
 
@@ -31,7 +31,7 @@ add_subdirectory(RootInterface)
 add_subdirectory(Tools)
 
 #target_link_libraries(TDRtools ${ROOT_LIBRARIES})
-target_link_libraries(TDR2tree ${ROOT_LIBRARIES} CGAL::CGAL)
+target_link_libraries(TDR2tree ${ROOT_LIBRARIES})
 #target_link_libraries(TDR2tree TDRtools)
 
 

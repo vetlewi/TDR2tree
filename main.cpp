@@ -13,8 +13,6 @@
 #include "Event.h"
 #include "ProgressUI.h"
 
-#include "PolygonGate.h"
-
 #include <TROOT.h>
 
 ProgressUI progress;

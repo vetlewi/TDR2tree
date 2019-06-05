@@ -6,10 +6,10 @@ target_sources(TDR2tree
             Calibration.cpp
             experimentsetup.c
             Parameters.cpp
-            PolygonGate.cpp
+            #PolygonGate.cpp
         PUBLIC
             Calibration.h
             experimentsetup.h
             Parameters.h
-            PolygonGate.h
+            #PolygonGate.h
         )
