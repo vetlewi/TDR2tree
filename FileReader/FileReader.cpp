@@ -6,6 +6,8 @@
 #include "XIA_CFD.h"
 #include "ProgressUI.h"
 
+#include "BufferType.h"
+
 #include <cstdint>
 #include <algorithm>
 #include <iostream>
@@ -247,7 +249,15 @@ int FileReader::Read(word_t *buffer, int size)
 
 // #########################################################
 
+int FileReader::Read(TDRBuffer *buffer)
+{
+    int found = Read(buffer->GetBuffer(), buffer->GetSize());
+    if ( file_stdio )
+        progress.UpdateReadProgress(ftell(file_stdio));
+    return found;
+}
 
+// #########################################################
 
 bool FileReader::ReadEvent(word_t &hit)
 {

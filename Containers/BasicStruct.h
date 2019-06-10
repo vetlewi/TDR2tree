@@ -2,9 +2,7 @@
 #define BASICSTRUCT_H
 
 #include <cstdint>
-//#include <vector>
 
-//#include "experimentsetup.h"
 
 typedef struct {
     uint16_t address;		//!< Holds the address of the ADC.

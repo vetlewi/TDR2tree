@@ -18,74 +18,47 @@
  *                                                                             *
  *******************************************************************************/
 
-#ifndef FILEREADER_H
-#define FILEREADER_H
+#ifndef STFILEBUFFERFETCHER_H
+#define STFILEBUFFERFETCHER_H
 
-#include <cstdio>
-#include <cstdint>
-#include <vector>
+#include "FileBufferFetcher.h"
+#include "FileReader.h"
 
-#include "BasicStruct.h"
+#include "BufferType.h"
 
-class TDRBuffer;
+#include <string>
+
+
+//! Class for fetching buffers from a file.
+/*! This class does not prefetch buffers or spawn a reader thread.
+ */
 
 /*!
- * \class FileReader
- * \brief Class for reading TDR buffers from file.
- * \details This class reads the TDR buffers from binary files. It removes all CFD values from the stream. It also decodes the binary format to
- * the WordBuffer type.
+ * \class STFileBufferFetcher
+ * \brief Buffer fetcher class that fetches the buffers in the same thread as the main program.
  * \author Vetle W. Ingeberg
  * \date 2015-2016
  * \copyright GNU Public License v. 3
  */
-class FileReader {
-
+class STFileBufferFetcher : public FileBufferFetcher {
 public:
 
-	//! Initilizer
-	FileReader();
+	//! Calls the reader to open a file.
+    Status Open(const std::string& filename,    /*!< File to read.          */
+                int bufnum=0                    /*!< First buffer to read.  */)
+		{return reader.Open(filename.c_str(), bufnum*buffer.GetSize()) ? OKAY : ERROR; }
 
-	//! Destructor
-	~FileReader();
-
-	//! Open a file.
-	/*! \return true if opening was successful.
-	 */
-    bool Open(const char *filename, /*!< Name of the file to open.	*/
-              int seekpos=0         /*!< Where to open the file at.	*/);
-
-	//! Read a single buffer from the file.
-    /*! \return 1 for new buffer, 0 if EOF is reached or -1 if
-     *  an error was encountred.
-	 */
-    int Read(word_t *buffer,    /*!< Buffer to put the data. 	*/
-             int size           /*!< How many hits to read.     */);
-
-    int Read(TDRBuffer *buffer);
-
-    //! Read a
-
-    //! Check the error flag.
-    /*! \return The error flag.
+	//! Calls the reader to fetch a buffer.
+    /*! \return Pointer to the buffer that have been read.
      */
-    bool IsError() const
-    	{ return errorflag; }
-
-    //! Read entire file to memory.
-    static std::vector<word_t> GetFile(const char *fname);
+    const TDRBuffer* Next(Status& state    /*!< Result of the reading process. */);
 
 private:
-	//! The object for reading files.
-    std::FILE * file_stdio;
+	//! Implementation of the actual reading.
+	FileReader reader;
 
-	//! Close the file.
-    void Close();
-
-	//! Number of buffers that have been read.
-	bool errorflag;
-
-    //! Method for reading and parsing an event from the file.
-    bool ReadEvent(word_t &hit);
+	//! The buffer used to store the file data in.
+    TDRBuffer buffer;
 };
 
-#endif // FILEREADER_H
+#endif // STFILEBUFFERFETCHER_H

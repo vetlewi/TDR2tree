@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <queue>
 
 #include "CommandLineInterface.h"
 #include "Calibration.h"
@@ -12,6 +13,8 @@
 #include "TreeManager.h"
 #include "Event.h"
 #include "ProgressUI.h"
+#include "MTFileBufferFetcher.h"
+#include "BufferType.h"
 
 #include <TROOT.h>
 
@@ -57,6 +60,49 @@ void Convert_to_root(const std::vector<std::string> &in_files, const std::string
     }
 }
 
+void Convert_to_root_MT(const std::vector<std::string> &in_files, const std::string &out_file, const Options &opt)
+{
+    std::vector<Event> event_data;
+    RootFileManager fm(out_file.c_str());
+    HistManager hm(&fm);
+    TreeManager<Event> tm(&fm, "events", "Event tree", opt.validate);
+    TH2 *ab_hist = ( opt.addback ) ? fm.CreateTH2("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr;
+    for ( const auto& file : in_files ) {
+        MTFileBufferFetcher bufFetch;
+        bufFetch.Open(file);
+        BufferFetcher::Status status;
+        std::vector<word_t> data;
+        const TDRBuffer *buffer;
+        while ( true ){
+            buffer = bufFetch.Next(status);
+            if ( status == BufferFetcher::OKAY ){
+                data.insert(data.end(), buffer->CGetBuffer(), buffer->CGetBuffer()+buffer->GetSize());
+                if ( data.size() > 196608 ){
+                    std::sort(data.begin(), data.end(), [](const word_t &lhs, const word_t &rhs) { return ((rhs.timestamp - lhs.timestamp) + (rhs.cfdcorr - lhs.cfdcorr)) > 0; });
+                    if ( opt.particle_gamma )
+                        Event::BuildPGAndFill(std::vector<word_t>(data.begin(), data.begin()+65536), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
+                    else
+                        Event::BuildAndFill(std::vector<word_t>(data.begin(), data.begin()+65536), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
+                    std::vector<word_t> new_data(data.begin()+65536, data.end());
+                    data = new_data;
+                }
+            } else if ( status == BufferFetcher::END ) {
+                if ( buffer )
+                    data.insert(data.end(), buffer->CGetBuffer(), buffer->CGetBuffer()+buffer->GetSize());
+                std::sort(data.begin(), data.end(), [](const word_t &lhs, const word_t &rhs) { return ((rhs.timestamp - lhs.timestamp) + (rhs.cfdcorr - lhs.cfdcorr)) > 0; });
+                if ( opt.particle_gamma )
+                    Event::BuildPGAndFill(std::vector<word_t>(data.begin(), data.end()), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
+                else
+                    Event::BuildAndFill(std::vector<word_t>(data.begin(), data.end()), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
+                progress.Finish();
+                break;
+            } else {
+                break;
+            }
+        }
+    }
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -98,7 +144,7 @@ int main(int argc, char *argv[])
     std::cout << "Running with options:" << std::endl;
     std::cout << opt << std::endl;
 
-    Convert_to_root(input_file, output_file, opt);
+    Convert_to_root_MT(input_file, output_file, opt);
     exit(EXIT_SUCCESS);
 }
 

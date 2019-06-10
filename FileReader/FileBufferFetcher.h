@@ -18,74 +18,34 @@
  *                                                                             *
  *******************************************************************************/
 
-#ifndef FILEREADER_H
-#define FILEREADER_H
+#ifndef FILEBUFFERFETCHER_H
+#define FILEBUFFERFETCHER_H
 
-#include <cstdio>
-#include <cstdint>
-#include <vector>
+#include "BufferFetcher.h"
 
-#include "BasicStruct.h"
+#include <string>
+#include <memory>
 
-class TDRBuffer;
+class FileReader;
 
+//! Class to read a new buffer from file.
 /*!
- * \class FileReader
- * \brief Class for reading TDR buffers from file.
- * \details This class reads the TDR buffers from binary files. It removes all CFD values from the stream. It also decodes the binary format to
- * the WordBuffer type.
+ * \class FileBufferFetcher
+ * \brief Class interface for buffer fetching classes that fetches these from file.
+ * \details Interface for classes that fetches buffers from files.
  * \author Vetle W. Ingeberg
  * \date 2015-2016
  * \copyright GNU Public License v. 3
  */
-class FileReader {
-
+class FileBufferFetcher : public BufferFetcher {
 public:
-
-	//! Initilizer
-	FileReader();
-
-	//! Destructor
-	~FileReader();
-
-	//! Open a file.
-	/*! \return true if opening was successful.
+	//! Open a new file.
+	/*! If a file was open previously, it should be closed.
+	 *
+	 *	\return the status after opening the file.
 	 */
-    bool Open(const char *filename, /*!< Name of the file to open.	*/
-              int seekpos=0         /*!< Where to open the file at.	*/);
-
-	//! Read a single buffer from the file.
-    /*! \return 1 for new buffer, 0 if EOF is reached or -1 if
-     *  an error was encountred.
-	 */
-    int Read(word_t *buffer,    /*!< Buffer to put the data. 	*/
-             int size           /*!< How many hits to read.     */);
-
-    int Read(TDRBuffer *buffer);
-
-    //! Read a
-
-    //! Check the error flag.
-    /*! \return The error flag.
-     */
-    bool IsError() const
-    	{ return errorflag; }
-
-    //! Read entire file to memory.
-    static std::vector<word_t> GetFile(const char *fname);
-
-private:
-	//! The object for reading files.
-    std::FILE * file_stdio;
-
-	//! Close the file.
-    void Close();
-
-	//! Number of buffers that have been read.
-	bool errorflag;
-
-    //! Method for reading and parsing an event from the file.
-    bool ReadEvent(word_t &hit);
+    virtual Status Open(const std::string& filename,    /*!< The name of the file to open.		*/
+                        int bufnum=0                    /*!< The buffer number to start from.	*/) = 0;
 };
 
-#endif // FILEREADER_H
+#endif // FILEBUFFERFETCHER_H
