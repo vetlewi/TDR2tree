@@ -6,7 +6,7 @@
 
 #define NUM_CLOVER_DETECTORS 10     //!< Number of Clover detectors
 #define NUM_CLOVER_CRYSTALS 4       //!< Number of Clover crystals per detector
-#define NUM_LABR_3X8_DETECTORS 2    //!< Number of LaBr detectors
+#define NUM_LABR_3X8_DETECTORS 6    //!< Number of LaBr detectors
 #define NUM_LABR_2X2_DETECTORS 6    //!< Number of LaBr detectors
 #define NUM_SI_RING 48           //!< Number of Si dE rings
 #define NUM_SI_SECT 16           //!< Number of Si dE sector
