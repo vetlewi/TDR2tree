@@ -406,10 +406,8 @@ void Event::BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm,
     DetectorInfo_t trigger;
     double timediff;
     size_t i, j, start=0, stop=0;
-    //progress.StartBuildingEvents(raw_data.size());
     for (i = 0 ; i < raw_data.size() ; ++i) {
         trigger = GetDetector(raw_data[i].address);
-        //progress.UpdateEventBuildingProgress(i);
         if (trigger.type != eDet) // Skip to next word.
             continue;
 
@@ -447,10 +445,8 @@ void Event::BuildAndFill(const std::vector<word_t> &raw_data, HistManager *hm, T
 {
     double timediff;
     size_t i, j;
-    progress.StartBuildingEvents(raw_data.size());
     for (i = 0 ; i < raw_data.size() ; ++i){
         std::vector<word_t> event;
-        progress.UpdateEventBuildingProgress(i);
         for (j = i ; j < raw_data.size() - 1 ; ++j){
             timediff = abs(raw_data[j + 1].timestamp - raw_data[j].timestamp);
             event.push_back(raw_data[j]);
