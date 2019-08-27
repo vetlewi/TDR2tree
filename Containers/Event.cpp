@@ -572,11 +572,11 @@ bool Event::IsGood()
         labrSData.tfine[i] = tdiff;
     }
 
-    /*for (int i = 0 ; i < labrFData ; ++i){
+    for (int i = 0 ; i < labrFData ; ++i){
         tdiff = labrFData[i].tcoarse - sectData[0].tcoarse;
         tdiff += labrFData[i].tfine - sectData[0].tfine;
         labrFData.tfine[i] = tdiff;
-    }*/
+    }
 
     for (int i = 0 ; i < cloverData ; ++i){
         tdiff = cloverData[i].tcoarse - sectData[0].tcoarse;
