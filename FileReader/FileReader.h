@@ -21,13 +21,10 @@
 #ifndef FILEREADER_H
 #define FILEREADER_H
 
-#include <cstdio>
-#include <cstdint>
-#include <vector>
+#include "BufferType.h"
 
-#include "BasicStruct.h"
-
-class TDRBuffer;
+typedef struct __sFILE FILE;
+class Buffer;
 
 /*!
  * \class FileReader
@@ -40,6 +37,11 @@ class TDRBuffer;
  */
 class FileReader {
 
+protected:
+
+    //! Private initializer used by derived classes.
+    FileReader(Buffer *buf_type);
+
 public:
 
 	//! Initilizer
@@ -51,19 +53,22 @@ public:
 	//! Open a file.
 	/*! \return true if opening was successful.
 	 */
-    bool Open(const char *filename, /*!< Name of the file to open.	*/
-              int seekpos=0         /*!< Where to open the file at.	*/);
+    bool Open(const char *filename,    /*!< Name of the file to open.	*/
+              const int &seekpos=0    /*!< Where to open the file at.	*/);
 
-	//! Read a single buffer from the file.
-    /*! \return 1 for new buffer, 0 if EOF is reached or -1 if
-     *  an error was encountred.
+	//! Read data from file.
+    /*!
+     * \return size if entire buffer was read, the amount of data read if EOF and -1 if error.
 	 */
-    int Read(word_t *buffer,    /*!< Buffer to put the data. 	*/
-             int size           /*!< How many hits to read.     */);
+    virtual int Read(void *buffer,                /*!< Buffer to put the data.  */
+                     const unsigned int &size     /*!< How many hits to read.   */);
 
-    int Read(TDRBuffer *buffer);
+    //! Read data from file.
+    /*!
+    * \return 1 if successful, 0 if EOF and -1 if an error was encountred.
+    */
+    virtual int Read(Buffer &buffer);
 
-    //! Read a
 
     //! Check the error flag.
     /*! \return The error flag.
@@ -71,21 +76,37 @@ public:
     bool IsError() const
     	{ return errorflag; }
 
-    //! Read entire file to memory.
-    static std::vector<word_t> GetFile(const char *fname);
+    //! Check if file is open or not.
+    inline bool IsOpen() const { return ( file_stdio != nullptr ); }
+
+    //! Get a pointer to the buffer type.
+    inline Buffer *GetBufferType() const { return buffer_type; }
+
+protected:
+
+    //! Read raw data from file (used by derived classes).
+    /*!
+     * Read raw data from file.
+     * \param buffer
+     * \param size
+     * \return size if successful, actual amount of data read if EOF and -1 if error.
+     */
+    int ReadRaw(void *buffer,               /*!< Pointer to memory where the raw data should be read to */
+                const unsigned int &size    /*!< Amount of data to read in bytes.                       */);
 
 private:
 	//! The object for reading files.
-    std::FILE * file_stdio;
+    FILE * file_stdio;
+
+    //! Number of buffers that have been read.
+    bool errorflag;
+
+    //! A static object that defines the buffer type.
+    Buffer *buffer_type;
 
 	//! Close the file.
     void Close();
 
-	//! Number of buffers that have been read.
-	bool errorflag;
-
-    //! Method for reading and parsing an event from the file.
-    bool ReadEvent(word_t &hit);
 };
 
 #endif // FILEREADER_H

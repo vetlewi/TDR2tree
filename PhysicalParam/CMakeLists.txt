@@ -4,7 +4,7 @@
 target_sources(TDR2tree
         PRIVATE
             Calibration.cpp
-            experimentsetup.c
+            experimentsetup.cpp
             Parameters.cpp
             #PolygonGate.cpp
         PUBLIC

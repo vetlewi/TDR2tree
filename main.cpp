@@ -15,13 +15,13 @@
 #include "Event.h"
 #include "ProgressUI.h"
 #include "MTFileBufferFetcher.h"
+#include "STFileBufferFetcher.h"
 #include "BufferType.h"
+#include "TDRFileReader.h"
 
 #include <TROOT.h>
 
 ProgressUI progress;
-//PolygonGate sectBackGate;
-//PolygonGate ringSectGate;
 
 struct Options {
     int coincidence_time;
@@ -42,7 +42,7 @@ std::ostream &operator<<(std::ostream &os, const Options &opt)
     return os;
 }
 
-void Convert_to_root(const std::vector<std::string> &in_files, const std::string &out_file, const Options &opt)
+/*void Convert_to_root(const std::vector<std::string> &in_files, const std::string &out_file, const Options &opt)
 {
     std::vector<Event> event_data;
     RootFileManager fm(out_file.c_str());
@@ -59,49 +59,153 @@ void Convert_to_root(const std::vector<std::string> &in_files, const std::string
             Event::BuildAndFill(FileReader::GetFile(file.c_str()), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
         progress.Finish();
     }
-}
+}*/
 
-void Convert_to_root_MT(const std::vector<std::string> &in_files, const std::string &out_file, const Options &opt)
+template<class T>
+struct ROOT_objects {
+    RootFileManager *fm;
+    HistManager *hm;
+    TreeManager<T> *tm;
+};
+
+template<typename T, int BufferSize = 65536>
+class BufferedEvents {
+
+private:
+
+    //! Fetcher object.
+    BufferFetcher *fetcher;
+
+    //! Object to store the buffered data.
+    std::vector<T> buffer_data;
+
+    //! Method to add data to the buffer.
+    void AddData(const T *ptr, const int &size)
+    {
+        buffer_data.insert(std::end(buffer_data), ptr, ptr+size);
+    }
+
+public:
+
+    //! initializer
+    BufferedEvents(BufferFetcher *fetch) : fetcher( fetch ), buffer_data( 2*BufferSize ){}
+
+    //! Get a buffer of data.
+    std::vector<T> GetData(BufferFetcher::Status &status)
+    {
+        const Buffer *buffer = fetcher->Next(status);
+        if (status == BufferFetcher::OKAY)
+            AddData(reinterpret_cast<const T *>(buffer->CGetBuffer()), buffer->GetSize());
+        else {
+            return std::vector<T>(0);
+        }
+        std::sort(std::begin(buffer_data), std::end(buffer_data));
+        if (buffer_data.size() >= 2 * BufferSize) {
+            std::vector<T> res(2*BufferSize);
+            std::move(std::begin(buffer_data), std::end(buffer_data) - BufferSize, res.begin());
+            buffer_data.erase(buffer_data.begin(), buffer_data.end() - BufferSize);
+            return res;
+        } else {
+            return GetData(status);
+        }
+    }
+
+    //! Flush the buffer.
+    std::vector<T> Flush(){ return buffer_data; }
+
+};
+
+template<typename EventType, typename EntryType>
+class RootFileConverter
 {
-    std::vector<Event> event_data;
-    RootFileManager fm(out_file.c_str());
-    HistManager hm(&fm);
-    TreeManager<Event> tm(&fm, "events", "Event tree", opt.validate);
-    TH2 *ab_hist = ( opt.addback ) ? fm.CreateTH2("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr;
-    for ( const auto& file : in_files ) {
-        MTFileBufferFetcher bufFetch;
-        bufFetch.Open(file);
-        BufferFetcher::Status status;
-        std::vector<word_t> data;
-        const TDRBuffer *buffer;
-        while ( true ){
-            buffer = bufFetch.Next(status);
-            if ( status == BufferFetcher::OKAY ){
-                data.insert(data.end(), buffer->CGetBuffer(), buffer->CGetBuffer()+buffer->GetSize());
-                if ( data.size() > 196608 ){
-                    std::sort(data.begin(), data.end(), [](const word_t &lhs, const word_t &rhs) { return ((rhs.timestamp - lhs.timestamp) + (rhs.cfdcorr - lhs.cfdcorr)) > 0; });
-                    if ( opt.particle_gamma )
-                        Event::BuildPGAndFill(std::vector<word_t>(data.begin(), data.begin()+65536), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
-                    else
-                        Event::BuildAndFill(std::vector<word_t>(data.begin(), data.begin()+65536), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
-                    std::vector<word_t> new_data(data.begin()+65536, data.end());
-                    data = new_data;
-                }
-            } else if ( status == BufferFetcher::END ) {
-                if ( buffer )
-                    data.insert(data.end(), buffer->CGetBuffer(), buffer->CGetBuffer()+buffer->GetSize());
-                std::sort(data.begin(), data.end(), [](const word_t &lhs, const word_t &rhs) { return ((rhs.timestamp - lhs.timestamp) + (rhs.cfdcorr - lhs.cfdcorr)) > 0; });
-                if ( opt.particle_gamma )
-                    Event::BuildPGAndFill(std::vector<word_t>(data.begin(), data.end()), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
-                else
-                    Event::BuildAndFill(std::vector<word_t>(data.begin(), data.end()), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
-                progress.Finish();
+private:
+
+    //! Class responsible for fetching data from file.
+    aptr<FileBufferFetcher> file_fetcher;
+
+    //! Options for the event building, etc.
+    Options options;
+
+    //! Class handling I/O control.
+    RootFileManager fileManager;
+
+    //! Class handling filling of histograms.
+    HistManager histManager;
+
+    //! Class handling filling of trees.
+    TreeManager<EventType> treeManager;
+
+    //! Class buffering events.
+    BufferedEvents<EntryType> buffer_event_fetcher;
+
+    //! Addback spectra.
+    TH2 *ab_hist;
+
+public:
+
+    //! Initializer
+    RootFileConverter(FileBufferFetcher *fetcher, const char *out_file, const Options &opt)
+        : file_fetcher( fetcher )
+        , options( opt )
+        , fileManager( out_file )
+        , histManager( &fileManager )
+        , treeManager( &fileManager, "events", "Event tree", opt.validate )
+        , buffer_event_fetcher( file_fetcher.get() )
+        , ab_hist(  (options.addback) ?
+                    fileManager.CreateTH2("time_self_clover", "Time spectra, clover self timing",
+                                          3000, -1500, 1500, "Time [ns]",
+                                          NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector")
+                                          : nullptr ){}
+
+
+
+    //! Extract and sort files.
+    bool ConvertFiles(const std::vector<std::string> &files);
+
+};
+
+template<typename EventType, typename EntryType>
+bool RootFileConverter<EventType, EntryType>::ConvertFiles(const std::vector<std::string> &files)
+{
+    BufferFetcher::Status status;
+    for ( auto &file : files ){
+        status = file_fetcher->Open(file.c_str(), 0);
+        if ( status != BufferFetcher::OKAY ){
+            std::cerr << __PRETTY_FUNCTION__ << ": Unable to open file '" << file << "', skipping..." << std::endl;
+            continue;
+        }
+
+
+        while ( status == BufferFetcher::OKAY ){
+
+            std::vector<EntryType> events = buffer_event_fetcher.GetData(status);
+
+            if ( status == BufferFetcher::END )
                 break;
+
+            if ( options.build_tree ){
+                Event::BuildPGAndFill(events, &histManager,( options.build_tree ) ? &treeManager : nullptr,
+                                      ab_hist, options.coincidence_time);
             } else {
-                break;
+                Event::BuildAndFill(events, &histManager,( options.build_tree ) ? &treeManager : nullptr,
+                                    ab_hist, options.coincidence_time);
             }
         }
     }
+
+    if ( status == BufferFetcher::END ){
+        std::vector<EntryType> events = buffer_event_fetcher.Flush();
+
+        if ( options.build_tree ){
+            Event::BuildPGAndFill(events, &histManager,( options.build_tree ) ? &treeManager : nullptr,
+                                  ab_hist, options.coincidence_time);
+        } else {
+            Event::BuildAndFill(events, &histManager,( options.build_tree ) ? &treeManager : nullptr,
+                                ab_hist, options.coincidence_time);
+        }
+    }
+
+    return true;
 }
 
 
@@ -144,8 +248,10 @@ int main(int argc, char *argv[])
 
     std::cout << "Running with options:" << std::endl;
     std::cout << opt << std::endl;
+    FileBufferFetcher *bufFetch = new STFileBufferFetcher(new TDRFileReader());
+    RootFileConverter<Event, word_t> converter(bufFetch, output_file.c_str(), opt);
 
-    Convert_to_root_MT(input_file, output_file, opt);
+    converter.ConvertFiles(input_file);
     exit(EXIT_SUCCESS);
 }
 

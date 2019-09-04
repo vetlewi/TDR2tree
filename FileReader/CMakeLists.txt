@@ -6,6 +6,7 @@ target_sources(TDR2tree
             FileReader.cpp
             MTFileBufferFetcher.cpp
             STFileBufferFetcher.cpp
+            TDRFileReader.cpp
             XIA_CFD.c
         PUBLIC
             BufferType.h
@@ -13,5 +14,6 @@ target_sources(TDR2tree
             FileReader.h
             MTFileBufferFetcher.h
             STFileBufferFetcher.h
+            TDRFileReader.h
             XIA_CFD.h
         )

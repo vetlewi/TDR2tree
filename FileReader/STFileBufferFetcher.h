@@ -24,7 +24,7 @@
 #include "FileBufferFetcher.h"
 #include "FileReader.h"
 
-#include "BufferType.h"
+#include "aptr.h"
 
 #include <string>
 
@@ -43,22 +43,25 @@
 class STFileBufferFetcher : public FileBufferFetcher {
 public:
 
+    //! Construct with correct FileReader and Buffer type.
+    explicit STFileBufferFetcher(FileReader *freader) : FileBufferFetcher( freader ), buffer( template_buffer->New() ){}
+
+    ~STFileBufferFetcher() override { delete buffer; }
+
 	//! Calls the reader to open a file.
-    Status Open(const std::string& filename,    /*!< File to read.          */
-                int bufnum=0                    /*!< First buffer to read.  */)
-		{return reader.Open(filename.c_str(), bufnum*buffer.GetSize()) ? OKAY : ERROR; }
+    Status Open(const char *filename,    /*!< File to read.          */
+                int bufnum               /*!< First buffer to read.  */) override
+		{return reader->Open(filename, bufnum) ? OKAY : ERROR; }
 
 	//! Calls the reader to fetch a buffer.
     /*! \return Pointer to the buffer that have been read.
      */
-    const TDRBuffer* Next(Status& state    /*!< Result of the reading process. */);
+    const Buffer* Next(Status& state    /*!< Result of the reading process. */) override;
 
 private:
-	//! Implementation of the actual reading.
-	FileReader reader;
 
-	//! The buffer used to store the file data in.
-    TDRBuffer buffer;
+    //! Actual object that are filling.
+    Buffer *buffer;
 };
 
 #endif // STFILEBUFFERFETCHER_H

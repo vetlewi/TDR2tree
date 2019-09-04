@@ -170,7 +170,7 @@ class PrefetchThread {
 public:
 	//! Initilize, but do not yet start running.
 	PrefetchThread(FileReader* reader,		/*!< Helper to perform the actual file reading.	*/
-                   TDRBuffer* template_buffer	/*!< Buffer object to be "multiplied". 			*/);
+                   Buffer* template_buffer	/*!< Buffer object to be "multiplied". 			*/);
 
 	//! Cleanup after the thread stopped running.
 	~PrefetchThread();
@@ -179,7 +179,7 @@ public:
 	void Start();
 
 	//! Called to get a new buffer for sorting.
-	TDRBuffer* ReadingBegins();
+	Buffer* ReadingBegins();
 
 	//! Called after sorting a buffer has finished.
 	void ReadingEnds();
@@ -199,13 +199,13 @@ private:
 	PThreadMutex mutex;
 
 	//! The condition "write ring full".
-	pthread_cond_t cond_full;
+	pthread_cond_t cond_full{};
 
 	//! The condition "read ring not empty"
-	pthread_cond_t cond_avail;
+	pthread_cond_t cond_avail{};
 
 	//! The thread object;
-	pthread_t thread;
+	pthread_t thread{};
 
 	//! The file reading implementation.
 	FileReader* reader;
@@ -213,10 +213,10 @@ private:
     enum { NBUFFERS = 128 /*!< By default, read up to 128 buffers in advance. */};
 	
 	//! The ring for fetching buffers.
-	RingBuffer<TDRBuffer,NBUFFERS,true> writeRing;
+	RingBuffer<Buffer,NBUFFERS,true> writeRing;
 
 	//! The ring for reading buffers.
-	RingBuffer<TDRBuffer,NBUFFERS,false> readRing;
+	RingBuffer<Buffer,NBUFFERS,false> readRing;
 
 	//! Flag set to stop the thread. Only written by main thread.
 	bool cancel;
@@ -225,7 +225,7 @@ private:
 	bool finished;	
 };
 
-PrefetchThread::PrefetchThread(FileReader* rdr, TDRBuffer* template_buffer)
+PrefetchThread::PrefetchThread(FileReader* rdr, Buffer* template_buffer)
 	: reader( rdr )
 	, cancel( false )
 	, finished( false )
@@ -252,7 +252,7 @@ void PrefetchThread::ReadingEnds()
 	pthread_cond_signal( &cond_full );
 }
 
-TDRBuffer* PrefetchThread::ReadingBegins()
+Buffer* PrefetchThread::ReadingBegins()
 {
 	PThreadMutexLock lock( mutex );
     while ( true ) {
@@ -269,7 +269,7 @@ TDRBuffer* PrefetchThread::ReadingBegins()
 void PrefetchThread::StartReading()
 {
 	while ( !cancel && !finished ){
-		TDRBuffer* buffer = 0;
+		Buffer* buffer = nullptr;
         { // Critical section
 			PThreadMutexLock lock( mutex );
 			while ( !cancel && !finished && writeRing.Full() )
@@ -284,7 +284,7 @@ void PrefetchThread::StartReading()
 
         // Reading is time-consuming and should be performed while the
         // lock is released
-        if ( reader->Read(buffer) <= 0 )
+        if ( reader->Read(*buffer) <= 0 )
 			finished = true;
         { // Critical section
 			PThreadMutexLock lock( mutex );
@@ -311,7 +311,7 @@ void PrefetchThread::Stop()
     } // Unlock in 'lock' destructor.
 
     // Wait for the thread to terminate
-	pthread_join( thread, NULL );
+	pthread_join( thread, nullptr );
 }
 
 PrefetchThread::~PrefetchThread()
@@ -323,21 +323,20 @@ PrefetchThread::~PrefetchThread()
 // ##############################################################
 // ##############################################################
 
-MTFileBufferFetcher::MTFileBufferFetcher()
-	: reader( new FileReader() )
-	, template_buffer( new TDRBuffer() )
-    , prefetch( 0 ) { }
+MTFileBufferFetcher::MTFileBufferFetcher(FileReader *freader)
+	: FileBufferFetcher( freader )
+    , prefetch( nullptr ) { }
 
 MTFileBufferFetcher::~MTFileBufferFetcher()
 {
 	StopPrefetching();
 }
 
-const TDRBuffer* MTFileBufferFetcher::Next(Status& state)
+const Buffer* MTFileBufferFetcher::Next(Status& state)
 {
 	if ( reader->IsError() ){
 		state = ERROR;
-		return 0;
+		return nullptr;
 	}
 
 	if ( !prefetch ){
@@ -347,16 +346,18 @@ const TDRBuffer* MTFileBufferFetcher::Next(Status& state)
 		prefetch->ReadingEnds();
 	}
 
-    const TDRBuffer* b = prefetch->ReadingBegins();
+    const Buffer* b = prefetch->ReadingBegins();
     state = b ? OKAY : END;
 	return b;
 }
 
-BufferFetcher::Status MTFileBufferFetcher::Open(const std::string& filename, int bufnum)
+BufferFetcher::Status MTFileBufferFetcher::Open(const char *filename, int bufnum)
 {
 	StopPrefetching();
-	int i = reader->Open( filename.c_str(), bufnum*template_buffer->GetSize()*32 );
-    if (i > 0) return OKAY; else if ( i==0 ) return END; else return ERROR;
+	if ( !reader->Open(filename, bufnum) ){
+	    return ERROR;
+	}
+	return OKAY;
 }
 
 void MTFileBufferFetcher::StopPrefetching()

@@ -1,6 +1,8 @@
 #ifndef EXPERIMENTSETUP_H
 #define EXPERIMENTSETUP_H
 
+#include "BasicStruct.h"
+
 // Currently the sorting rutine will only support dE-E silicon telescopes.
 // This may change in the future if needed... I think...
 
@@ -16,12 +18,6 @@
 
 
 #define TOTAL_NUMBER_OF_ADDRESSES 545   //! Total number of address that needs to be defined
-
-#if __cplusplus
-extern "C" {
-#endif // __cplusplus
-
-#include <stdint.h>
 
 enum DetectorType {
     invalid,        //!< Invalid address
@@ -57,16 +53,12 @@ typedef struct DetectorInfo_ DetectorInfo_t;
 /*! \return Detector structure containing information about the
  *  detector at address.
  */
-DetectorInfo_t GetDetector(uint16_t address   /*!< Address of the detector to get */);
+DetectorInfo_t GetDetector(const word_t &detector   /*!< Address of the detector to get */);
 
 //! Get sampling frequency
 /*! \return The XIA module sampling frequency
  */
-enum ADCSamplingFreq GetSamplingFrequency(uint16_t address    /*!< ADC address    */);
-
-#if __cplusplus
-}
-#endif // __cplusplus
+enum ADCSamplingFreq GetSamplingFrequency(const word_t &detector    /*!< ADC address    */);
 
 
 

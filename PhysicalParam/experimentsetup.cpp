@@ -4,10 +4,6 @@
 // List of all detectors, sorted by the address. Needs to be edited by
 // the user whenever the addresses are changed.
 
-#ifdef __cplusplus
-extern "C" {
-#endif // __cplusplus
-
 
 DetectorInfo_t pDetector[] =
 {
@@ -623,16 +619,14 @@ DetectorInfo_t pDetector[] =
 };
 
 
-DetectorInfo_t GetDetector(uint16_t address)
+DetectorInfo_t GetDetector(const word_t& detector)
 {
+    int address = (detector.crateID >> 8)|(detector.slotID >> 4)|(detector.chanID);
     return (address < TOTAL_NUMBER_OF_ADDRESSES) ? pDetector[address] : pDetector[0];
 }
 
-enum ADCSamplingFreq GetSamplingFrequency(uint16_t address)
+enum ADCSamplingFreq GetSamplingFrequency(const word_t& detector)
 {
+    int address = (detector.crateID >> 8)|(detector.slotID >> 4)|(detector.chanID);
     return (address < TOTAL_NUMBER_OF_ADDRESSES) ? pDetector[address].sfreq : f000MHz;
 }
-
-#ifdef __cplusplus
-}
-#endif // __cplusplus

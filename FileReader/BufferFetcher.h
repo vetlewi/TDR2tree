@@ -21,7 +21,9 @@
 #ifndef BUFFERFETCHER_H
 #define BUFFERFETCHER_H
 
-class TDRBuffer;
+#include "aptr.h"
+
+class Buffer;
 
 //! Class to fetch a new buffer.
 /*!
@@ -33,6 +35,12 @@ class TDRBuffer;
  * \copyright GNU Public License v. 3
  */
 class BufferFetcher {
+
+protected:
+
+    //! Template for the buffer.
+    aptr<Buffer> template_buffer;
+
 public:
 	typedef enum {
         OKAY,		//!< Buffer was fetched without problems.
@@ -41,15 +49,18 @@ public:
 		WAIT		//!< A buffer might be avalible later.
 	} Status;
 
+	//! Constructor. Takes the buffer type as the only argument.
+    explicit BufferFetcher(Buffer *bufr) : template_buffer( bufr ){}
+
 	//! Fetch the next buffer.
 	/*! \return OKEY if buffer was fetched, END if there
 	 *  are no more buffers, ERROR in case of error, WAIT if
 	 *  if fetching a buffer might be possible later.
 	 */
-    virtual const TDRBuffer* Next(Status& state /*!< Will contain the status after reading. */) = 0;
+    virtual const Buffer* Next(Status& state /*!< Will contain the status after reading. */) = 0;
 
     //! Destructor.
-    virtual ~BufferFetcher() { }
+    virtual ~BufferFetcher() = default;
 };
 
 #endif // BUFFERFETCHER_H

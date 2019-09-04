@@ -1,15 +1,14 @@
 #include "Calibration.h"
 
 #include "experimentsetup.h"
-
 #include "Parameters.h"
+#include "BasicStruct.h"
+#include "XIA_CFD.h"
 
 #include <fstream>
 #include <string>
 #include <sstream>
 #include <iostream>
-#include <cmath>
-#include <cstdint>
 
 static Parameters calParam;
 
@@ -89,7 +88,7 @@ bool SetCalibration(const char *calfile)
 
 double CalibrateEnergy(const word_t &detector)
 {
-    DetectorInfo_t dinfo = GetDetector(detector.address);
+    DetectorInfo_t dinfo = GetDetector(detector);
     switch (dinfo.type) {
         case labr_3x8 :
             return gain_labrL[dinfo.detectorNum]*(detector.adcdata + drand48() - 0.5) + shift_labrL[dinfo.detectorNum];
@@ -110,9 +109,39 @@ double CalibrateEnergy(const word_t &detector)
     }
 }
 
+word_t &CalibrateCFD(word_t &detector)
+{
+    switch ( GetSamplingFrequency(detector) ) {
+        case f100MHz :
+            detector.cfdcorr = XIA_CFD_Fraction_100MHz(detector.cfddata, &detector.cfdfail);
+            detector.timestamp *= 10;
+            if ( detector.cfddata == 0 )
+                detector.cfdfail = 1;
+            break;
+        case f250MHz :
+            detector.cfdcorr = XIA_CFD_Fraction_250MHz(detector.cfddata, &detector.cfdfail);
+            detector.timestamp *= 8;
+            if ( detector.cfddata == 0 )
+                detector.cfdfail = 1;
+            break;
+        case f500MHz :
+            detector.cfdcorr = XIA_CFD_Fraction_500MHz(detector.cfddata, &detector.cfdfail);
+            detector.timestamp *= 10;
+            if ( detector.cfddata == 0 )
+                detector.cfdfail = 1;
+            break;
+        default :
+            detector.cfdcorr = 0;
+            detector.cfdfail = 1;
+            detector.timestamp *= 10;
+            break;
+    }
+    return detector;
+}
+
 double CalibrateTime(const word_t &detector)
 {
-    DetectorInfo_t dinfo = GetDetector(detector.address);
+    DetectorInfo_t dinfo = GetDetector(detector);
     switch (dinfo.type) {
         case labr_3x8 :
             return detector.cfdcorr + shift_t_labrL[dinfo.detectorNum];
@@ -131,6 +160,15 @@ double CalibrateTime(const word_t &detector)
         default :
             return detector.cfdcorr;
     }
+}
+
+word_t &Calibrate(word_t &evt)
+{
+    const word_t cevt = evt;
+    evt = CalibrateCFD(evt);
+    evt.cfdcorr = CalibrateTime(cevt);
+    evt.energy = CalibrateEnergy(cevt);
+    return evt;
 }
 
 bool CheckTimeGateAddback(const double &timediff)

@@ -41,9 +41,9 @@ extern ProgressUI progress;
 
 
 EventEntry::EventEntry(const word_t &word)
-    : ID(  (GetDetector(word.address).type != clover) ? GetDetector(word.address).detectorNum : GetDetector(word.address).detectorNum*NUM_CLOVER_CRYSTALS + GetDetector(word.address).telNum )
+    : ID(  (GetDetector(word).type != clover) ? GetDetector(word).detectorNum : GetDetector(word).detectorNum*NUM_CLOVER_CRYSTALS + GetDetector(word).telNum )
     , e_raw( word.adcdata )
-    , energy( CalibrateEnergy(word) )
+    , energy( word.energy )
     , tfine( word.cfdcorr )
     , tcoarse( word.timestamp )
 {
@@ -65,9 +65,9 @@ bool EventData::Add(const EventEntry &e)
 bool EventData::Add(const word_t &w)
 {
     if ( mult < MAX_NUM ){
-        ID[mult] = (GetDetector(w.address).type != clover) ? GetDetector(w.address).detectorNum : GetDetector(w.address).detectorNum*NUM_CLOVER_CRYSTALS + GetDetector(w.address).telNum;
+        ID[mult] = (GetDetector(w).type != clover) ? GetDetector(w).detectorNum : GetDetector(w).detectorNum*NUM_CLOVER_CRYSTALS + GetDetector(w).telNum;
         e_raw[mult] = w.adcdata;
-        energy[mult] = CalibrateEnergy(w);
+        energy[mult] = w.energy;
         tfine[mult] = w.cfdcorr;
         tcoarse[mult++] = w.timestamp;
         return true;
@@ -149,7 +149,7 @@ Event::Event(const std::vector<word_t> &event)
 {
     DetectorInfo_t dinfo;
     for (const auto & it : event){
-        dinfo = GetDetector(it.address);
+        dinfo = GetDetector(it);
 
         switch ( dinfo.type ){
 
@@ -235,7 +235,7 @@ Event &Event::operator=(const std::vector<word_t> &event)
     Reset();
     DetectorInfo_t dinfo;
     for (const auto & it : event){
-        dinfo = GetDetector(it.address);
+        dinfo = GetDetector(it);
         switch ( dinfo.type ){
 
             case de_ring : {
@@ -343,7 +343,7 @@ std::vector<Event> Event::BuildPGEvents(const std::vector<word_t> &raw_data, TH2
     size_t i, j, start=0, stop=0;
     progress.StartBuildingEvents(raw_data.size());
     for (i = 0 ; i < raw_data.size() ; ++i) {
-        trigger = GetDetector(raw_data[i].address);
+        trigger = GetDetector(raw_data[i]);
         progress.UpdateEventBuildingProgress(i);
         if (trigger.type != eDet) // Skip to next word.
             continue;
@@ -407,7 +407,7 @@ void Event::BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm,
     double timediff;
     size_t i, j, start=0, stop=0;
     for (i = 0 ; i < raw_data.size() ; ++i) {
-        trigger = GetDetector(raw_data[i].address);
+        trigger = GetDetector(raw_data[i]);
         if (trigger.type != eDet) // Skip to next word.
             continue;
 

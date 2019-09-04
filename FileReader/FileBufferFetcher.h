@@ -22,11 +22,7 @@
 #define FILEBUFFERFETCHER_H
 
 #include "BufferFetcher.h"
-
-#include <string>
-#include <memory>
-
-class FileReader;
+#include "FileReader.h"
 
 //! Class to read a new buffer from file.
 /*!
@@ -38,14 +34,28 @@ class FileReader;
  * \copyright GNU Public License v. 3
  */
 class FileBufferFetcher : public BufferFetcher {
+
+protected:
+
+    //! Class performing the reading.
+    aptr<FileReader> reader;
+
 public:
+
+    /*!
+     * Constructor
+     * \param freader FileReader type - type based on file format.
+     */
+    explicit FileBufferFetcher(FileReader *freader)
+        : reader( freader ), BufferFetcher( freader->GetBufferType()->New() ){}
+
 	//! Open a new file.
 	/*! If a file was open previously, it should be closed.
 	 *
 	 *	\return the status after opening the file.
 	 */
-    virtual Status Open(const std::string& filename,    /*!< The name of the file to open.		*/
-                        int bufnum=0                    /*!< The buffer number to start from.	*/) = 0;
+    virtual Status Open(const char *filename,    /*!< The name of the file to open.		*/
+                        int bufnum               /*!< The buffer number to start from.	*/) = 0;
 };
 
 #endif // FILEBUFFERFETCHER_H

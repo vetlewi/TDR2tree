@@ -46,35 +46,25 @@ class TDRBuffer;
 class MTFileBufferFetcher : public FileBufferFetcher {
 public:
 	//! Construct the buffer fetcher.
-	MTFileBufferFetcher();
+	MTFileBufferFetcher(FileReader *freader);
 
 	//! Closes the file, if still open.
-	~MTFileBufferFetcher();
+	~MTFileBufferFetcher() override;
 
     //! Open a new file.
     /*! \return the result of the opening of the file.
      */
-    Status Open(const std::string& filename,    /*!< Filename of the file to read.          */
-                int bufnum = 0                  /*!< What buffer no. to start reading from. */);
+    Status Open(const char *filename,    /*!< Filename of the file to read.          */
+                int bufnum               /*!< What buffer no. to start reading from. */) override;
 
 	/*! Creates a new thread which prefetches some buffers while
 	 * the main thread is sorting.
 	 */
-	const TDRBuffer* Next(Status& state);
-
-	//! Set the buffer template.
-    void SetBuffer(TDRBuffer *buf)
-		{ template_buffer.reset( buf ); }
+	const Buffer* Next(Status& state) override;
 
 private:
 	//! Stop the prefetch thread.
 	void StopPrefetching();
-
-    //! Class performing the reading.
-	aptr<FileReader> reader;
-
-    //! Template for the buffer.
-	aptr<TDRBuffer> template_buffer;
 
     //! Class to prefetch a buffer.
 	class PrefetchThread* prefetch;
