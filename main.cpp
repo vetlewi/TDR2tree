@@ -82,21 +82,26 @@ private:
     //! Method to add data to the buffer.
     void AddData(const T *ptr, const int &size)
     {
-        buffer_data.insert(std::end(buffer_data), ptr, ptr+size);
+        int set = 0;
+        while ( set < size ){
+            const T *d = reinterpret_cast<const T *>(ptr+set++);
+            buffer_data.push_back(*d);
+        }
     }
 
 public:
 
     //! initializer
-    BufferedEvents(BufferFetcher *fetch) : fetcher( fetch ), buffer_data( 2*BufferSize ){}
+    BufferedEvents(BufferFetcher *fetch) : fetcher( fetch ), buffer_data( 2*BufferSize ){ buffer_data.clear(); }
 
     //! Get a buffer of data.
     std::vector<T> GetData(BufferFetcher::Status &status)
     {
         const Buffer *buffer = fetcher->Next(status);
-        if (status == BufferFetcher::OKAY)
-            AddData(reinterpret_cast<const T *>(buffer->CGetBuffer()), buffer->GetSize());
-        else {
+        if (status == BufferFetcher::OKAY) {
+            int bufSize = buffer->GetSize();
+            AddData(reinterpret_cast<const T *>(buffer->CGetBuffer()), bufSize / sizeof(T));
+        } else {
             return std::vector<T>(0);
         }
         std::sort(std::begin(buffer_data), std::end(buffer_data));

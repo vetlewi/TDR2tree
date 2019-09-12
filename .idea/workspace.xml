@@ -14,30 +14,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ff6b2c24-70e8-487b-a383-3f33126f0a92" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/thriftCompiler.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/FileReader/TDRFileReader.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/FileReader/TDRFileReader.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/PhysicalParam/experimentsetup.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BlockingCollection.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Containers/BasicStruct.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Containers/BasicStruct.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Containers/BasicStruct.h" beforeDir="false" afterPath="$PROJECT_DIR$/Containers/BasicStruct.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Containers/Event.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Containers/Event.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileReader/BufferFetcher.h" beforeDir="false" afterPath="$PROJECT_DIR$/FileReader/BufferFetcher.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileReader/BufferType.h" beforeDir="false" afterPath="$PROJECT_DIR$/FileReader/BufferType.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileReader/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/FileReader/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileReader/FileBufferFetcher.h" beforeDir="false" afterPath="$PROJECT_DIR$/FileReader/FileBufferFetcher.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileReader/FileReader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/FileReader/FileReader.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileReader/FileReader.h" beforeDir="false" afterPath="$PROJECT_DIR$/FileReader/FileReader.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileReader/MTFileBufferFetcher.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/FileReader/MTFileBufferFetcher.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileReader/MTFileBufferFetcher.h" beforeDir="false" afterPath="$PROJECT_DIR$/FileReader/MTFileBufferFetcher.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileReader/STFileBufferFetcher.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/FileReader/STFileBufferFetcher.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileReader/STFileBufferFetcher.h" beforeDir="false" afterPath="$PROJECT_DIR$/FileReader/STFileBufferFetcher.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PhysicalParam/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/PhysicalParam/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PhysicalParam/Calibration.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/PhysicalParam/Calibration.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PhysicalParam/Calibration.h" beforeDir="false" afterPath="$PROJECT_DIR$/PhysicalParam/Calibration.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PhysicalParam/experimentsetup.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PhysicalParam/experimentsetup.h" beforeDir="false" afterPath="$PROJECT_DIR$/PhysicalParam/experimentsetup.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/main.cpp" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -136,7 +113,8 @@
       <workItem from="1565196337572" duration="6000" />
       <workItem from="1567081126426" duration="6119000" />
       <workItem from="1567419084947" duration="12789000" />
-      <workItem from="1567433256418" duration="12748000" />
+      <workItem from="1567433256418" duration="13576000" />
+      <workItem from="1567838121264" duration="50000" />
     </task>
     <task id="LOCAL-00001" summary="Updates.">
       <created>1559134323834</created>
@@ -366,58 +344,13 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/main.cpp</url>
-          <line>182</line>
-          <option name="timeStamp" value="42" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/main.cpp</url>
-          <line>196</line>
-          <option name="timeStamp" value="44" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/main.cpp</url>
-          <line>180</line>
-          <option name="timeStamp" value="45" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/main.cpp</url>
-          <line>185</line>
-          <option name="timeStamp" value="46" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/main.cpp</url>
-          <line>96</line>
-          <option name="timeStamp" value="47" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/FileReader/TDRFileReader.cpp</url>
-          <line>100</line>
-          <option name="timeStamp" value="60" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/FileReader/TDRFileReader.cpp</url>
-          <line>106</line>
-          <option name="timeStamp" value="61" />
+          <line>87</line>
+          <option name="timeStamp" value="72" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/FileReader/TDRFileReader.cpp</url>
           <line>108</line>
-          <option name="timeStamp" value="62" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/FileReader/STFileBufferFetcher.cpp</url>
-          <line>34</line>
-          <option name="timeStamp" value="63" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/main.cpp</url>
-          <line>84</line>
-          <option name="timeStamp" value="65" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/main.cpp</url>
-          <line>101</line>
-          <option name="timeStamp" value="66" />
+          <option name="timeStamp" value="75" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
