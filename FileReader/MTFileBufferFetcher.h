@@ -45,7 +45,7 @@ class FileReader;
 class MTFileBufferFetcher : public FileBufferFetcher {
 public:
 	//! Construct the buffer fetcher.
-	MTFileBufferFetcher(FileReader *freader);
+	explicit MTFileBufferFetcher(FileReader *freader);
 
 	//! Closes the file, if still open.
 	~MTFileBufferFetcher() override;
