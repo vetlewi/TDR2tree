@@ -59,6 +59,7 @@ private:
     TH2 *energy_cal_labrF;
     TH2 *energy_cal_clover;
 
+    TH2 *addback_hist;
 
 public:
 
@@ -68,9 +69,8 @@ public:
     //! Fill spectra with an event.
     void AddEntry(const Event &buffer  /*!< Event to read from    */);
 
-    //! Fill spectra with a list of events.
-    void AddEntries(const std::vector<Event> &evts);
-
+    //! Get addback histogram.
+    TH2 *GetAB() { return addback_hist; }
 };
 
 

@@ -64,16 +64,6 @@ public:
         tree->Fill();
     }
 
-    //! Add entries.
-    void AddEntries(const std::vector<T> &entries)
-    {
-        progress.StartFillingTree(entries.size());
-        for (int i = 0 ; i < entries.size() ; ++i){
-            AddEntry(entries[i]);
-            progress.UpdateTreeFillProgress(i);
-        }
-    }
-
 };
 
 

@@ -29,8 +29,6 @@
 #include <TH1.h>
 #include <TH2.h>
 
-extern ProgressUI progress;
-
 HistManager::HistManager(RootFileManager *fm)
     : time_ring( fm->CreateTH2("time_ring", "Time spectra rings", 3000, -1500, 1500, "Time [ns]", NUM_SI_RING, 0, NUM_SI_RING, "Ring ID") )
     , time_sect( fm->CreateTH2("time_sect", "Time spectra sectors", 3000, -1500, 1500, "Time [ns]", NUM_SI_SECT, 0, NUM_SI_SECT, "Sector ID") )
@@ -55,6 +53,7 @@ HistManager::HistManager(RootFileManager *fm)
     , energy_cal_labrS( fm->CreateTH2("energy_cal_labrS", "Energy spectra LaBr S", 16384, 0, 16384, "Energy [keV]", NUM_LABR_2X2_DETECTORS, 0, NUM_LABR_2X2_DETECTORS, "LaBr S ID") )
     , energy_cal_labrF( fm->CreateTH2("energy_cal_labrF", "Energy spectra LaBr F", 16384, 0, 16384, "Energy [keV]", NUM_LABR_2X2_DETECTORS, 0, NUM_LABR_2X2_DETECTORS, "LaBr F ID") )
     , energy_cal_clover( fm->CreateTH2("energy_cal_clover", "Energy spectra CLOVER", 16384, 0, 16384, "Energy [keV]", NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, 0, NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, "CLOVER ID") )
+    , addback_hist( fm->CreateTH2("time_self_clover", "Time spectra, clover self timing",3000, -1500, 1500, "Time [ns]",NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") )
 {
 
 }
@@ -72,49 +71,49 @@ void HistManager::AddEntry(const Event &buffer)
 
         for (j = 0 ; j < buffer.GetRingEvent() ; ++j){
             evt = buffer.GetRingEvent()[j];
-            timediff = (evt.tcoarse - rfEvt.tcoarse);
+            timediff = double(evt.tcoarse - rfEvt.tcoarse);
             timediff += (evt.tfine - rfEvt.tfine);
             time_ring->Fill(timediff, evt.ID);
         }
 
         for (j = 0 ; j < buffer.GetSectEvent() ; ++j){
             evt = buffer.GetSectEvent()[j];
-            timediff = (evt.tcoarse - rfEvt.tcoarse);
+            timediff = double(evt.tcoarse - rfEvt.tcoarse);
             timediff += (evt.tfine - rfEvt.tfine);
             time_sect->Fill(timediff, evt.ID);
         }
 
         for (j = 0 ; j < buffer.GetBackEvent() ; ++j){
             evt = buffer.GetSectEvent()[j];
-            timediff = (evt.tcoarse - rfEvt.tcoarse);
+            timediff = double(evt.tcoarse - rfEvt.tcoarse);
             timediff += (evt.tfine - rfEvt.tfine);
             time_back->Fill(timediff, evt.ID);
         }
 
         for (j = 0 ; j < buffer.GetLabrLEvent() ; ++j){
             evt = buffer.GetLabrLEvent()[j];
-            timediff = (evt.tcoarse - rfEvt.tcoarse);
+            timediff = double(evt.tcoarse - rfEvt.tcoarse);
             timediff += (evt.tfine - rfEvt.tfine);
             time_labrL->Fill(timediff, evt.ID);
         }
 
         for (j = 0 ; j < buffer.GetLabrSEvent() ; ++j){
             evt = buffer.GetLabrSEvent()[j];
-            timediff = (evt.tcoarse - rfEvt.tcoarse);
+            timediff = double(evt.tcoarse - rfEvt.tcoarse);
             timediff += (evt.tfine - rfEvt.tfine);
             time_labrS->Fill(timediff, evt.ID);
         }
 
         for (j = 0 ; j < buffer.GetLabrFEvent() ; ++j){
             evt = buffer.GetLabrFEvent()[j];
-            timediff = (evt.tcoarse - rfEvt.tcoarse);
+            timediff = double(evt.tcoarse - rfEvt.tcoarse);
             timediff += (evt.tfine - rfEvt.tfine);
             time_labrF->Fill(timediff, evt.ID);
         }
 
         for (j = 0 ; j < buffer.GetCloverEvent() ; ++j){
             evt = buffer.GetCloverEvent()[j];
-            timediff = (evt.tcoarse - rfEvt.tcoarse);
+            timediff = double(evt.tcoarse - rfEvt.tcoarse);
             timediff += (evt.tfine - rfEvt.tfine);
             time_clover->Fill(timediff, evt.ID);
         }
@@ -166,7 +165,7 @@ void HistManager::AddEntry(const Event &buffer)
         rfEvt = buffer.GetSectEvent()[i];
         for (j = 0 ; j < buffer.GetBackEvent() ; ++j){
             evt = buffer.GetBackEvent()[j];
-            timediff = (evt.tcoarse - rfEvt.tcoarse);
+            timediff = double(evt.tcoarse - rfEvt.tcoarse);
             timediff += (evt.tfine - rfEvt.tfine);
             time_energy_sect_back->Fill(evt.energy, timediff);
         }
@@ -174,17 +173,9 @@ void HistManager::AddEntry(const Event &buffer)
             evt = buffer.GetRingEvent()[j];
             if ( abs(rfEvt.energy - evt.energy) > 500 )
                 continue;
-            timediff = (evt.tcoarse - rfEvt.tcoarse);
+            timediff = double(evt.tcoarse - rfEvt.tcoarse);
             timediff += (evt.tfine - rfEvt.tfine);
             time_energy_ring_sect->Fill(evt.energy, timediff);
         }
-    }
-}
-
-void HistManager::AddEntries(const std::vector<Event> &evts)
-{
-    progress.StartFillingHistograms(evts.size());
-    for (size_t i = 0 ; i < evts.size() ; ++i){
-        AddEntry(evts[i]);
     }
 }
