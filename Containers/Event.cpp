@@ -451,7 +451,7 @@ void Event::BuildAndFill(const std::vector<word_t> &raw_data, HistManager *hm, T
             timediff = abs(raw_data[j + 1].timestamp - raw_data[j].timestamp);
             event.push_back(raw_data[j]);
             if (timediff > coins_time) {
-                i = j + 1;
+                i = j;
                 break;
             }
         }
