@@ -13,9 +13,14 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ff6b2c24-70e8-487b-a383-3f33126f0a92" name="Default Changelist" comment="">
+    <list default="true" id="ff6b2c24-70e8-487b-a383-3f33126f0a92" name="Default Changelist" comment="Added an Interface class for the classes used to write to ROOT files.">
+      <change afterPath="$PROJECT_DIR$/Configuration/CMakeLists.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Configuration/Options.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FileReader/BufferType.h" beforeDir="false" afterPath="$PROJECT_DIR$/FileReader/BufferType.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FileReader/MTFileBufferFetcher.h" beforeDir="false" afterPath="$PROJECT_DIR$/FileReader/MTFileBufferFetcher.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -41,6 +46,13 @@
     <select />
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="CMakeLists.txt" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="PREVIOUS_COMMIT_AUTHORS">
       <list>
@@ -115,6 +127,8 @@
       <workItem from="1567419084947" duration="12789000" />
       <workItem from="1567433256418" duration="13576000" />
       <workItem from="1567838121264" duration="50000" />
+      <workItem from="1568628590181" duration="322000" />
+      <workItem from="1568628988872" duration="2882000" />
     </task>
     <task id="LOCAL-00001" summary="Updates.">
       <created>1559134323834</created>
@@ -270,7 +284,28 @@
       <option name="project" value="LOCAL" />
       <updated>1563301710697</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="Fixed the bug in issue #5.">
+      <created>1568628809066</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1568628809066</updated>
+    </task>
+    <task id="LOCAL-00024" summary="Added an Interface class for the classes used to write to ROOT files.">
+      <created>1568633329187</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1568633329187</updated>
+    </task>
+    <task id="LOCAL-00025" summary="Added a configuration structure to reduce the number of parameters needed to be passed around.">
+      <created>1568633391031</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1568633391031</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="TodoView">
@@ -313,7 +348,7 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
+    <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="Updates." />
     <MESSAGE value="Added an option to build events that are not particle triggered." />
@@ -337,16 +372,15 @@
     <MESSAGE value="A wrong index was used to fill the calibration histograms. I've also changed the time reference from the RF to LaBrF 0 (2x2 inch LaBr)." />
     <MESSAGE value="Changed the experimentalsetup file to reflect the setup of PR271." />
     <MESSAGE value="Uncommented something. Don't know why it was commented. Doesn't matter." />
-    <option name="LAST_COMMIT_MESSAGE" value="Uncommented something. Don't know why it was commented. Doesn't matter." />
+    <MESSAGE value="Fixed the bug in issue #5." />
+    <MESSAGE value="Added an Interface class for the classes used to write to ROOT files." />
+    <MESSAGE value="Added a configuration structure to reduce the number of parameters needed to be passed around." />
+    <option name="LAST_COMMIT_MESSAGE" value="Added a configuration structure to reduce the number of parameters needed to be passed around." />
+    <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/main.cpp</url>
-          <line>87</line>
-          <option name="timeStamp" value="72" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/FileReader/TDRFileReader.cpp</url>
           <line>108</line>

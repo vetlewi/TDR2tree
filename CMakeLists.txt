@@ -17,7 +17,7 @@ include(${ROOT_USE_FILE})
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native")
 
-include_directories(. Containers FileReader PhysicalParam RootInterface Tools)
+include_directories(. Configuration Containers FileReader PhysicalParam RootInterface Tools)
 
 #ROOT_GENERATE_DICTIONARY(TDRtools_dic Containers/Event.h LINKDEF LinkDef.h)
 
