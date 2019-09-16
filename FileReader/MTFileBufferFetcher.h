@@ -28,7 +28,6 @@
 #include <string>
 
 class FileReader;
-class TDRBuffer;
 
 //! Fetch buffers from a file in a separate thread.
 /*! This class spawns a thread to prefetch buffers on the

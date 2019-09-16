@@ -1,7 +1,7 @@
 #ifndef BUFFERTYPE_H
 #define BUFFERTYPE_H
 
-#include <stdint.h>
+#include <cstdint>
 #include "BasicStruct.h"
 
 //! Class to store a general buffer.
@@ -58,8 +58,6 @@ public:
 
 	//! Create a new buffer of the same type.
 	virtual Buffer* New() { return nullptr; }
-
-	//!
 
 	//! Resize the buffer.
 	virtual void Resize(const int &new_size){ pResize(new_size); }
