@@ -3,23 +3,13 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#include <queue>
 
-#include "CommandLineInterface.h"
-#include "Calibration.h"
-#include "experimentsetup.h"
+#include "Tools/CommandLineInterface.h"
+#include "PhysicalParam/Calibration.h"
 
-#include "RootFileManager.h"
-#include "HistManager.h"
-#include "TreeManager.h"
-#include "Event.h"
-#include "ProgressUI.h"
-#include "MTFileBufferFetcher.h"
-#include "STFileBufferFetcher.h"
-#include "BufferType.h"
-#include "TDRFileReader.h"
+#include "Tools/ProgressUI.h"
 
-#include <TROOT.h>
+#include "Converter.h"
 
 ProgressUI progress;
 
@@ -61,13 +51,7 @@ std::ostream &operator<<(std::ostream &os, const Options &opt)
     }
 }*/
 
-template<class T>
-struct ROOT_objects {
-    RootFileManager *fm;
-    HistManager *hm;
-    TreeManager<T> *tm;
-};
-
+/*
 template<typename T, int BufferSize = 65536>
 class BufferedEvents {
 
@@ -211,10 +195,10 @@ bool RootFileConverter<EventType, EntryType>::ConvertFiles(const std::vector<std
     }
 
     return true;
-}
+}*/
 
 
-int main(int argc, char *argv[])
+/*int main(int argc, char *argv[])
 {
     CommandLineInterface interface;
     std::vector<std::string> input_file;
@@ -234,10 +218,7 @@ int main(int argc, char *argv[])
     interface.CheckFlags(argc, argv);
 
     opt.particle_gamma = !opt.particle_gamma;
-    /*if ( sectBack_file != "")
-        sectBackGate.Set(sectBack_file.c_str());
-    if ( ringSect_file != "")
-        ringSectGate.Set(ringSect_file.c_str());*/
+
 
     if (input_file.empty() || output_file.empty() ){
         std::cerr << "Input or output file missing." << std::endl;
@@ -257,6 +238,49 @@ int main(int argc, char *argv[])
     RootFileConverter<Event, word_t> converter(bufFetch, output_file.c_str(), opt);
 
     converter.ConvertFiles(input_file);
+    exit(EXIT_SUCCESS);
+}*/
+
+int main(int argc, char *argv[])
+{
+
+    CommandLineInterface interface;
+    std::vector<std::string> input_file;
+    std::string output_file, cal_file;//, sectBack_file, ringSect_file;
+    Options opt = {1500, false, false, false, false};
+
+    interface.Add("-i", "Input file", &input_file);
+    interface.Add("-o", "Output file", &output_file);
+    interface.Add("-c", "Calibration file", &cal_file);
+    interface.Add("-ct", "Coincidence time", &opt.coincidence_time);
+    interface.Add("-ab", "Addback", &opt.addback);
+    interface.Add("-t", "Build tree", &opt.build_tree);
+    interface.Add("-v", "Validate events", &opt.validate);
+    //interface.Add("-sb", "SectBack gate", &sectBack_file);
+    //interface.Add("-rs", "RingSect gate", &ringSect_file);
+    interface.Add("-npg", "Not particle gamma event builder", &opt.particle_gamma);
+    interface.CheckFlags(argc, argv);
+
+    opt.particle_gamma = !opt.particle_gamma;
+
+
+    if (input_file.empty() || output_file.empty() ){
+        std::cerr << "Input or output file missing." << std::endl;
+        return -1;
+    }
+
+    if ( !cal_file.empty() ){
+        if ( !SetCalibration(cal_file.c_str()) ){
+            std::cerr << "Error reading calibration file." << std::endl;
+            return -1;
+        }
+    }
+
+    std::cout << "Running with options:" << std::endl;
+    std::cout << opt << std::endl;
+
+    FileConverter converter(output_file.c_str(), opt.build_tree, "events", "TDRevents", opt.addback);
+
     exit(EXIT_SUCCESS);
 }
 

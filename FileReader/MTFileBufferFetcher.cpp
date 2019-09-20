@@ -31,12 +31,10 @@
 
 #include "FileReader.h"
 #include "BufferType.h"
-#include "aptr.ipp"
 
 #include <cstdlib>
 #include <iostream>
 #include <pthread.h>
-#include <stdint.h>
 
 #define TEST_MTFILEBUFFERFETCHER 0
 

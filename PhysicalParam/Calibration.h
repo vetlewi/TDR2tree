@@ -1,7 +1,7 @@
 #ifndef CALIBRATION_H
 #define CALIBRATION_H
 
-#include "BasicStruct.h"
+struct word_t;
 
 extern bool SetCalibration(const char *calfile);
 

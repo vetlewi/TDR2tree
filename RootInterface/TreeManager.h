@@ -21,46 +21,34 @@
 #ifndef TREEMANAGER_H
 #define TREEMANAGER_H
 
+#include "aptr.h"
 #include "RootFileManager.h"
-
-#include "ProgressUI.h"
-
-extern ProgressUI progress;
-
-#include <vector>
+#include "Event.h"
 
 #include <TTree.h>
+
 
 /*!
  * TreeManager class
  * \brief The tree manager class is the interface between a built event and the ROOT tree.
  * \tparam T is an event type that implements the branches of the tree.
  */
-template<class T>
 class TreeManager {
 
 private:
 
     TTree *tree;    //!< The tree object.
-    T entry_obj;    //!< Private event object.
-    bool validate;  //!< Flag to tell if the events should be validated before filling or not.
+    aptr<Event::Base> entry_obj;    //!< Private event object.
 
 public:
 
     //! Constructor from RootTreeManager.
-    TreeManager(RootFileManager *FileManager, const char *name, const char *title, bool validate_event = false)
-        : tree( FileManager->CreateTree(name, title) )
-        , entry_obj( tree, validate_event )
-        , validate( validate_event ){}
+    TreeManager(RootFileManager *FileManager, const char *name, const char *title, Event::Base *template_event );
 
     //! Add entry.
-    inline void AddEntry(const T &entry)
+    void AddEntry(Event::Base *entry)
     {
-        entry_obj = entry;
-        if ( validate ){
-            if ( !entry_obj.IsGood() )
-                return;
-        }
+        entry_obj->Copy(entry);
         tree->Fill();
     }
 

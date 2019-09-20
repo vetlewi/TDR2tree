@@ -39,8 +39,9 @@ RootFileManager::~RootFileManager()
 
 TTree *RootFileManager::CreateTree(const char *name, const char *title)
 {
-    auto *tree = new TTree(name, title);
-    list.push_back(tree);
+    auto *tree = new TTree( ( name != nullptr ) ? name : "tree", ( title != nullptr ) ? title : "" );
+    if ( name != nullptr )
+        list.push_back(tree);
     return tree;
 }
 

@@ -11,7 +11,6 @@
 
 #include "BasicStruct.h"
 #include "Calibration.h"
-#include "experimentsetup.h"
 #include "BufferType.h"
 
 struct DATA_HEADER_T {
@@ -77,7 +76,7 @@ static TDRdata glob_tmp;
 int CountDataW(const uint64_t *data, const int &size){
     int read = 0, found = 0;
     while ( read < size ){
-        if ( reinterpret_cast<const TDRbasic *>(data+read++)->iden == 3 )
+        if ( reinterpret_cast<const TDRbasic *>(data+read++)->iden == unsigned(3) )
             ++found;
     }
     return found;
@@ -90,8 +89,8 @@ int TDRFileReader::Read(Buffer &buffer)
 {
     // First we will read a new block of data from file.
     int raw_length = ReadRaw(p_buffer, TDRBUFFER_SIZE);
-    const DATA_HEADER_T *buffer_header = reinterpret_cast<const DATA_HEADER_T *>(p_buffer);
-    const uint64_t *data = reinterpret_cast<const uint64_t *>(p_buffer + sizeof(DATA_HEADER_T));
+    const auto *buffer_header = reinterpret_cast<const DATA_HEADER_T *>(p_buffer);
+    const auto *data = reinterpret_cast<const uint64_t *>(p_buffer + sizeof(DATA_HEADER_T));
     const int bufsize = buffer_header->header_dataLen / sizeof( uint64_t );
 
     if ( top_time <= 0 )
@@ -163,9 +162,8 @@ std::vector<word_t> TDRFileReader::Process_data(const uint64_t *data, const int 
         // Check if we have both a cfd and a adc word.
         if ( adc && cfd ){
             if ( *adc == *cfd ){
-                events.push_back({uint16_t(adc->crateID), uint16_t(adc->slotID), uint16_t(adc->chanID),
-                                  uint16_t(adc->adcdata), uint16_t(cfd->adcdata),0, 0,
-                                  (unsigned(uint64_t(top_time) >> unsigned(20))|adc->timestamp), 0, 0});
+                events.push_back({uint16_t((adc->crateID >> 8)|(adc->slotID >> 4)|(adc->chanID)),uint16_t(adc->adcdata),
+                uint16_t(cfd->adcdata),0,0,(unsigned(uint64_t(top_time) >> unsigned(20))|adc->timestamp),0,0});
             }
             adc = nullptr;
             cfd = nullptr;

@@ -1,14 +1,10 @@
 // FileReader 2.0
 
 #include "FileReader.h"
-#include "experimentsetup.h"
-#include "Calibration.h"
-#include "XIA_CFD.h"
 #include "ProgressUI.h"
 
 #include "BufferType.h"
 
-#include <cstdint>
 #include <algorithm>
 #include <iostream>
 

@@ -23,7 +23,12 @@
 
 #include "RootFileManager.h"
 
-class Event;
+#include <vector>
+
+namespace Event {
+    class TDREntry;
+    class TDREvent;
+}
 
 class HistManager {
 
@@ -61,13 +66,16 @@ private:
 
     TH2 *addback_hist;
 
+    void FillTDiff(const Event::TDREntry &start, const std::vector<Event::TDREntry> &stop, TH2 *time);
+    void FillEnergy(const std::vector<Event::TDREntry> &entries, TH2 *hist, TH2 *hist_cal);
+
 public:
 
     //! Constructor.
     explicit HistManager(RootFileManager *fileManager    /*!< ROOT file where the histograms will reside.    */);
 
     //! Fill spectra with an event.
-    void AddEntry(const Event &buffer  /*!< Event to read from    */);
+    void AddEntry(const Event::TDREvent &event  /*!< Event to read from    */);
 
     //! Get addback histogram.
     TH2 *GetAB() { return addback_hist; }

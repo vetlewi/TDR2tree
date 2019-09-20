@@ -1,7 +1,7 @@
 #ifndef EXPERIMENTSETUP_H
 #define EXPERIMENTSETUP_H
 
-#include "BasicStruct.h"
+#include <cstdint>
 
 // Currently the sorting rutine will only support dE-E silicon telescopes.
 // This may change in the future if needed... I think...
@@ -13,9 +13,6 @@
 #define NUM_SI_RING 48           //!< Number of Si dE rings
 #define NUM_SI_SECT 16           //!< Number of Si dE sector
 #define NUM_SI_BACK 16             //!< Number of Si  E sector
-
-#define MAX_WORDS_PER_DET 32    //!< Maximum number of words per detector in each event
-
 
 #define TOTAL_NUMBER_OF_ADDRESSES 545   //! Total number of address that needs to be defined
 
@@ -49,16 +46,22 @@ struct DetectorInfo_ {
 
 typedef struct DetectorInfo_ DetectorInfo_t;
 
-//! Get detector method
+//! Get detector structure
 /*! \return Detector structure containing information about the
  *  detector at address.
  */
-DetectorInfo_t GetDetector(const word_t &detector   /*!< Address of the detector to get */);
+DetectorInfo_t GetDetector(const uint16_t &address   /*!< Address of the detector to get */);
+
+//! Get Detector type
+/*!
+ * \return Detector type.
+ */
+enum DetectorType GetDetectorType(const uint16_t &address   /*!< Address of the detector to get */);
 
 //! Get sampling frequency
 /*! \return The XIA module sampling frequency
  */
-enum ADCSamplingFreq GetSamplingFrequency(const word_t &detector    /*!< ADC address    */);
+enum ADCSamplingFreq GetSamplingFrequency(const uint16_t &address    /*!< ADC address    */);
 
 
 

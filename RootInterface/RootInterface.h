@@ -9,19 +9,16 @@
 #include "HistManager.h"
 #include "TreeManager.h"
 
-#include "Options.h"
+#include "Event.h"
+#include "TDREvent.h"
 
 /*
  * This class acts as the interface between the user code and ROOT.
  * Basically it will store the object that talks with the ROOT library.
  */
-template<class T>
 class RootInterface {
 
 private:
-
-    //! Structure storing the program options
-    Options options;
 
     //! Object storing the File interface.
     RootFileManager fileManager;
@@ -30,7 +27,10 @@ private:
     HistManager histManager;
 
     //! Object storing the tree.
-    TreeManager<T> treeManager;
+    TreeManager treeManager;
+
+    //! Flag indicating if trees are to be built or not.
+    bool buildTree;
 
 public:
 
@@ -42,11 +42,11 @@ public:
      * @param tree_name - name of the ROOT tree.
      * @param tree_title - title of the ROOT tree.
      */
-    RootInterface(const Options &opt)
-                  : options( opt )
-                  , fileManager( options.output_file )
-                  , histManager( &fileManager )
-                  , treeManager( &fileManager, opt.tree_name, opt.tree_title ){}
+    RootInterface(const char *rname, Event::Base *template_event, const bool BuildTree=false, const char *tname=nullptr, const char *ttitle=nullptr)
+        : fileManager( rname )
+        , histManager( &fileManager )
+        , treeManager( &fileManager, tname, ttitle, template_event )
+        , buildTree( BuildTree ){}
 
 
     /*!
@@ -59,10 +59,10 @@ public:
      * Fill an event.
      * @param event - structure with the events in them.
      */
-    inline void Fill(const T &event){
+    inline void Fill(Event::TDREvent &event){
         histManager.AddEntry(event);
-        if ( options.buildTree )
-            treeManager.AddEntry(event);
+        if ( buildTree )
+            treeManager.AddEntry(&event);
     }
 
 };

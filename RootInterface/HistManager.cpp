@@ -19,12 +19,8 @@
  *******************************************************************************/
 
 #include "HistManager.h"
-#include "Calibration.h"
 #include "experimentsetup.h"
-#include "Event.h"
-#include "ProgressUI.h"
-
-#include <cstdio>
+#include "TDREvent.h"
 
 #include <TH1.h>
 #include <TH2.h>
@@ -58,124 +54,51 @@ HistManager::HistManager(RootFileManager *fm)
 
 }
 
-void HistManager::AddEntry(const Event &buffer)
+void HistManager::FillTDiff(const Event::TDREntry &start, const std::vector<Event::TDREntry> &entries, TH2 *hist)
+{
+    double tdiff;
+    for ( auto &stop : entries ){
+        tdiff = double(stop.tcoarse  - start.tcoarse);
+        tdiff += stop.tfine - start.tfine;
+        hist->Fill(tdiff, stop.ID);
+    }
+}
+
+void HistManager::FillEnergy(const std::vector<Event::TDREntry> &entries, TH2 *hist, TH2 *hist_cal)
+{
+    for ( auto &entry : entries ){
+        hist->Fill(entry.e_raw, entry.ID);
+        hist_cal->Fill(entry.energy, entry.ID);
+    }
+}
+
+
+void HistManager::AddEntry(const Event::TDREvent &event)
 {
     // First time spectra. We use the RF as reference.
     double timediff;
     int i, j;
-    EventEntry rfEvt, evt;
-    for (i = 0 ; i < buffer.GetLabrFEvent() ; ++i){
-        rfEvt = buffer.GetLabrFEvent()[i];
-        if ( rfEvt.ID != 0 )
+
+
+    for ( auto &rfEntry : event.GetRF() ){
+        if ( rfEntry.ID != 0 )
             continue;
 
-        for (j = 0 ; j < buffer.GetRingEvent() ; ++j){
-            evt = buffer.GetRingEvent()[j];
-            timediff = double(evt.tcoarse - rfEvt.tcoarse);
-            timediff += (evt.tfine - rfEvt.tfine);
-            time_ring->Fill(timediff, evt.ID);
-        }
-
-        for (j = 0 ; j < buffer.GetSectEvent() ; ++j){
-            evt = buffer.GetSectEvent()[j];
-            timediff = double(evt.tcoarse - rfEvt.tcoarse);
-            timediff += (evt.tfine - rfEvt.tfine);
-            time_sect->Fill(timediff, evt.ID);
-        }
-
-        for (j = 0 ; j < buffer.GetBackEvent() ; ++j){
-            evt = buffer.GetSectEvent()[j];
-            timediff = double(evt.tcoarse - rfEvt.tcoarse);
-            timediff += (evt.tfine - rfEvt.tfine);
-            time_back->Fill(timediff, evt.ID);
-        }
-
-        for (j = 0 ; j < buffer.GetLabrLEvent() ; ++j){
-            evt = buffer.GetLabrLEvent()[j];
-            timediff = double(evt.tcoarse - rfEvt.tcoarse);
-            timediff += (evt.tfine - rfEvt.tfine);
-            time_labrL->Fill(timediff, evt.ID);
-        }
-
-        for (j = 0 ; j < buffer.GetLabrSEvent() ; ++j){
-            evt = buffer.GetLabrSEvent()[j];
-            timediff = double(evt.tcoarse - rfEvt.tcoarse);
-            timediff += (evt.tfine - rfEvt.tfine);
-            time_labrS->Fill(timediff, evt.ID);
-        }
-
-        for (j = 0 ; j < buffer.GetLabrFEvent() ; ++j){
-            evt = buffer.GetLabrFEvent()[j];
-            timediff = double(evt.tcoarse - rfEvt.tcoarse);
-            timediff += (evt.tfine - rfEvt.tfine);
-            time_labrF->Fill(timediff, evt.ID);
-        }
-
-        for (j = 0 ; j < buffer.GetCloverEvent() ; ++j){
-            evt = buffer.GetCloverEvent()[j];
-            timediff = double(evt.tcoarse - rfEvt.tcoarse);
-            timediff += (evt.tfine - rfEvt.tfine);
-            time_clover->Fill(timediff, evt.ID);
-        }
+        FillTDiff(rfEntry, event.GetRing(), time_ring);
+        FillTDiff(rfEntry, event.GetSect(), time_sect);
+        FillTDiff(rfEntry, event.GetBack(), time_back);
+        FillTDiff(rfEntry, event.GetLabrL(), time_labrL);
+        FillTDiff(rfEntry, event.GetLabrS(), time_labrS);
+        FillTDiff(rfEntry, event.GetLabrF(), time_labrF);
+        FillTDiff(rfEntry, event.GetClover(), time_clover);
     }
 
-    for (j = 0 ; j < buffer.GetRingEvent() ; ++j){
-        evt = buffer.GetRingEvent()[j];
-        energy_ring->Fill(evt.e_raw, evt.ID);
-        energy_cal_ring->Fill(evt.energy, evt.ID);
-    }
+    FillEnergy(event.GetRing(), energy_ring, energy_cal_ring);
+    FillEnergy(event.GetSect(), energy_sect, energy_cal_sect);
+    FillEnergy(event.GetBack(), energy_back, energy_cal_back);
+    FillEnergy(event.GetLabrL(), energy_labrL, energy_cal_labrL);
+    FillEnergy(event.GetLabrS(), energy_labrS, energy_cal_labrS);
+    FillEnergy(event.GetLabrF(), energy_labrF, energy_cal_labrF);
+    FillEnergy(event.GetClover(), energy_clover, energy_cal_clover);
 
-    for (j = 0 ; j < buffer.GetSectEvent() ; ++j){
-        evt = buffer.GetSectEvent()[j];
-        energy_sect->Fill(evt.e_raw, evt.ID);
-        energy_cal_sect->Fill(evt.energy, evt.ID);
-    }
-
-    for (j = 0 ; j < buffer.GetBackEvent() ; ++j){
-        evt = buffer.GetBackEvent()[j];
-        energy_back->Fill(evt.e_raw, evt.ID);
-        energy_cal_back->Fill(evt.energy, evt.ID);
-    }
-
-    for (j = 0 ; j < buffer.GetLabrLEvent() ; ++j){
-        evt = buffer.GetLabrLEvent()[j];
-        energy_labrL->Fill(evt.e_raw, evt.ID);
-        energy_cal_labrL->Fill(evt.energy, evt.ID);
-    }
-
-    for (j = 0 ; j < buffer.GetLabrSEvent() ; ++j){
-        evt = buffer.GetLabrSEvent()[j];
-        energy_labrS->Fill(evt.e_raw, evt.ID);
-        energy_cal_labrS->Fill(evt.energy, evt.ID);
-    }
-
-    for (j = 0 ; j < buffer.GetLabrFEvent() ; ++j){
-        evt = buffer.GetLabrFEvent()[j];
-        energy_labrF->Fill(evt.e_raw, evt.ID);
-        energy_cal_labrF->Fill(evt.energy, evt.ID);
-    }
-
-    for (j = 0 ; j < buffer.GetCloverEvent() ; ++j){
-        evt = buffer.GetCloverEvent()[j];
-        energy_clover->Fill(evt.e_raw, evt.ID);
-        energy_cal_clover->Fill(evt.energy, evt.ID);
-    }
-
-    for (i = 0 ; i < buffer.GetSectEvent() ; ++i){
-        rfEvt = buffer.GetSectEvent()[i];
-        for (j = 0 ; j < buffer.GetBackEvent() ; ++j){
-            evt = buffer.GetBackEvent()[j];
-            timediff = double(evt.tcoarse - rfEvt.tcoarse);
-            timediff += (evt.tfine - rfEvt.tfine);
-            time_energy_sect_back->Fill(evt.energy, timediff);
-        }
-        for (j = 0 ; j < buffer.GetRingEvent() ; ++j) {
-            evt = buffer.GetRingEvent()[j];
-            if ( abs(rfEvt.energy - evt.energy) > 500 )
-                continue;
-            timediff = double(evt.tcoarse - rfEvt.tcoarse);
-            timediff += (evt.tfine - rfEvt.tfine);
-            time_energy_ring_sect->Fill(evt.energy, timediff);
-        }
-    }
 }

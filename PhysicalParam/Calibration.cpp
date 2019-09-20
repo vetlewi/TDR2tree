@@ -1,8 +1,9 @@
 #include "Calibration.h"
 
+#include "BasicStruct.h"
+
 #include "experimentsetup.h"
 #include "Parameters.h"
-#include "BasicStruct.h"
 #include "XIA_CFD.h"
 
 #include <fstream>
@@ -88,7 +89,7 @@ bool SetCalibration(const char *calfile)
 
 double CalibrateEnergy(const word_t &detector)
 {
-    DetectorInfo_t dinfo = GetDetector(detector);
+    DetectorInfo_t dinfo = GetDetector(detector.address);
     switch (dinfo.type) {
         case labr_3x8 :
             return gain_labrL[dinfo.detectorNum]*(detector.adcdata + drand48() - 0.5) + shift_labrL[dinfo.detectorNum];
@@ -111,7 +112,7 @@ double CalibrateEnergy(const word_t &detector)
 
 word_t &CalibrateCFD(word_t &detector)
 {
-    switch ( GetSamplingFrequency(detector) ) {
+    switch ( GetSamplingFrequency(detector.address) ) {
         case f100MHz :
             detector.cfdcorr = XIA_CFD_Fraction_100MHz(detector.cfddata, &detector.cfdfail);
             detector.timestamp *= 10;
@@ -141,7 +142,7 @@ word_t &CalibrateCFD(word_t &detector)
 
 double CalibrateTime(const word_t &detector)
 {
-    DetectorInfo_t dinfo = GetDetector(detector);
+    DetectorInfo_t dinfo = GetDetector(detector.address);
     switch (dinfo.type) {
         case labr_3x8 :
             return detector.cfdcorr + shift_t_labrL[dinfo.detectorNum];

@@ -619,14 +619,17 @@ DetectorInfo_t pDetector[] =
 };
 
 
-DetectorInfo_t GetDetector(const word_t& detector)
+DetectorInfo_t GetDetector(const uint16_t& address)
 {
-    int address = (detector.crateID >> 8)|(detector.slotID >> 4)|(detector.chanID);
     return (address < TOTAL_NUMBER_OF_ADDRESSES) ? pDetector[address] : pDetector[0];
 }
 
-enum ADCSamplingFreq GetSamplingFrequency(const word_t& detector)
+enum DetectorType GetDetectorType(const uint16_t &address)
 {
-    int address = (detector.crateID >> 8)|(detector.slotID >> 4)|(detector.chanID);
+    return (address < TOTAL_NUMBER_OF_ADDRESSES) ? pDetector[address].type : unused;
+}
+
+enum ADCSamplingFreq GetSamplingFrequency(const uint16_t& address)
+{
     return (address < TOTAL_NUMBER_OF_ADDRESSES) ? pDetector[address].sfreq : f000MHz;
 }
