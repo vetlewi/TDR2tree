@@ -3,83 +3,34 @@
 //
 
 #include <Parameters/experimentsetup.h>
+#include <Parameters/Calibration.h>
 
 #include "Parser/TDRparser.h"
 
 #include <Buffer/Buffer.h>
+#include <map>
 
 using namespace Parser;
 
 
-struct data_header_t {
-    char     header_id[8];          /*!< Contains the string  EBYEDATA. (8 bytes) (byte 0-7) */
-    uint32_t header_sequence;       /*!< Within the file. (4 bytes) (8-11) */
-    uint16_t  header_stream;        /*!< Data acquisition stream number (in the range 1=>4). (2 bytes) (12-13) */
-    uint16_t  header_tape;          /*!< =1. (2 bytes) (14-15) */
-    uint16_t  header_MyEndian;      /*!< Written as a native 1 by the tape server (2 bytes) (16-17) */
-    uint16_t  header_DataEndian;    /*!< Written as a native 1 in the hardware structure of the data following. (2 bytes) (18-19) */
-    uint32_t header_dataLen;        /*!< Total length of useful data following the header in bytes. (4 bytes) (20-23) */
-};
 
-enum TDR_type {
-    unknown = 0,
-    sample_trace = 1,
-    module_info = 2,
-    ADC_event = 3
-};
 
-struct TDR_basic_type_t {
-    unsigned unused_a : 32;
-    unsigned unused_b : 30;
-    TDR_type ident : 2;
-};
+Entry_t MakeEntry(const TDR_entry &adc, const TDR_entry &tdc)
+{
+    assert( adc.address == tdc.address );
+    assert( adc.timestamp == tdc.timestamp );
 
-struct TDR_event_type_t {
-    unsigned timestamp : 28;
-    unsigned unused : 4;
-    unsigned ADC_data : 16;
-    unsigned chanID : 12;
-    bool veto : 1;
-    bool fail : 1;
-    TDR_type ident : 2;
-};
 
-struct TDR_info_type_t {
-    unsigned timestamp : 28;
-    unsigned unused : 2;
-    unsigned info_field : 20;
-    unsigned info_code : 4;
-    unsigned module_number : 6;
-    TDR_type ident : 2;
-};
-
-struct TDR_entry {
-    int64_t timestamp;
-    uint16_t address;
-    const TDR_event_type_t *adc;
-    const TDR_event_type_t *tdc;
-
-    TDR_entry(const int64_t &ts, const uint16_t &adr, const TDR_event_type_t *evt)
-        : timestamp( ts )
-        , address( ( evt->chanID & 0x10 ) ? evt->chanID-16 : evt->chanID )
-        , adc( nullptr )
-        , tdc( nullptr )
-    {
-        adc = ( evt->chanID & 0x10 ) ? nullptr : evt;
-        tdc = ( evt->chanID & 0x10 ) ? evt : nullptr;
-    }
-
-    TDR_entry(const int64_t &ts, const uint16_t &adr, const TDR_event_type_t *ADC, const TDR_event_type_t *TDC)
-            : timestamp( ts )
-            , address( ADC->chanID )
-            , adc( ADC )
-            , tdc( TDC )
-    {
-        assert((adc->chanID & 0xF) == (tdc->chanID & 0xF))
-    }
-
-};
-
+    Entry_t ret = {adc.address,
+                   static_cast<uint16_t>(adc.evt->ADC_data),
+                   static_cast<uint16_t>(tdc.evt->ADC_data),
+                   adc.timestamp,
+                   0,
+                   0,
+                   false,
+                   false};
+    return Calibrate(ret);
+}
 
 int64_t FindTopTime(const uint64_t *raw, const size_t &size)
 {
@@ -96,6 +47,45 @@ int64_t FindTopTime(const uint64_t *raw, const size_t &size)
 }
 
 
+std::vector<Entry_t> TDRparser::SortMerge(std::vector<TDR_entry> &entries)
+{
+    std::vector<Entry_t> res;
+    std::vector<TDR_leftover_entries> leftover;
+    for ( auto &entry : leftover_entries ){
+        entries.push_back(entry.entry);
+    }
+
+
+    // First sort the entries by the timestamp
+    std::sort(entries.begin(), entries.end(), [](const TDR_entry &lhs, const TDR_entry &rhs){ return lhs.timestamp < rhs.timestamp; });
+
+    std::vector<TDR_entry> v, vnew;
+    bool found;
+    v = entries;
+
+    while ( v.size() > 0 ){
+        found = false;
+        vnew.clear();
+        for ( size_t i = 1 ; i < v.size() ; ++i){
+            if ( v[0] == v[i] ){
+                found = true;
+                res.push_back(( v[0].is_tdc ) ?  MakeEntry(v[i], v[0]) : MakeEntry(v[0], v[i]));
+                vnew.insert(vnew.end(), v.begin()+i+1, v.end());
+                break;
+            } else {
+                vnew.push_back(v[i]);
+            }
+        }
+        if ( !found ){
+            leftover.emplace_back(v[0]);
+        }
+        v = vnew;
+    }
+    leftover_entries = leftover;
+    return res;
+}
+
+
 std::vector<Entry_t> TDRparser::GetEntry(const Fetcher::Buffer *new_buffer, Status &status)
 {
     size_t read = 0;
@@ -108,6 +98,7 @@ std::vector<Entry_t> TDRparser::GetEntry(const Fetcher::Buffer *new_buffer, Stat
 
     std::vector<TDR_entry> entries;
     const TDR_basic_type_t *entry;
+    const TDR_event_type_t *evt_entry;
     while ( read < buffer->GetSize() ){
         entry = reinterpret_cast<const TDR_basic_type_t *>(raw_buffer + read);
 
@@ -116,19 +107,13 @@ std::vector<Entry_t> TDRparser::GetEntry(const Fetcher::Buffer *new_buffer, Stat
                 top_time = int64_t(reinterpret_cast<const TDR_info_type_t *>(raw_buffer + read)->info_field) << 28;
                 break;
             case ADC_event :
-                entries.emplace_back(top_time+reinterpret_cast<const TDR_event_type_t *>(raw_buffer + read)->timestamp,
-                                     reinterpret_cast<const TDR_event_type_t *>(raw_buffer + read));
+                evt_entry = reinterpret_cast<const TDR_event_type_t *>(raw_buffer + read);
+                entries.emplace_back(top_time+evt_entry->timestamp, evt_entry);
                 break;
             default :
                 break;
         }
         ++read;
     }
-
-    // Next we need to sort the entries by time:
-    std::sort(entries.begin(), entries.end(), [](const TDR_entry &lhs, const TDR_entry &rhs){ lhs.timestamp < rhs.timestamp; });
-
-    // Next we will make a vector for each of the channels.
-
-
+    return SortMerge(entries);
 }

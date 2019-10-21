@@ -97,7 +97,14 @@ target_include_directories(Parameter
 target_compile_features(Parameter PRIVATE cxx_std_11)
 
 
-add_executable(TDR2tree main.cpp)
+target_link_libraries(Parser Sort::Parameter)
+
+
+
+add_executable(TDR2tree ${CMAKE_SOURCE_DIR}/app/TDR2tree.cpp)
+
+target_compile_features(TDR2tree PRIVATE cxx_std_11)
+
 target_link_libraries(TDR2tree Sort::Buffer Sort::Parser Sort::Parameter)
 
 

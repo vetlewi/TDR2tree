@@ -6,6 +6,7 @@
 #define TDR2TREE_TDRPARSER_H
 
 #include "Parser.h"
+#include "TDRtypes.h"
 
 namespace Parser {
 
@@ -29,6 +30,10 @@ namespace Parser {
 
         //! Top 32-bit of the timestamp
         int64_t top_time;
+
+        std::vector<TDR_leftover_entries> leftover_entries;
+
+        std::vector<Entry_t> SortMerge(std::vector<TDR_entry> &entries);
 
     };
 

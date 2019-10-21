@@ -31,7 +31,7 @@ namespace Parser {
          * \param status result of the parsing
          * \return An entry from the buffer
          */
-        virtual std::vector<Entry_t> GetEntry(Status &status) = 0;
+        virtual std::vector<Entry_t> GetEntry(const Fetcher::Buffer *buffer, Status &status) = 0;
 
         //! No-op destructor
         virtual ~Parser() = default;

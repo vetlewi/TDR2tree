@@ -27,7 +27,7 @@ namespace Fetcher {
 
     public:
         //! Virtual no-op destructor.
-        virtual ~Buffer() = 0;
+        virtual ~Buffer(){};
 
         //! Get the size of the buffer in bytes.
         size_t GetSizeChar() const { return size; };

@@ -6,8 +6,8 @@
       <config projectName="TDR2tree" targetName="TDRtools_dic" />
       <config projectName="TDR2tree" targetName="TDR2tree_test" />
       <config projectName="TDR2tree" targetName="TDR2tree" />
-      <config projectName="TDR2tree" targetName="Buffer" />
       <config projectName="TDR2tree" targetName="Parser" />
+      <config projectName="TDR2tree" targetName="Buffer" />
     </generated>
   </component>
   <component name="CMakeSettings" AUTO_RELOAD="true">
@@ -18,50 +18,39 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ff6b2c24-70e8-487b-a383-3f33126f0a92" name="Default Changelist" comment="Various changes">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake/CodeCoverage.cmake" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake/ParseAndAddCatchTests.cmake" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake/RPClib-CMakeLists.txt.in" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake/libsirius-CMakeLists.txt.in" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/Buffer/Buffer.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/Buffer/BufferFetcher.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/Buffer/FileBufferFetcher.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/Buffer/FileReader.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/Buffer/MTFileBufferFetcher.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/Buffer/NetworkBufferFetcher.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/Buffer/STFileBufferFetcher.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/Buffer/aptr.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/Parameters/Calibration.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/Parameters/Parameters.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/Parameters/XIA_CFD.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/Parameters/experimentsetup.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/Parser/Entry.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/Parser/Parser.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/Parser/TDRparser.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Buffer/FileReader.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Buffer/MTFileBufferFetcher.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Buffer/PThreadMutex.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Buffer/PrefetchThread.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Buffer/PrefetchThread.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Buffer/RingBuffer.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Buffer/STFileBufferFetcher.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Buffer/aptr.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Parameters/Calibration.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Parameters/Parameters.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Parameters/XIA_CFD.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Parameters/experimentsetup.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Parser/TDRparser.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/CMakeLists.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/src/TDRparser.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/src/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/TDR2tree.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/include/Parser/TDRtypes.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileReader/BufferFetcher.h" beforeDir="false" afterPath="$PROJECT_DIR$/FileReader/BufferFetcher.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileReader/BufferType.h" beforeDir="false" afterPath="$PROJECT_DIR$/FileReader/BufferType.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PhysicalParam/experimentsetup.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/PhysicalParam/experimentsetup.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PhysicalParam/experimentsetup.h" beforeDir="false" afterPath="$PROJECT_DIR$/PhysicalParam/experimentsetup.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FileReader/BufferFetcher.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FileReader/BufferType.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FileReader/CMakeLists.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FileReader/FileBufferFetcher.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FileReader/FileReader.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FileReader/FileReader.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FileReader/MTFileBufferFetcher.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FileReader/MTFileBufferFetcher.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FileReader/STFileBufferFetcher.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FileReader/STFileBufferFetcher.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FileReader/TDRFileReader.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FileReader/TDRFileReader.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PhysicalParam/CMakeLists.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PhysicalParam/Calibration.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PhysicalParam/Calibration.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PhysicalParam/Parameters.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PhysicalParam/Parameters.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PhysicalParam/PolygonGate.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PhysicalParam/PolygonGate.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PhysicalParam/XIA_CFD.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PhysicalParam/XIA_CFD.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PhysicalParam/experimentsetup.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PhysicalParam/experimentsetup.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/Buffer/Buffer.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Buffer/Buffer.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/Parser/Parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Parser/Parser.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/Parser/TDRparser.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Parser/TDRparser.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Parameters/Calibration.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parameters/Calibration.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Parser/TDRparser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser/TDRparser.cpp" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -205,6 +194,7 @@
       <workItem from="1568628988872" duration="18594000" />
       <workItem from="1568979052260" duration="1240000" />
       <workItem from="1571308501573" duration="18123000" />
+      <workItem from="1571654533123" duration="8148000" />
     </task>
     <task id="LOCAL-00001" summary="Updates.">
       <created>1559134323834</created>

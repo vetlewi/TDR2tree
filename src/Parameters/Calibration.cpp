@@ -180,7 +180,7 @@ Parser::Entry_t &CalibrateTime(Parser::Entry_t &detector)
     return detector;
 }
 
-Parser::Entry_t &CalibrateEntry(Parser::Entry_t &entry)
+Parser::Entry_t &Calibrate(Parser::Entry_t &entry)
 {
     entry = CalibrateEnergy(entry);
     entry = CalibrateCFD(entry);
