@@ -1,11 +1,11 @@
-#include "experimentsetup.h"
+#include "Parameters/experimentsetup.h"
 
 
 // List of all detectors, sorted by the address. Needs to be edited by
 // the user whenever the addresses are changed.
 
 
-const DetectorInfo_t *pDetector =
+const DetectorInfo_t pDetector[] =
 {
     {0, f000MHz, unused, 0, 0},
     {1, f000MHz, unused, 0, 0},
@@ -552,7 +552,7 @@ const DetectorInfo_t *pDetector =
     {542, f000MHz, unused, 0, 0},
     {543, f000MHz, unused, 0, 0},
     {544, f000MHz, unused, 0, 0},
-    {0, 0, 0, 0} // "Null" terminated
+    {0, f000MHz, unused, 0, 0}
 };
 
 

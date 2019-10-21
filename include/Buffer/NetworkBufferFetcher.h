@@ -18,49 +18,40 @@
  *                                                                             *
  *******************************************************************************/
 
-#ifndef BUFFERFETCHER_H
-#define BUFFERFETCHER_H
+#ifndef FILEBUFFERFETCHER_H
+#define FILEBUFFERFETCHER_H
 
-#include "Buffer/aptr.h"
+#include "BufferFetcher.h"
 
-class Buffer;
 
-//! Class to fetch a new buffer.
+//! Class to read a new buffer from file.
 /*!
- * \class BufferFetcher
- * \brief Interface for buffer fetcher classes.
- * \details This class defines the interface for classes used for fetching buffers.
+ * \class FileBufferFetcher
+ * \brief Class interface for buffer fetching classes that fetches these from file.
+ * \details Interface for classes that fetches buffers from files.
  * \author Vetle W. Ingeberg
  * \date 2015-2016
  * \copyright GNU Public License v. 3
  */
-class BufferFetcher {
-
-protected:
-
-    //! Template for the buffer.
-    aptr<Buffer> template_buffer;
+class NetworkBufferFetcher : public BufferFetcher {
 
 public:
-	typedef enum {
-        OKAY,		//!< Buffer was fetched without problems.
-		END,		//!< End of buffer stream was reached.
-		ERROR,		//!< An error while trying to fetch buffer.
-		WAIT		//!< A buffer might be avalible later.
-	} Status;
 
-	//! Constructor. Takes the buffer type as the only argument.
-    explicit BufferFetcher(Buffer *bufr) : template_buffer( bufr ){}
+    /*!
+     *  Start the network server
+     *  \param address Address to start the server on
+     *  \param port port to listen on
+     */
+    virtual Status StartServer(const char *address, const int &port) = 0;
 
-	//! Fetch the next buffer.
-	/*! \return OKEY if buffer was fetched, END if there
-	 *  are no more buffers, ERROR in case of error, WAIT if
-	 *  if fetching a buffer might be possible later.
+	//! Open a new file.
+	/*! If a file was open previously, it should be closed.
+	 *
+     *  \param Filename Name of the file to open
+     *  \param bufnum Buffer number to start from (legacy?)
+	 *	\return the status after opening the file.
 	 */
-    virtual const Buffer* Next(Status& state /*!< Will contain the status after reading. */) = 0;
-
-    //! Destructor.
-    virtual ~BufferFetcher() = default;
+    virtual Status Open(const char *filename, int bufnum) = 0;
 };
 
-#endif // BUFFERFETCHER_H
+#endif // FILEBUFFERFETCHER_H

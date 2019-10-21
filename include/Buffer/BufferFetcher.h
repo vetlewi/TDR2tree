@@ -21,9 +21,11 @@
 #ifndef BUFFERFETCHER_H
 #define BUFFERFETCHER_H
 
-#include "Buffer/aptr.h"
+#include "aptr.h"
 
-class Buffer;
+namespace Fetcher {
+
+    class Buffer;
 
 //! Class to fetch a new buffer.
 /*!
@@ -34,33 +36,30 @@ class Buffer;
  * \date 2015-2016
  * \copyright GNU Public License v. 3
  */
-class BufferFetcher {
+    class BufferFetcher
+    {
 
-protected:
+    public:
+        typedef enum
+        {
+            OKAY,   //!< Buffer was fetched without problems.
+            END,    //!< End of buffer stream was reached.
+            ERROR,  //!< An error while trying to fetch buffer.
+            WAIT    //!< A buffer might be avalible later.
+        } Status;
 
-    //! Template for the buffer.
-    aptr<Buffer> template_buffer;
 
-public:
-	typedef enum {
-        OKAY,		//!< Buffer was fetched without problems.
-		END,		//!< End of buffer stream was reached.
-		ERROR,		//!< An error while trying to fetch buffer.
-		WAIT		//!< A buffer might be avalible later.
-	} Status;
+        //! Fetch the next buffer.
+        /*! \return OKEY if buffer was fetched, END if there
+         *  are no more buffers, ERROR in case of error, WAIT if
+         *  if fetching a buffer might be possible later.
+         */
+        virtual const Buffer *Next(Status &state /*!< Will contain the status after reading. */) = 0;
 
-	//! Constructor. Takes the buffer type as the only argument.
-    explicit BufferFetcher(Buffer *bufr) : template_buffer( bufr ){}
+        //! Destructor.
+        virtual ~BufferFetcher() = default;
+    };
 
-	//! Fetch the next buffer.
-	/*! \return OKEY if buffer was fetched, END if there
-	 *  are no more buffers, ERROR in case of error, WAIT if
-	 *  if fetching a buffer might be possible later.
-	 */
-    virtual const Buffer* Next(Status& state /*!< Will contain the status after reading. */) = 0;
-
-    //! Destructor.
-    virtual ~BufferFetcher() = default;
-};
+}
 
 #endif // BUFFERFETCHER_H

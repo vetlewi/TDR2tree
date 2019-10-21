@@ -18,49 +18,39 @@
  *                                                                             *
  *******************************************************************************/
 
-#ifndef BUFFERFETCHER_H
-#define BUFFERFETCHER_H
+#ifndef FILEBUFFERFETCHER_H
+#define FILEBUFFERFETCHER_H
 
-#include "Buffer/aptr.h"
+#include "aptr.h"
+#include "BufferFetcher.h"
 
-class Buffer;
+#include <cstddef>
 
-//! Class to fetch a new buffer.
+namespace Fetcher {
+
+//! Class to read a new buffer from file.
 /*!
- * \class BufferFetcher
- * \brief Interface for buffer fetcher classes.
- * \details This class defines the interface for classes used for fetching buffers.
+ * \class FileBufferFetcher
+ * \brief Class interface for buffer fetching classes that fetches these from file.
+ * \details Interface for classes that fetches buffers from files.
  * \author Vetle W. Ingeberg
  * \date 2015-2016
  * \copyright GNU Public License v. 3
  */
-class BufferFetcher {
+    class FileBufferFetcher : public BufferFetcher
+    {
 
-protected:
+    public:
 
-    //! Template for the buffer.
-    aptr<Buffer> template_buffer;
+        //! Open a new file.
+        /*! If a file was open previously, it should be closed.
+         *
+         *	\return the status after opening the file.
+         */
+        virtual Status Open(const char *filename,    /*!< The name of the file to open.		*/
+                            size_t bufnum            /*!< The buffer number to start from.	*/) = 0;
+    };
 
-public:
-	typedef enum {
-        OKAY,		//!< Buffer was fetched without problems.
-		END,		//!< End of buffer stream was reached.
-		ERROR,		//!< An error while trying to fetch buffer.
-		WAIT		//!< A buffer might be avalible later.
-	} Status;
+}
 
-	//! Constructor. Takes the buffer type as the only argument.
-    explicit BufferFetcher(Buffer *bufr) : template_buffer( bufr ){}
-
-	//! Fetch the next buffer.
-	/*! \return OKEY if buffer was fetched, END if there
-	 *  are no more buffers, ERROR in case of error, WAIT if
-	 *  if fetching a buffer might be possible later.
-	 */
-    virtual const Buffer* Next(Status& state /*!< Will contain the status after reading. */) = 0;
-
-    //! Destructor.
-    virtual ~BufferFetcher() = default;
-};
-
-#endif // BUFFERFETCHER_H
+#endif // FILEBUFFERFETCHER_H

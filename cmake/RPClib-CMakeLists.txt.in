@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.13)
+
+
+project(RPClib-download NONE)
+
+include(ExternalProject)
+ExternalProject_Add(rpclib
+  GIT_REPOSITORY    https://github.com/rpclib/rpclib.git
+  GIT_TAG           master
+  SOURCE_DIR        "${CMAKE_BINARY_DIR}/rpclib-src"
+  BINARY_DIR        "${CMAKE_BINARY_DIR}/rpcl-build"
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND     ""
+  INSTALL_COMMAND   ""
+  TEST_COMMAND      ""
+)

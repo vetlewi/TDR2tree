@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include <string>
+/*#include <string>
 #include <vector>
 #include <algorithm>
 
@@ -30,7 +30,7 @@ std::ostream &operator<<(std::ostream &os, const Options &opt)
     os << "\nBuild tree: " << ( opt.build_tree ? "true" : "false");
     os << "\nValidate: " << ( opt.validate ? "true " : "false");
     return os;
-}
+}*/
 
 /*void Convert_to_root(const std::vector<std::string> &in_files, const std::string &out_file, const Options &opt)
 {
@@ -241,7 +241,12 @@ bool RootFileConverter<EventType, EntryType>::ConvertFiles(const std::vector<std
     exit(EXIT_SUCCESS);
 }*/
 
-int main(int argc, char *argv[])
+int main()
+{
+    return 0;
+}
+
+/*int main(int argc, char *argv[])
 {
 
     CommandLineInterface interface;
@@ -282,5 +287,5 @@ int main(int argc, char *argv[])
     FileConverter converter(output_file.c_str(), opt.build_tree, "events", "TDRevents", opt.addback);
 
     exit(EXIT_SUCCESS);
-}
+}*/
 

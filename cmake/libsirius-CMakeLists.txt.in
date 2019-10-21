@@ -1,0 +1,15 @@
+cmake_minimum_required(3.13)
+
+project(libsirius-download NONE)
+
+include(ExternalProject)
+ExternalProject_Add(
+    GIT_REPOSITORY      https://github.com/vetlewi/libsirius.git
+    GIT_TAG             master
+    SOURCE_DIR          "${CMAKE_BINARY_DIR}/libsirius-src"
+    BINARY_DIR          "${CMAKE_BINARY_DIR}/libsirius-build"
+    CONFIGURE_COMMAND   ""
+    BUILD_COMMAND       ""
+    INSTALL_COMMAND     ""
+    TEST_COMMAND        ""
+)

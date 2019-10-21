@@ -2,7 +2,6 @@
 #define BUFFERTYPE_H
 
 #include <cstdint>
-#include "BasicStruct.h"
 
 //! Class to store a general buffer.
 class Buffer {
