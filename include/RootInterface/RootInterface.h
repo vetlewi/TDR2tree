@@ -9,13 +9,14 @@
 #include "HistManager.h"
 #include "TreeManager.h"
 
-#include "Event.h"
-#include "TDREvent.h"
+#include "Event/Event.h"
+#include "Event/iThembaEvent.h"
 
 /*
  * This class acts as the interface between the user code and ROOT.
  * Basically it will store the object that talks with the ROOT library.
  */
+template<class T>
 class RootInterface {
 
 private:
@@ -27,7 +28,7 @@ private:
     HistManager histManager;
 
     //! Object storing the tree.
-    TreeManager treeManager;
+    TreeMangr<T> treeManager;
 
     //! Flag indicating if trees are to be built or not.
     bool buildTree;
@@ -42,12 +43,16 @@ public:
      * @param tree_name - name of the ROOT tree.
      * @param tree_title - title of the ROOT tree.
      */
-    RootInterface(const char *rname, Event::Base *template_event, const bool BuildTree=false, const char *tname=nullptr, const char *ttitle=nullptr)
+    explicit RootInterface(const char *rname, const bool BuildTree=false, const char *tname=nullptr, const char *ttitle=nullptr)
         : fileManager( rname )
         , histManager( &fileManager )
-        , treeManager( &fileManager, tname, ttitle, template_event )
+        , treeManager( &fileManager, tname, ttitle )
         , buildTree( BuildTree ){}
 
+    void Close()
+    {
+        fileManager.Close();
+    }
 
     /*!
      * Get pointer to addback spectra
@@ -59,7 +64,7 @@ public:
      * Fill an event.
      * @param event - structure with the events in them.
      */
-    inline void Fill(Event::TDREvent &event){
+    inline void Fill(T &event){
         histManager.AddEntry(event);
         if ( buildTree )
             treeManager.AddEntry(&event);

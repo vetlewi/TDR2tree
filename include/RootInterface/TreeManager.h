@@ -21,34 +21,74 @@
 #ifndef TREEMANAGER_H
 #define TREEMANAGER_H
 
-#include "aptr.h"
+#include <Buffer/aptr.h>
 #include "RootFileManager.h"
-#include "Event.h"
+#include "Event/Event.h"
 
 #include <TTree.h>
 
+#include <mutex>
+
+class TreeManager
+{
+protected:
+
+    TTree *tree;            //!< Pointer to the tree to write events to.
+    Event::Base *entry_obj; //!< Object to fill (set at run time
+
+public:
+
+    TreeManager(RootFileManager *fm, const char *name, const char *title, Event::Base *type)
+        : tree( fm->CreateTree(name, title) )
+        , entry_obj( type )
+        {
+            entry_obj->SetupTree(tree);
+        }
+
+    TreeManager(RootMergeFileManager *fm, const char *name, const char *title, Event::Base *type)
+            : tree( fm->CreateTree(name, title) )
+            , entry_obj( type )
+    {
+        entry_obj->SetupTree(tree);
+    }
+
+    ~TreeManager()
+    {
+        delete entry_obj;
+    }
+
+    inline void AddEntry(Event::Base *entry)
+    {
+        entry_obj->Copy(entry);
+        tree->Fill();
+    }
+};
 
 /*!
  * TreeManager class
  * \brief The tree manager class is the interface between a built event and the ROOT tree.
  * \tparam T is an event type that implements the branches of the tree.
  */
-class TreeManager {
-
+template<class T>
+class TreeMangr
+{
 private:
 
-    TTree *tree;    //!< The tree object.
-    aptr<Event::Base> entry_obj;    //!< Private event object.
+    TTree *tree;
+    T entry_obj;
+
+
 
 public:
 
-    //! Constructor from RootTreeManager.
-    TreeManager(RootFileManager *FileManager, const char *name, const char *title, Event::Base *template_event );
+    TreeMangr(RootFileManager *fm, const char *name, const char *title)
+        : tree( fm->CreateTree(name, title) )
+        , entry_obj( tree ){}
 
-    //! Add entry.
-    void AddEntry(Event::Base *entry)
+    //! Add an entry
+    inline void AddEntry(const Event::Base *entry)
     {
-        entry_obj->Copy(entry);
+        entry_obj.Copy(reinterpret_cast<const T *>(entry));
         tree->Fill();
     }
 

@@ -1,23 +1,24 @@
 //
-// Created by Vetle Wegner Ingeberg on 16/09/2019.
+// Created by Vetle Wegner Ingeberg on 30/10/2019.
 //
 
-#ifndef TDR2TREE_TDREVENT_H
-#define TDR2TREE_TDREVENT_H
+#ifndef TDR2TREE_ITHEMBAEVENT_H
+#define TDR2TREE_ITHEMBAEVENT_H
 
-#include <cassert>
 #include <vector>
 
-#include "BasicStruct.h"
-#include "Event.h"
+#include "Event/Event.h"
+#include "Parser/Entry.h"
+
+class TH2;
+class TTree;
+class TBranch;
 
 #define MAX_NUM 128
 
-class TH2;
-
 namespace Event {
 
-    struct TDREntry {
+    struct iThembaEntry {
         uint16_t ID;
         uint16_t e_raw;
         double energy;
@@ -26,7 +27,8 @@ namespace Event {
         bool cfdvalid;
     };
 
-    class TDREventData : public EventData {
+    class iThembaData : public EventData
+    {
 
     private:
 
@@ -38,32 +40,42 @@ namespace Event {
         int64_t tcoarse[MAX_NUM];   //!< Timestamp of the entry.
         bool cfdvalid[MAX_NUM];     //!< Flag indicating if the CFD is valid.
 
+        TBranch *b_mult;
+        TBranch *b_ID;
+        TBranch *b_e_raw;
+        TBranch *b_energy;
+        TBranch *b_tfine;
+        TBranch *b_tcoarse;
+        TBranch *b_cfdvalid;
 
     public:
 
         /*!
          * Constructor.
          */
-        TDREventData() : mult(0) {}
+        iThembaData()
+        : mult(0), ID{}, e_raw{}, energy{}, tfine{}, tcoarse{}, cfdvalid{}
+        , b_mult( nullptr ), b_ID( nullptr ), b_e_raw( nullptr ), b_energy( nullptr )
+        , b_tfine( nullptr ), b_tcoarse( nullptr ), b_cfdvalid( nullptr ) {}
 
         /*!
          * Destructor
          */
-        ~TDREventData() {}
+        ~iThembaData() override = default;
 
         /*!
          * Add a word to this entry.
          * @param word - raw data from file.
          * @return True if mult < MAX_NUM, false otherwise.
          */
-        bool Add(const word_t &word);
+        bool Add(const Parser::Entry_t &word);
 
         /*!
          * Add a word to this entry.
          * @param word - raw data from file.
          * @return True if mult < MAX_NUM, false otherwise.
          */
-        bool Add(const TDREntry &entry);
+        bool Add(const iThembaEntry &entry);
 
         /*!
          * Reset the class
@@ -77,6 +89,10 @@ namespace Event {
          */
         void SetupBranch(TTree *tree, const char *baseName) override;
 
+        //void SetBranchAddress(EventData *other) override;
+
+        void Copy(const EventData *other) override;
+
         /*!
          * Get number of entries.
          */
@@ -85,7 +101,7 @@ namespace Event {
         /*!
          * Get as TDREntry
          */
-        inline TDREntry operator[](const int &i)
+        inline iThembaEntry operator[](const int &i)
         {
             assert(i < mult);
             return {ID[i], e_raw[i], energy[i],
@@ -95,10 +111,10 @@ namespace Event {
         /*!
          * Get all entries as a vector.
          */
-        inline std::vector<TDREntry> GetEntries() const
+        inline std::vector <iThembaEntry> GetEntries() const
         {
-            std::vector<TDREntry> entries(mult);
-            for ( int i = 0 ; i < mult ; ++i ){
+            std::vector <iThembaEntry> entries(mult);
+            for (int i = 0; i < mult; ++i) {
                 entries.push_back({ID[i], e_raw[i], energy[i], tfine[i], tcoarse[i], cfdvalid[i]});
             }
             return entries;
@@ -106,11 +122,16 @@ namespace Event {
 
     };
 
-    class TDRTimeData : public EventData {
+    class iThembaTimeData : public EventData {
         int mult;                   //!< Number of fields populated.
         double tfine[MAX_NUM];      //!< CFD correction of the timestamp.
         int64_t tcoarse[MAX_NUM];   //!< Timestamp of the entry.
         bool cfdvalid[MAX_NUM];     //!< Flag indicating if the CFD is valid.
+
+        TBranch *b_mult;
+        TBranch *b_tfine;
+        TBranch *b_tcoarse;
+        TBranch *b_cfdvalid;
 
 
     public:
@@ -118,26 +139,28 @@ namespace Event {
         /*!
          * Constructor.
          */
-        TDRTimeData() : mult(0) {}
+        iThembaTimeData()
+        : mult(0), tfine{}, tcoarse{}, cfdvalid{}
+        , b_mult( nullptr ), b_tfine( nullptr ), b_tcoarse( nullptr ), b_cfdvalid( nullptr ){}
 
         /*!
          * Destructor
          */
-        ~TDRTimeData() {}
+        ~iThembaTimeData() override = default;
 
         /*!
          * Add a word to this entry.
          * @param word - raw data from file.
          * @return True if mult < MAX_NUM, false otherwise.
          */
-        bool Add(const word_t &word);
+        bool Add(const Parser::Entry_t &word);
 
         /*!
          * Add a word to this entry.
          * @param word - raw data from file.
          * @return True if mult < MAX_NUM, false otherwise.
          */
-        bool Add(const TDREntry &entry);
+        bool Add(const iThembaEntry &entry);
 
         /*!
          * Reset the class
@@ -151,6 +174,10 @@ namespace Event {
          */
         void SetupBranch(TTree *tree, const char *baseName) override;
 
+        void Copy(const EventData *other) override;
+
+        //void SetBranchAddress(EventData *other) override;
+
         /*!
          * Get number of entries.
          */
@@ -159,7 +186,7 @@ namespace Event {
         /*!
          * Get as TDREntry
          */
-        inline TDREntry operator[](const int &i)
+        inline iThembaEntry operator[](const int &i)
         {
             assert(i < mult);
             return {0, 0, 0,tfine[i], tcoarse[i], cfdvalid[i]};
@@ -168,9 +195,9 @@ namespace Event {
         /*!
          * Get all entries as a vector.
          */
-        inline std::vector<TDREntry> GetEntries() const
+        inline std::vector<iThembaEntry> GetEntries() const
         {
-            std::vector<TDREntry> entries(mult);
+            std::vector<iThembaEntry> entries(mult);
             for ( int i = 0 ; i < mult ; ++i ){
                 entries.push_back({0, 0, 0, tfine[i], tcoarse[i], cfdvalid[i]});
             }
@@ -179,35 +206,37 @@ namespace Event {
 
     };
 
-    class TDREvent : public Base {
+
+    class iThembaEvent : public Base
+    {
 
     protected:
 
-        TDREventData ringData;      //!< Ring dE-Si event structure.
-        TDREventData sectData;      //!< Sector dE-Si event structure.
-        TDREventData backData;      //!< Back E-Si event structure.
-        TDREventData labrLData;     //!< LaBr 3x8" event structure.
-        TDREventData labrSData;     //!< LaBr 2x2" (slow signal) event structure.
-        TDREventData labrFData;     //!< LaBr 2x2" (fast signal) event structure.
-        TDREventData cloverData;    //!< CLOVER event structure.
-        TDRTimeData rfData;         //!< RF event structure.
+        iThembaData ringData;      //!< Ring dE-Si event structure.
+        iThembaData sectData;      //!< Sector dE-Si event structure.
+        iThembaData backData;      //!< Back E-Si event structure.
+        iThembaData labrLData;     //!< LaBr 3x8" event structure.
+        iThembaData labrSData;     //!< LaBr 2x2" (slow signal) event structure.
+        iThembaData labrFData;     //!< LaBr 2x2" (fast signal) event structure.
+        iThembaData cloverData;    //!< CLOVER event structure.
+        iThembaTimeData rfData;    //!< RF event structure.
 
     public:
 
         //! Constructor.
-        TDREvent();
+        explicit iThembaEvent(TTree *tree = nullptr);
 
         /*!
          * Set the event from raw data.
          * @param data - list of entries.
          */
-        explicit TDREvent(const std::vector<word_t> &data);
+        explicit iThembaEvent(const std::vector <Parser::Entry_t> &data);
 
         /*!
          * Return a new object
          * @return a new object of same type.
          */
-        inline Base *New() override { return new TDREvent; }
+        inline Base *New() override { return new iThembaEvent; }
 
         /*!
          * Run addback routine.
@@ -217,46 +246,46 @@ namespace Event {
         /*!
          * Get ring data.
          */
-        inline std::vector<TDREntry> GetRing() const { return ringData.GetEntries(); }
+        inline std::vector <iThembaEntry> GetRing() const { return ringData.GetEntries(); }
 
         /*!
          * Get sector data.
          */
-        inline std::vector<TDREntry> GetSect() const { return sectData.GetEntries(); }
+        inline std::vector <iThembaEntry> GetSect() const { return sectData.GetEntries(); }
 
         /*!
          * Get back data.
          */
-        inline std::vector<TDREntry> GetBack() const { return backData.GetEntries(); }
+        inline std::vector <iThembaEntry> GetBack() const { return backData.GetEntries(); }
 
         /*!
          * Get LaBr L data.
          */
-        inline std::vector<TDREntry> GetLabrL() const { return labrLData.GetEntries(); }
+        inline std::vector <iThembaEntry> GetLabrL() const { return labrLData.GetEntries(); }
 
         /*!
          * Get LaBr S data.
          */
-        inline std::vector<TDREntry> GetLabrS() const { return labrSData.GetEntries(); }
+        inline std::vector <iThembaEntry> GetLabrS() const { return labrSData.GetEntries(); }
 
         /*!
          * Get LaBr F data.
          */
-        inline std::vector<TDREntry> GetLabrF() const { return labrFData.GetEntries(); }
+        inline std::vector <iThembaEntry> GetLabrF() const { return labrFData.GetEntries(); }
 
         /*!
          * Get CLOVER data.
          */
-        inline std::vector<TDREntry> GetClover() const { return cloverData.GetEntries(); }
+        inline std::vector <iThembaEntry> GetClover() const { return cloverData.GetEntries(); }
 
         /*!
          * Get CLOVER data.
          */
-        inline std::vector<TDREntry> GetRF() const { return rfData.GetEntries(); }
-
+        inline std::vector <iThembaEntry> GetRF() const { return rfData.GetEntries(); }
 
     };
-
 }
 
-#endif //TDR2TREE_TDREVENT_H
+
+
+#endif //TDR2TREE_ITHEMBAEVENT_H

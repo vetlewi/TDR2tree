@@ -2,8 +2,8 @@
 
 
 
-#include <stdlib.h>
-#include <stdint.h>
+#include <cstdlib>
+#include <cstdint>
 
 #define BIT15TO15	0x8000
 #define BIT14TO14	0x4000
@@ -21,7 +21,7 @@ double XIA_CFD_Fraction_100MHz(uint16_t CFDvalue, bool &fail)
 	timecfd = ((CFDvalue & BIT14TO0) >> 0);
 	correction = (10*(double)timecfd)/32768.0;
     fail = (cfdfailbit > 0 || CFDvalue == 0);
-	return correction;
+	return ( !fail ) ? correction : 0;
 }
 
 double XIA_CFD_Fraction_250MHz(uint16_t CFDvalue, bool &fail)
@@ -34,7 +34,7 @@ double XIA_CFD_Fraction_250MHz(uint16_t CFDvalue, bool &fail)
 	timecfd = ((CFDvalue & BIT13TO0) >> 0);
 	correction = (((double)timecfd)/16384.0 - cfdtrigsource)*4.0;
     fail = (cfdfailbit > 0 || CFDvalue == 0);
-	return correction;
+    return ( !fail ) ? correction : 0;
 }
 
 double XIA_CFD_Fraction_500MHz(uint16_t CFDvalue, bool &fail)
@@ -46,5 +46,5 @@ double XIA_CFD_Fraction_500MHz(uint16_t CFDvalue, bool &fail)
 	timecfd = ((CFDvalue & BIT12TO0) >> 0);
 	correction = (((double)timecfd)/8192.0 + cfdtrigsource - 1.0)*2.0;
     fail = (cfdtrigsource >= 7);
-	return correction;
+    return ( !fail ) ? correction : 0;
 }

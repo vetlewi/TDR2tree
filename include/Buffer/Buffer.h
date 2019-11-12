@@ -27,7 +27,7 @@ namespace Fetcher {
 
     public:
         //! Virtual no-op destructor.
-        virtual ~Buffer(){};
+        virtual ~Buffer() = default;
 
         //! Get the size of the buffer in bytes.
         size_t GetSizeChar() const { return size; };
@@ -114,7 +114,7 @@ namespace Fetcher {
     {
         enum
         {
-            BUFSIZE = 0x2000 /*!< The size of a sirius buffer in 32 */
+            BUFSIZE = 0x4000 /*!< The size of a sirius buffer in 32 */
         };
 
     public:

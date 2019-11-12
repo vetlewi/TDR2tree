@@ -5,33 +5,33 @@
 #ifndef TDR2TREE_TDRPARSER_H
 #define TDR2TREE_TDRPARSER_H
 
-#include "Parser.h"
-#include "TDRtypes.h"
+#include "Parser/Parser.h"
+#include "Parser/TDRtypes.h"
 
 namespace Parser {
 
-    class TDRparser : public Parser {
+    class TDRparser : public Base {
 
     public:
 
         /*!
          * Initialize everything to zero
          */
-        TDRparser() : top_time( -1 ){}
+        explicit TDRparser(const char *logger = "logger") : Base(logger), top_time( -1 ){}
 
         /*!
          * Get next entry
          * \param status
          * \return
          */
-        std::vector<Entry_t> GetEntry(const Fetcher::Buffer *new_buffer, Status &status);
+        std::vector<Entry_t> GetEntry(const Fetcher::Buffer *new_buffer) override;
 
     private:
 
         //! Top 32-bit of the timestamp
         int64_t top_time;
 
-        std::vector<TDR_leftover_entries> leftover_entries;
+        std::vector<TDR_explicit> leftover_entries;
 
         std::vector<Entry_t> SortMerge(std::vector<TDR_entry> &entries);
 

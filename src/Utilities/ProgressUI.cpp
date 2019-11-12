@@ -2,9 +2,10 @@
 // Created by Vetle Wegner Ingeberg on 2019-05-28.
 //
 
-#include "ProgressUI.h"
+#include "Utilities/ProgressUI.h"
 
 #include <iostream>
+#include <future>
 
 void ProgressUI::StartNewFile(const std::string &fname, const size_t &size)
 {
@@ -21,7 +22,7 @@ void ProgressUI::StartNewFile(const std::string &fname, const size_t &size)
     std::cout.flush();
 }
 
-void ProgressUI::UpdateReadProgress(const size_t &curr_pos)
+void ProgressUI::UpdateCout(const size_t &curr_pos)
 {
     if ( curr_pos/double(length) - shown*0.02 > 0 ){
         ++shown;
@@ -37,6 +38,11 @@ void ProgressUI::UpdateReadProgress(const size_t &curr_pos)
         std::cout << "] " << int(100 * (curr_pos / double(length))) << "% Reading file '" << curr_fname << "'\r";
         std::cout.flush();
     }
+}
+
+void ProgressUI::UpdateReadProgress(const size_t &curr_pos)
+{
+    auto res = std::async(std::launch::async, &ProgressUI::UpdateCout, this, curr_pos);
 }
 
 void ProgressUI::StartBuildingEvents(const size_t &size)

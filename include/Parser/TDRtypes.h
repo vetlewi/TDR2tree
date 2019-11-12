@@ -5,6 +5,10 @@
 #ifndef TDR2TREE_TDRTYPES_H
 #define TDR2TREE_TDRTYPES_H
 
+#include <cstdint>
+#include <cassert>
+#include <ostream>
+
 namespace Parser {
     struct tdr_data_header_t
     {
@@ -27,12 +31,9 @@ namespace Parser {
 
     struct TDR_basic_type_t
     {
-        unsigned unused_a
-                : 32;
-        unsigned unused_b
-                : 30;
-        TDR_type ident
-                : 2;
+        unsigned unused_a : 32;
+        unsigned unused_b : 30;
+        TDR_type ident : 2;
     };
 
     struct TDR_event_type_t
@@ -48,18 +49,12 @@ namespace Parser {
 
     struct TDR_info_type_t
     {
-        unsigned timestamp
-                : 28;
-        unsigned unused
-                : 2;
-        unsigned info_field
-                : 20;
-        unsigned info_code
-                : 4;
-        unsigned module_number
-                : 6;
-        TDR_type ident
-                : 2;
+        unsigned timestamp : 28;
+        unsigned unused : 2;
+        unsigned info_field : 20;
+        unsigned info_code : 4;
+        unsigned module_number : 6;
+        TDR_type ident : 2;
     };
 
     struct TDR_entry
@@ -67,16 +62,18 @@ namespace Parser {
         int64_t timestamp;
         uint16_t address;
         bool is_tdc;
+        bool is_merged;
         const TDR_event_type_t *evt;
 
         TDR_entry()
-                : timestamp(-1), address(0), is_tdc(false), evt(nullptr) {}
+                : timestamp(-1), address(0), is_tdc(false), is_merged( false ), evt(nullptr) {}
 
 
         TDR_entry(const int64_t &ts, const TDR_event_type_t *TDR)
                 : timestamp(ts)
-                , address((TDR->chanID & 0x10) ? TDR->chanID - 16 : TDR->chanID)
-                , is_tdc((TDR->chanID & 0x10))
+                , address((TDR->chanID & 0x10) ? TDR->chanID - 16 : TDR->chanID) // NOLINT(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+                , is_tdc((TDR->chanID & 0x10)) // NOLINT(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+                , is_merged( false )
                 , evt(TDR)
         {
             assert(evt != nullptr);
@@ -93,20 +90,80 @@ namespace Parser {
         return req;
     }
 
-
-    struct TDR_leftover_entries
+    struct TDR_explicit
     {
-        TDR_event_type_t data;
-        TDR_entry entry;
+        int64_t timestamp;
+        uint16_t address;
+        bool is_tdc;
+        TDR_event_type_t evt;
 
-        TDR_leftover_entries() = default;
+        explicit TDR_explicit(const TDR_entry &entry)
+            : timestamp( entry.timestamp )
+            , address( entry.address )
+            , is_tdc( entry.is_tdc )
+            , evt( *entry.evt ){}
 
-        explicit TDR_leftover_entries(const TDR_entry &entr)
-            : data( *entr.evt )
-            , entry( entr.timestamp, &data )
-        {}
+        TDR_explicit(const int64_t &ts, const TDR_event_type_t *TDR)
+            : timestamp( ts )
+            , address((TDR->chanID & 0x10) ? TDR->chanID - 16 : TDR->chanID) // NOLINT(cppcoreguidelines-narrowing-conversions,bugprone-narrowing-conversions)
+            , is_tdc((TDR->chanID & 0x10)) // NOLINT(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+            , evt(*TDR){}
+
+        explicit operator TDR_entry() const { return TDR_entry(timestamp, &evt); } // NOLINT(modernize-return-braced-init-list)
 
     };
+
+    std::ostream &operator<<(std::ostream &str, const TDR_event_type_t &event)
+    {
+        str << "\t\tTimestamp: " << event.timestamp << "\n";
+        str << "\t\tADC_data: " << event.ADC_data << "\n";
+        str << "\t\tchanID: " << event.chanID << "\n";
+        str << "\t\tveto: ";
+        if ( event.veto )
+            str << "true";
+        else
+            str << "false";
+        str << "\n";
+        str << "\t\tfail: ";
+        if ( event.fail )
+            str << "true";
+        else
+            str << "false";
+        str << "\n";
+        str << "\t\tiden: ";
+        switch ( event.ident ){
+            case unknown :
+                str << "unknown";
+                break;
+            case sample_trace :
+                str << "sample_trace";
+                break;
+            case module_info :
+                str << "module_info";
+                break;
+            case ADC_event :
+                str << "ADC_event";
+                break;
+            default :
+                str << "unknown";
+                break;
+        }
+        return str;
+    }
+
+    std::ostream &operator<<(std::ostream &str, const TDR_explicit &entry)
+    {
+        str << "\tTimestamp: " << "\t" << entry.timestamp << "\n";
+        str << "\tAddress: " << "\t" << entry.address << "\n";
+        str << "\tIs_TDC: " << "\t";
+        if ( entry.is_tdc )
+            str <<  "true";
+        else
+            str << "false";
+        str << "\n";
+        str << "\tRaw event:\n" << entry.evt;
+        return str;
+    }
 
 }
 

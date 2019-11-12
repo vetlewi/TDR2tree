@@ -16,6 +16,8 @@ private:
     size_t length;
     int shown;
 
+    void UpdateCout(const size_t &curr_pos);
+
 public:
 
     //! Default ctor.

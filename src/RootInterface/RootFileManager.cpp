@@ -18,11 +18,12 @@
  *                                                                             *
  *******************************************************************************/
 
-#include "RootFileManager.h"
+#include "RootInterface/RootFileManager.h"
 
 #include <TTree.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <ROOT/TBufferMerger.hxx>
 
 
 RootFileManager::RootFileManager(const char *fname, const char *mode, const char *ftitle)
@@ -60,8 +61,7 @@ TH1 *RootFileManager::CreateTH1(const char *name, const char *title, int xbin, d
     return h;
 }
 
-TH2 *
-RootFileManager::CreateTH2(const char *name, const char *title, int xbin, double xmin, double xmax, const char *xtitle, int ybin, double ymin, double ymax, const char *ytitle, const char *dir)
+TH2 *RootFileManager::CreateTH2(const char *name, const char *title, int xbin, double xmin, double xmax, const char *xtitle, int ybin, double ymin, double ymax, const char *ytitle, const char *dir)
 {
     if ( !file.GetDirectory(dir) ){
         file.mkdir(dir, dir);
@@ -84,7 +84,55 @@ RootFileManager::CreateTH2(const char *name, const char *title, int xbin, double
 }
 
 
+RootMergeFileManager::RootMergeFileManager(ROOT::Experimental::TBufferMerger *bm)
+        : file( bm->GetFile() ){}
 
+RootMergeFileManager::~RootMergeFileManager()
+{
+    file->Write();
+}
 
+TTree *RootMergeFileManager::CreateTree(const char *name, const char *title)
+{
+    auto *tree = new TTree( ( name != nullptr ) ? name : "tree", ( title != nullptr ) ? title : "" );
+    if ( name != nullptr )
+        list.push_back(tree);
+    return tree;
+}
 
+TH1 *RootMergeFileManager::CreateTH1(const char *name, const char *title, int xbin, double xmin, double xmax, const char *xtitle, const char *dir)
+{
+    if ( !file->GetDirectory(dir) ){
+        file->mkdir(dir, dir);
+    }
+    file->cd(dir);
+    TH1 *h = new TH1I(name, title, xbin, xmin, xmax);
+    h->GetXaxis()->SetTitle(xtitle);
+    h->GetXaxis()->SetTitleSize(0.03);
+    h->GetXaxis()->SetLabelSize(0.03);
+    file->cd();
+    list.push_back(h);
+    return h;
+}
 
+TH2 *RootMergeFileManager::CreateTH2(const char *name, const char *title, int xbin, double xmin, double xmax, const char *xtitle, int ybin, double ymin, double ymax, const char *ytitle, const char *dir)
+{
+    if ( !file->GetDirectory(dir) ){
+        file->mkdir(dir, dir);
+    }
+    file->cd(dir);
+    TH2 *m = new TH2I(name, title, xbin, xmin, xmax, ybin, ymin, ymax);
+    m->GetXaxis()->SetTitle(xtitle);
+    m->GetXaxis()->SetTitleSize(0.03);
+    m->GetXaxis()->SetLabelSize(0.03);
+    m->GetYaxis()->SetTitle(ytitle);
+    m->GetYaxis()->SetTitleSize(0.03);
+    m->GetYaxis()->SetLabelSize(0.03);
+    m->GetYaxis()->SetTitleOffset(1.3);
+    m->GetZaxis()->SetLabelSize(0.025);
+    m->SetOption("colz");
+    m->SetContour(64);
+    file->cd();
+    list.push_back(m);
+    return m;
+}

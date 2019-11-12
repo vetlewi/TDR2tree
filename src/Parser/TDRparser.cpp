@@ -9,10 +9,12 @@
 
 #include <Buffer/Buffer.h>
 #include <map>
+#include <list>
+
+#include <spdlog/spdlog.h>
+#include <spdlog/fmt/ostr.h>
 
 using namespace Parser;
-
-
 
 
 Entry_t MakeEntry(const TDR_entry &adc, const TDR_entry &tdc)
@@ -24,6 +26,19 @@ Entry_t MakeEntry(const TDR_entry &adc, const TDR_entry &tdc)
     Entry_t ret = {adc.address,
                    static_cast<uint16_t>(adc.evt->ADC_data),
                    static_cast<uint16_t>(tdc.evt->ADC_data),
+                   adc.timestamp,
+                   0,
+                   0,
+                   false,
+                   false};
+    return Calibrate(ret);
+}
+
+Entry_t MakeStandAloneEntry(const TDR_entry &adc)
+{
+    Entry_t ret = {adc.address,
+                   ( adc.is_tdc ) ? static_cast<uint16_t>(0) : static_cast<uint16_t>(adc.evt->ADC_data),
+                   ( adc.is_tdc ) ? static_cast<uint16_t>(adc.evt->ADC_data) : static_cast<uint16_t>(0),
                    adc.timestamp,
                    0,
                    0,
@@ -46,47 +61,76 @@ int64_t FindTopTime(const uint64_t *raw, const size_t &size)
     return -1;
 }
 
-
 std::vector<Entry_t> TDRparser::SortMerge(std::vector<TDR_entry> &entries)
 {
     std::vector<Entry_t> res;
-    std::vector<TDR_leftover_entries> leftover;
+    std::vector<TDR_explicit> leftover;
     for ( auto &entry : leftover_entries ){
-        entries.push_back(entry.entry);
+        entries.emplace_back(TDR_entry(entry));
     }
-
 
     // First sort the entries by the timestamp
-    std::sort(entries.begin(), entries.end(), [](const TDR_entry &lhs, const TDR_entry &rhs){ return lhs.timestamp < rhs.timestamp; });
+    /*std::sort(std::begin(entries), std::end(entries),
+            [](const TDR_entry &lhs, const TDR_entry &rhs)
+            { return (lhs.timestamp != rhs.timestamp ) ? lhs.timestamp < rhs.timestamp :
+                     ( lhs.address != rhs.address ) ? lhs.address < rhs.address : !lhs.is_tdc;});*/
 
-    std::vector<TDR_entry> v, vnew;
-    bool found;
-    v = entries;
-
-    while ( v.size() > 0 ){
-        found = false;
-        vnew.clear();
-        for ( size_t i = 1 ; i < v.size() ; ++i){
-            if ( v[0] == v[i] ){
-                found = true;
-                res.push_back(( v[0].is_tdc ) ?  MakeEntry(v[i], v[0]) : MakeEntry(v[0], v[i]));
-                vnew.insert(vnew.end(), v.begin()+i+1, v.end());
+    auto entry_pos = std::begin(entries);
+    auto dres = std::back_inserter(res);
+    bool merged;
+    while ( entry_pos != std::end(entries) ){
+        auto entry_pos_search = entry_pos + 1;
+        merged = false;
+        if ( (*entry_pos).is_merged ) {
+            ++entry_pos;
+            continue;
+        }
+        while ( entry_pos_search != std::end(entries) ){
+            if ( *entry_pos == *entry_pos_search ){
+                *dres++ = ( (*entry_pos).is_tdc ) ? MakeEntry(*entry_pos_search, *entry_pos) :
+                        MakeEntry(*entry_pos, *entry_pos_search);
+                (*entry_pos++).is_merged = true;
+                (*entry_pos_search++).is_merged = true;
+                merged = true;
                 break;
-            } else {
-                vnew.push_back(v[i]);
+            }
+            ++entry_pos_search;
+        }
+        if ( !merged )
+            ++entry_pos;
+    }
+
+    for ( auto &e : entries ){
+        if ( !e.is_merged )
+            leftover.emplace_back(e);
+    }
+
+    // We check if leftover entries follows from earlier buffers. If so, we add them to the output buffer
+    // and set all the
+    std::vector<TDR_explicit> keep;
+    bool will_keep;
+    for ( auto &l : leftover ){
+        will_keep = true;
+        for ( auto &l_old : leftover_entries ){
+            if ( (l.address == l_old.address)&&(l.timestamp == l_old.timestamp)&&(l.is_tdc == l_old.is_tdc) ){
+                will_keep = false;
+                //logger->info("Dropped entry:\n{}", l);
+                *dres++ = MakeStandAloneEntry(l);
             }
         }
-        if ( !found ){
-            leftover.emplace_back(v[0]);
-        }
-        v = vnew;
+        if ( will_keep )
+            keep.push_back(l);
     }
-    leftover_entries = leftover;
+
+    std::sort(std::begin(res), std::end(res), [](const Entry_t &lhs, const Entry_t &rhs){
+        return ( double( lhs.timestamp - rhs.timestamp ) + ( lhs.cfdcorr  - rhs.cfdcorr ) ) < 0;});
+
+    leftover_entries = keep;
     return res;
 }
 
 
-std::vector<Entry_t> TDRparser::GetEntry(const Fetcher::Buffer *new_buffer, Status &status)
+std::vector<Entry_t> TDRparser::GetEntry(const Fetcher::Buffer *new_buffer)
 {
     size_t read = 0;
     const auto *buffer = reinterpret_cast<const Fetcher::TDRBuffer *>(new_buffer);

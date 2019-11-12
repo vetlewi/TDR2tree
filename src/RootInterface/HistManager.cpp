@@ -18,12 +18,12 @@
  *                                                                             *
  *******************************************************************************/
 
-#include "HistManager.h"
-#include "experimentsetup.h"
-#include "TDREvent.h"
+#include "RootInterface/HistManager.h"
+#include <Parameters/experimentsetup.h>
 
 #include <TH1.h>
 #include <TH2.h>
+#include <Event/iThembaEvent.h>
 
 HistManager::HistManager(RootFileManager *fm)
     : time_ring( fm->CreateTH2("time_ring", "Time spectra rings", 3000, -1500, 1500, "Time [ns]", NUM_SI_RING, 0, NUM_SI_RING, "Ring ID") )
@@ -51,10 +51,37 @@ HistManager::HistManager(RootFileManager *fm)
     , energy_cal_clover( fm->CreateTH2("energy_cal_clover", "Energy spectra CLOVER", 16384, 0, 16384, "Energy [keV]", NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, 0, NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, "CLOVER ID") )
     , addback_hist( fm->CreateTH2("time_self_clover", "Time spectra, clover self timing",3000, -1500, 1500, "Time [ns]",NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") )
 {
-
 }
 
-void HistManager::FillTDiff(const Event::TDREntry &start, const std::vector<Event::TDREntry> &entries, TH2 *hist)
+HistManager::HistManager(RootMergeFileManager *fm)
+        : time_ring( fm->CreateTH2("time_ring", "Time spectra rings", 3000, -1500, 1500, "Time [ns]", NUM_SI_RING, 0, NUM_SI_RING, "Ring ID") )
+        , time_sect( fm->CreateTH2("time_sect", "Time spectra sectors", 3000, -1500, 1500, "Time [ns]", NUM_SI_SECT, 0, NUM_SI_SECT, "Sector ID") )
+        , time_back( fm->CreateTH2("time_back", "Time spectra back detector", 3000, -1500, 1500, "Time [ns]", NUM_SI_BACK, 0, NUM_SI_BACK, "Back ID") )
+        , time_labrL( fm->CreateTH2("time_labrL", "Time spectra LaBr L", 30000, -1500, 1500, "Time [ns]", NUM_LABR_3X8_DETECTORS, 0, NUM_LABR_3X8_DETECTORS, "LaBr L ID") )
+        , time_labrS( fm->CreateTH2("time_labrS", "Time spectra LaBr S", 3000, -1500, 1500, "Time [ns]", NUM_LABR_2X2_DETECTORS, 0, NUM_LABR_2X2_DETECTORS, "LaBr S ID") )
+        , time_labrF( fm->CreateTH2("time_labrF", "Time spectra LaBr F", 30000, -1500, 1500, "Time [ns]", NUM_LABR_2X2_DETECTORS, 0, NUM_LABR_2X2_DETECTORS, "LaBr F ID") )
+        , time_clover( fm->CreateTH2("time_clover", "Time spectra CLOVER", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, 0, NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, "CLOVER ID") )
+        , time_energy_sect_back( fm->CreateTH2("time_energy_sect_back", "Energy vs. sector/back time", 1000, 0, 30000, "E energy [keV]", 3000, -1500, 1500, "t_{back} - t_{sector} [ns]") )
+        , time_energy_ring_sect( fm->CreateTH2("time_energy_ring_sect", "Energy vs. sector/back time", 1000, 0, 30000, "Sector energy [keV]", 3000, -1500, 1500, "t_{ring} - t_{sector} [ns]") )
+        , energy_ring( fm->CreateTH2("energy_ring", "Energy spectra rings", 16384, 0, 16384, "Energy [ch]", NUM_SI_RING, 0, NUM_SI_RING, "Ring ID") )
+        , energy_sect( fm->CreateTH2("energy_sect", "Energy spectra sectors", 16384, 0, 16384, "Energy [ch]", NUM_SI_SECT, 0, NUM_SI_SECT, "Sector ID") )
+        , energy_back( fm->CreateTH2("energy_back", "Energy spectra back detectors", 16384, 0, 16384, "Energy [ch]", NUM_SI_BACK, 0, NUM_SI_BACK, "Back ID") )
+        , energy_labrL( fm->CreateTH2("energy_labrL", "Energy spectra LaBr L", 16384, 0, 16384, "Energy [ch]", NUM_LABR_3X8_DETECTORS, 0, NUM_LABR_3X8_DETECTORS, "LaBr L ID") )
+        , energy_labrS( fm->CreateTH2("energy_labrS", "Energy spectra LaBr S", 16384, 0, 16384, "Energy [ch]", NUM_LABR_2X2_DETECTORS, 0, NUM_LABR_2X2_DETECTORS, "LaBr S ID") )
+        , energy_labrF( fm->CreateTH2("energy_labrF", "Energy spectra LaBr F", 16384, 0, 16384, "Energy [ch]", NUM_LABR_2X2_DETECTORS, 0, NUM_LABR_2X2_DETECTORS, "LaBr F ID") )
+        , energy_clover( fm->CreateTH2("energy_clover", "Energy spectra CLOVER", 16384, 0, 16384, "Energy [ch]", NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, 0, NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, "CLOVER ID") )
+        , energy_cal_ring( fm->CreateTH2("energy_cal_ring", "Energy spectra rings", 16384, 0, 16384, "Energy [keV]", NUM_SI_RING, 0, NUM_SI_RING, "Ring ID") )
+        , energy_cal_sect( fm->CreateTH2("energy_cal_sect", "Energy spectra sectors", 16384, 0, 16384, "Energy [keV]", NUM_SI_SECT, 0, NUM_SI_SECT, "Sector ID") )
+        , energy_cal_back( fm->CreateTH2("energy_cal_back", "Energy spectra back detectors", 16384, 0, 16384, "Energy [keV]", NUM_SI_BACK, 0, NUM_SI_BACK, "Back ID") )
+        , energy_cal_labrL( fm->CreateTH2("energy_cal_labrL", "Energy spectra LaBr L", 16384, 0, 16384, "Energy [keV]", NUM_LABR_3X8_DETECTORS, 0, NUM_LABR_3X8_DETECTORS, "LaBr L ID") )
+        , energy_cal_labrS( fm->CreateTH2("energy_cal_labrS", "Energy spectra LaBr S", 16384, 0, 16384, "Energy [keV]", NUM_LABR_2X2_DETECTORS, 0, NUM_LABR_2X2_DETECTORS, "LaBr S ID") )
+        , energy_cal_labrF( fm->CreateTH2("energy_cal_labrF", "Energy spectra LaBr F", 16384, 0, 16384, "Energy [keV]", NUM_LABR_2X2_DETECTORS, 0, NUM_LABR_2X2_DETECTORS, "LaBr F ID") )
+        , energy_cal_clover( fm->CreateTH2("energy_cal_clover", "Energy spectra CLOVER", 16384, 0, 16384, "Energy [keV]", NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, 0, NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, "CLOVER ID") )
+        , addback_hist( fm->CreateTH2("time_self_clover", "Time spectra, clover self timing",3000, -1500, 1500, "Time [ns]",NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") )
+{
+}
+
+void HistManager::FillTDiff(const Event::iThembaEntry &start, const std::vector<Event::iThembaEntry> &entries, TH2 *hist)
 {
     double tdiff;
     for ( auto &stop : entries ){
@@ -64,7 +91,7 @@ void HistManager::FillTDiff(const Event::TDREntry &start, const std::vector<Even
     }
 }
 
-void HistManager::FillEnergy(const std::vector<Event::TDREntry> &entries, TH2 *hist, TH2 *hist_cal)
+void HistManager::FillEnergy(const std::vector<Event::iThembaEntry> &entries, TH2 *hist, TH2 *hist_cal)
 {
     for ( auto &entry : entries ){
         hist->Fill(entry.e_raw, entry.ID);
@@ -73,11 +100,9 @@ void HistManager::FillEnergy(const std::vector<Event::TDREntry> &entries, TH2 *h
 }
 
 
-void HistManager::AddEntry(const Event::TDREvent &event)
+void HistManager::AddEntry(const Event::iThembaEvent &event)
 {
     // First time spectra. We use the RF as reference.
-    double timediff;
-    int i, j;
 
 
     for ( auto &rfEntry : event.GetRF() ){

@@ -1,15 +1,11 @@
-//
-// Created by Vetle Wegner Ingeberg on 16/09/2019.
-//
-
 #ifndef EVENT_BASE_H
 #define EVENT_BASE_H
 
 #include <map>
 #include <string>
 
-class TTree;
 
+class TTree;
 
 namespace Event {
 
@@ -28,6 +24,18 @@ namespace Event {
 
         //! Reset all data.
         virtual void Reset() = 0;
+
+        //! Get the branch.
+        //virtual void SetBranchAddress(EventData *other) = 0;
+
+        virtual void Copy(const EventData *other) = 0;
+
+        //! Copy operator
+        EventData &operator=(const EventData *other)
+        {
+            this->Copy(other);
+            return *this;
+        }
 
     };
 
@@ -52,7 +60,7 @@ namespace Event {
         //! Copy contents of another event.
         void Copy(Base *other_event) {
             for (auto &data : event_data) {
-                *(data.second) = *(other_event->event_data[data.first]);
+                data.second->Copy(other_event->event_data[data.first]);
             }
         }
 
@@ -73,4 +81,4 @@ namespace Event {
 
 }
 
-#endif //TDR2TREE_EVENT_BASE_H
+#endif // EVENT_BASE_H

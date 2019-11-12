@@ -9,12 +9,16 @@
 
 #include <string>
 
+#include <Utilities/ProgressUI.h>
+
+extern ProgressUI progress;
+
 using namespace Fetcher;
 
 FileReader::FileReader()
         : file_stdio( nullptr )
 #if HAVE_ZLIB
-        , file_gz(0)
+        , file_gz( nullptr )
 #endif
         , errorflag( true )
 {
@@ -52,11 +56,16 @@ int FileReader::Read(char* data, size_t size_req)
         if( now<=0 ) {
             errorflag = (now<0 || (have!= 0 && have!=size_req));
             Close();
+            progress.Finish();
             return errorflag ? -1 : 0;
         } else {
             have += now;
         }
     }
+    if ( file_stdio )
+        progress.UpdateReadProgress(ftell(file_stdio));
+    else if ( file_gz )
+        progress.UpdateReadProgress(gztell(file_gz));
     return 1;
 }
 
@@ -69,14 +78,22 @@ bool FileReader::Open(const char *filename, size_t want)
     if( fname.find(".gz") == fname.size()-3 ) {
 #if HAVE_ZLIB
         file_gz = gzopen(filename, "rb");
-        errorflag = (file_gz == 0)
+
+        gzseek(file_gz, 0, SEEK_END);
+        progress.StartNewFile(filename, gztell(file_gz));
+        gzseek(file_gz, 0, SEEK_SET);
+        errorflag = (file_gz == nullptr)
                     || gzseek(file_gz, want, SEEK_SET) != want;
 #else
         throw std::runtime_error("FileReader::Open(): zlib missing");
 #endif
     } else {
         file_stdio = fopen(filename, "rb");
-        errorflag = (file_stdio == 0)
+
+        fseek(file_stdio, 0, SEEK_END);
+        progress.StartNewFile(filename, ftell(file_stdio));
+        fseek(file_stdio, 0, SEEK_SET);
+        errorflag = (file_stdio == nullptr)
                     || std::fseek(file_stdio, want, SEEK_SET) != want;
     }
     return !errorflag;
@@ -88,12 +105,12 @@ void FileReader::Close()
 {
     if( file_stdio ) {
         std::fclose(file_stdio);
-        file_stdio = 0;
+        file_stdio = nullptr;
     }
 #if HAVE_ZLIB
     if( file_gz ) {
         gzclose(file_gz);
-        file_gz = 0;
+        file_gz = nullptr;
     }
 #endif
 }
