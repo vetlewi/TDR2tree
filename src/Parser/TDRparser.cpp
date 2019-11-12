@@ -115,7 +115,7 @@ std::vector<Entry_t> TDRparser::SortMerge(std::vector<TDR_entry> &entries)
             if ( (l.address == l_old.address)&&(l.timestamp == l_old.timestamp)&&(l.is_tdc == l_old.is_tdc) ){
                 will_keep = false;
                 //logger->info("Dropped entry:\n{}", l);
-                *dres++ = MakeStandAloneEntry(l);
+                *dres++ = MakeStandAloneEntry(TDR_entry(l));
             }
         }
         if ( will_keep )

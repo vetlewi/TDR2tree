@@ -50,59 +50,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ff6b2c24-70e8-487b-a383-3f33126f0a92" name="Default Changelist" comment="Loads of updates!">
-      <change afterPath="$PROJECT_DIR$/app/SortUtillities.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/SortUtillities.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake/spdlog-CMakeLists.txt.in" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/external/CLI11.hpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/Event/Event.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/Event/iTLEvent.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/Event/iThembaEvent.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/Event/iThembaEventBuilder.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/Utilities/CLI_interface.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Event/iTLEvent.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Event/iThembaEvent.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Event/iThembaEventBuilder.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Parser/Parser.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Utilities/CLI_interface.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Containers/BasicStruct.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Containers/BasicStruct.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Containers/CMakeLists.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Containers/Event.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Containers/Event_old.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Containers/Event_old.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Containers/TDREvent.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Containers/TDREvent.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Converter.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Converter.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RootInterface/CMakeLists.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/RootInterface/HistManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/RootInterface/HistManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RootInterface/HistManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/RootInterface/HistManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RootInterface/RootFileManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/RootInterface/RootFileManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RootInterface/RootFileManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/RootInterface/RootFileManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RootInterface/RootInterface.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/RootInterface/RootInterface.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RootInterface/RootInterface.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/RootInterface/RootInterface.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RootInterface/TreeManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/RootInterface/TreeManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RootInterface/TreeManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/RootInterface/TreeManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tools/CMakeLists.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tools/CommandLineInterface.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tools/CommandLineInterface.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tools/ProgressUI.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Utilities/ProgressUI.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tools/ProgressUI.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Utilities/ProgressUI.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tools/aptr.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tools/aptr.ipp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/TDR2tree.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/app/TDR2tree.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/external/catch.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/external/catch.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/Buffer/Buffer.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Buffer/Buffer.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/Parser/Parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Parser/Parser.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/Parser/TDRparser.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Parser/TDRparser.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/Parser/TDRtypes.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Parser/TDRtypes.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Buffer/FileReader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Buffer/FileReader.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Parameters/XIA_CFD.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parameters/XIA_CFD.cpp" afterDir="false" />
+    <list default="true" id="ff6b2c24-70e8-487b-a383-3f33126f0a92" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/src/Parser/TDRparser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser/TDRparser.cpp" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -469,7 +417,7 @@
       <workItem from="1572706310545" duration="1227000" />
       <workItem from="1572708155648" duration="7021000" />
       <workItem from="1573479530453" duration="25610000" />
-      <workItem from="1573598353333" duration="3413000" />
+      <workItem from="1573598353333" duration="3730000" />
     </task>
     <task id="LOCAL-00001" summary="Updates.">
       <created>1559134323834</created>
@@ -667,7 +615,13 @@
       <option name="project" value="LOCAL" />
       <updated>1568633516344</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL−00029" summary="Loads of updates!">
+      <created>1573601910169</created>
+      <option name="number" value="LOCAL−00029" />
+      <option name="presentableId" value="LOCAL−00029" />
+      <updated>1573601910169</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
