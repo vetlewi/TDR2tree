@@ -24,8 +24,9 @@ namespace Parser {
     class Base {
 
     public:
+        Base() = default;
 
-        explicit Base(const char *logger_name = "logger");
+        explicit Base(const char *logger_name = "logger"){}
 
         /*!
          * Return a parsed entry
@@ -46,7 +47,7 @@ namespace Parser {
 
     protected:
 
-        std::shared_ptr<spdlog::logger> logger;
+        //std::shared_ptr<spdlog::logger> logger;
 
     };
 
