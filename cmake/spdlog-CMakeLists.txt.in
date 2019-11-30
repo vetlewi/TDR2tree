@@ -9,8 +9,4 @@ ExternalProject_Add(spdlog
   GIT_TAG           master
   SOURCE_DIR        "${CMAKE_BINARY_DIR}/spdlog-src"
   BINARY_DIR        "${CMAKE_BINARY_DIR}/spdlog-build"
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND     ""
-  INSTALL_COMMAND   ""
-  TEST_COMMAND      ""
 )
