@@ -10,6 +10,7 @@
 #include <Buffer/Buffer.h>
 #include <map>
 #include <list>
+#include <algorithm>
 
 //#include <spdlog/spdlog.h>
 //#include <spdlog/fmt/ostr.h>
