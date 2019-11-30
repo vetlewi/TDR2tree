@@ -32,24 +32,24 @@ find_package(Threads REQUIRED)
 ##############################################
 # Download and unpack the project
 
-#configure_file(${CMAKE_SOURCE_DIR}/cmake/spdlog-CMakeLists.txt.in ${CMAKE_BINARY_DIR}/spdlog-download/CMakeLists.txt)
-#execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-#        RESULT_VARIABLE result
-#        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/spdlog-download)
+configure_file(${CMAKE_SOURCE_DIR}/cmake/spdlog-CMakeLists.txt.in ${CMAKE_BINARY_DIR}/spdlog-download/CMakeLists.txt)
+execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+        RESULT_VARIABLE result
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/spdlog-download)
 
-#if (result)
-#    message(FATAL_ERROR "CMake step for spdlog failed: ${result}")
-#endif ()
+if (result)
+    message(FATAL_ERROR "CMake step for spdlog failed: ${result}")
+endif ()
 
-#execute_process(COMMAND ${CMAKE_COMMAND} --build .
-#        RESULT_VARIABLE result
-#        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/spdlog-download)
-#if (result)
-#    message(FATAL_ERROR "Build step for spdlog failed: ${result}")
-#endif ()
+execute_process(COMMAND ${CMAKE_COMMAND} --build .
+        RESULT_VARIABLE result
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/spdlog-download)
+if (result)
+    message(FATAL_ERROR "Build step for spdlog failed: ${result}")
+endif ()
 
-#add_subdirectory(${CMAKE_BINARY_DIR}/spdlog-src ${CMAKE_BINARY_DIR}/spdlog-build EXCLUDE_FROM_ALL)
-#find_package(spdlog REQUIRED)
+add_subdirectory(${CMAKE_BINARY_DIR}/spdlog-src ${CMAKE_BINARY_DIR}/spdlog-build EXCLUDE_FROM_ALL)
+find_package(spdlog REQUIRED)
 
 ##############################################
 # Create targets and set properties

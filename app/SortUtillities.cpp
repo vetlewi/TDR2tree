@@ -39,8 +39,6 @@
 #include <Utilities/CLI_interface.h>
 
 // ROOT headers
-#include <TFIle.h>
-#include <TFileMerger.h>
 #include <ROOT/TBufferMerger.hxx>
 
 
@@ -189,6 +187,8 @@ void RootFillerThread(const Settings_t *settings, const bool *running, const int
     }
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wfor-loop-analysis"
 void RFT(const Settings_t *settings, const bool *running, ROOT::Experimental::TBufferMerger *fm)
 {
     RootMergeFileManager fileManager(fm);
@@ -200,8 +200,7 @@ void RFT(const Settings_t *settings, const bool *running, ROOT::Experimental::TB
 
 
     std::vector<Parser::Entry_t> event;
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wfor-loop-analysis"
+
     while ( (*running) ){
 
         if ( settings->built_queue->wait_dequeue_timed(event, std::chrono::seconds(1)) ){
@@ -211,7 +210,6 @@ void RFT(const Settings_t *settings, const bool *running, ROOT::Experimental::TB
                 treeManager.AddEntry(&evt);
         }
     }
-#pragma clang diagnostic pop
 
     while ( settings->built_queue->try_dequeue(event) ){
         Event::iThembaEvent evt(event);
@@ -220,21 +218,8 @@ void RFT(const Settings_t *settings, const bool *running, ROOT::Experimental::TB
             treeManager.AddEntry(&evt);
     }
 }
+#pragma clang diagnostic pop
 
-// #################################################################
-
-void MergeFiles(const std::string &fname, const int &num_files)
-{
-    char tmp[1024];
-
-    TFileMerger merger;
-    merger.OutputFile(fname.c_str(), "RECREATE");
-    for ( int i = 0 ; i < num_files ; ++i ) {
-        sprintf(tmp, "%s_%i", fname.c_str(), i);
-        merger.AddFile(TFile::Open(tmp, "READ"));
-    }
-    merger.Merge();
-}
 
 // #################################################################
 
@@ -262,8 +247,6 @@ void ConvertFiles(const Settings_t *settings)
 
     int thread_ID = ( settings->num_filler_threads > 1 ) ? 0 : -1;
     for ( auto &thread : fill_threads ){
-        //thread = std::thread(RootFillerThread, settings, &filler_running, thread_ID);
-        thread_ID += ( thread_ID < 0 ) ? 0 : 1;
         thread = std::thread(RFT, settings, &filler_running, &bufferMerger);
     }
 
@@ -326,8 +309,4 @@ void ConvertFiles(const Settings_t *settings)
         }
     }
     std::cout << " Done" << std::endl;
-
-    if ( settings->num_filler_threads > 1 ){
-        //MergeFiles(settings->output_file, settings->num_filler_threads);
-    }
 }
