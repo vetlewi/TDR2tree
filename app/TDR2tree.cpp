@@ -9,8 +9,9 @@
 #include <cstdio>
 
 // External dependencies
-//#include <spdlog/spdlog.h>
-//#include <spdlog/sinks/file_sinks.h>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/file_sinks.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 // Buffer library
 #include <Buffer/Buffer.h>
@@ -54,8 +55,9 @@ void SetupTDR(Settings_t &settings, const int &queue_size)
 int main(int argc, char* argv[])
 {
     //ROOT::EnableThreadSafety();
-    //auto file_logger = spdlog::basic_logger_mt("logger", "log.txt");
-    //file_logger->set_level(spdlog::level::info);
+    auto file_logger = spdlog::basic_logger_mt("logger", "log.txt");
+    auto console = spdlog::stdout_color_mt("console");
+    file_logger->set_level(spdlog::level::info);
 
     Settings_t settings = {
             std::vector<std::string>(),

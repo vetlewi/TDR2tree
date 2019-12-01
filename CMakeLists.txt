@@ -117,7 +117,7 @@ target_include_directories(Parser
 
 target_compile_features(Parser PRIVATE cxx_std_11)
 
-#target_link_libraries(Parser spdlog::spdlog)
+target_link_libraries(Parser spdlog::spdlog)
 
 add_library(Parameter SHARED
         src/Parameters/Calibration.cpp
@@ -197,6 +197,7 @@ target_link_libraries(TDR2tree
         Sort::Utilities
         Sort::Event
         Sort::RootInterface
+        spdlog::spdlog
         ROOT::RIO ROOT::Hist)
 
 
