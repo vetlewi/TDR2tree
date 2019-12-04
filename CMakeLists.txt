@@ -4,6 +4,7 @@ project(TDR2tree VERSION 1.5.0 LANGUAGES CXX)
 option(ENABLE_DOC "Generates the documentation target" OFF)
 option(ENABLE_COVERAGE "Generates the coverage build" OFF)
 option(ENABLE_TESTING "Turns on testing" OFF)
+option(ENABLE_LOGGING "Turn on additional logging" OFF)
 set(ENABLE_TESTING 1)
 
 #Make sure that custom modules are found
@@ -32,24 +33,26 @@ find_package(Threads REQUIRED)
 ##############################################
 # Download and unpack the project
 
-configure_file(${CMAKE_SOURCE_DIR}/cmake/spdlog-CMakeLists.txt.in ${CMAKE_BINARY_DIR}/spdlog-download/CMakeLists.txt)
-execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-        RESULT_VARIABLE result
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/spdlog-download)
+if( ENABLE_LOGGING )
+    configure_file(${CMAKE_SOURCE_DIR}/cmake/spdlog-CMakeLists.txt.in ${CMAKE_BINARY_DIR}/spdlog-download/CMakeLists.txt)
+    execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+            RESULT_VARIABLE result
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/spdlog-download)
 
-if (result)
-    message(FATAL_ERROR "CMake step for spdlog failed: ${result}")
-endif ()
+    if (result)
+        message(FATAL_ERROR "CMake step for spdlog failed: ${result}")
+    endif ()
 
-execute_process(COMMAND ${CMAKE_COMMAND} --build .
-        RESULT_VARIABLE result
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/spdlog-download)
-if (result)
-    message(FATAL_ERROR "Build step for spdlog failed: ${result}")
-endif ()
+    execute_process(COMMAND ${CMAKE_COMMAND} --build .
+            RESULT_VARIABLE result
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/spdlog-download)
+    if (result)
+        message(FATAL_ERROR "Build step for spdlog failed: ${result}")
+    endif ()
 
-add_subdirectory(${CMAKE_BINARY_DIR}/spdlog-src ${CMAKE_BINARY_DIR}/spdlog-build EXCLUDE_FROM_ALL)
-find_package(spdlog REQUIRED)
+    add_subdirectory(${CMAKE_BINARY_DIR}/spdlog-src ${CMAKE_BINARY_DIR}/spdlog-build EXCLUDE_FROM_ALL)
+    find_package(spdlog REQUIRED)
+endif()
 
 ##############################################
 # Create targets and set properties
@@ -117,7 +120,10 @@ target_include_directories(Parser
 
 target_compile_features(Parser PRIVATE cxx_std_11)
 
-#target_link_libraries(Parser spdlog::spdlog)
+if( ENABLE_LOGGING )
+    target_link_libraries(Parser spdlog::spdlog)
+    target_compile_definitions(Parser LOG_ENABLED=1)
+endif()
 
 add_library(Parameter SHARED
         src/Parameters/Calibration.cpp

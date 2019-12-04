@@ -26,7 +26,7 @@ namespace Parser {
     public:
         Base() = default;
 
-        explicit Base(const char *logger_name = "logger"){}
+        explicit Base(const char *logger_name = "logger");
 
         /*!
          * Return a parsed entry
@@ -46,8 +46,9 @@ namespace Parser {
         inline std::vector<Entry_t> operator()(const Fetcher::Buffer *buffer){ return GetEntry(buffer); }
 
     protected:
-
-        //std::shared_ptr<spdlog::logger> logger;
+#if LOG_ENABLED
+        std::shared_ptr<spdlog::logger> logger;
+#endif // LOG_ENABLED
 
     };
 

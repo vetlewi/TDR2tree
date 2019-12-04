@@ -69,12 +69,6 @@ std::vector<Entry_t> TDRparser::SortMerge(std::vector<TDR_entry> &entries)
         entries.emplace_back(TDR_entry(entry));
     }
 
-    // First sort the entries by the timestamp
-    /*std::sort(std::begin(entries), std::end(entries),
-            [](const TDR_entry &lhs, const TDR_entry &rhs)
-            { return (lhs.timestamp != rhs.timestamp ) ? lhs.timestamp < rhs.timestamp :
-                     ( lhs.address != rhs.address ) ? lhs.address < rhs.address : !lhs.is_tdc;});*/
-
     auto entry_pos = std::begin(entries);
     auto dres = std::back_inserter(res);
     bool merged;
@@ -114,7 +108,9 @@ std::vector<Entry_t> TDRparser::SortMerge(std::vector<TDR_entry> &entries)
         for ( auto &l_old : leftover_entries ){
             if ( (l.address == l_old.address)&&(l.timestamp == l_old.timestamp)&&(l.is_tdc == l_old.is_tdc) ){
                 will_keep = false;
-                //logger->info("Dropped entry:\n{}", l);
+#if LOG_ENABLED
+                logger->info("Dropped entry:\n{}", l);
+#endif // LOG_ENABLED
                 *dres++ = MakeStandAloneEntry(TDR_entry(l));
             }
         }
