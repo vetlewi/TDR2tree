@@ -123,7 +123,7 @@ target_compile_features(Parser PRIVATE cxx_std_11)
 
 if( ENABLE_LOGGING )
     target_link_libraries(Parser spdlog::spdlog)
-    target_compile_definitions(Parser LOG_ENABLED=1)
+    target_compile_definitions(Parser PRIVATE LOG_ENABLED=1)
 endif()
 
 add_library(Parameter SHARED

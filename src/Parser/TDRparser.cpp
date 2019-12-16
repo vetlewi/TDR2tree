@@ -12,8 +12,10 @@
 #include <list>
 #include <algorithm>
 
+#if LOG_ENABLED
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/ostr.h>
+#endif // LOG_ENABLED
 
 using namespace Parser;
 

@@ -41,7 +41,9 @@
 // ROOT headers
 #include <ROOT/TBufferMerger.hxx>
 
+#if LOG_ENABLED
 #include <spdlog/spdlog.h>
+#endif // LOG_ENABLED
 
 
 extern ProgressUI progress;
@@ -102,7 +104,9 @@ void RunSplitterThread(const Settings_t *settings, const bool *running)
     try {
         SpliterThread(settings, running);
     } catch (const std::exception &e){
+#if LOG_ENABLED
         spdlog::get("console")->error("Splitter thread got and exception {}", e.what());
+#endif // LOG_ENABLED
     }
 }
 
@@ -168,7 +172,9 @@ void RunEventBuilder(const Settings_t *settings, const bool *running)
     try {
         EventBuilderThread(settings, running);
     } catch (const std::exception &e){
+#if LOG_ENABLED
         spdlog::get("console")->error("Event builder thread got and exception {}", e.what());
+#endif // LOG_ENABLED
     }
 
 }
@@ -249,12 +255,14 @@ void RFT(const Settings_t *settings, const bool *running, ROOT::Experimental::TB
 
 // #################################################################
 
-void RunRootThread(const Settings_t *settings, const bool *running, ROOT::Experimental::TBufferMerger *fm
+void RunRootThread(const Settings_t *settings, const bool *running, ROOT::Experimental::TBufferMerger *fm)
 {
     try {
         RFT(settings, running, fm);
     } catch (const std::exception &e){
+#if LOG_ENABLED
         spdlog::get("console")->error("ROOT filler thread got and exception {}", e.what());
+#endif // LOG_ENABLED
     }
 }
 
