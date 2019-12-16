@@ -105,7 +105,7 @@ void HistManager::AddEntry(const Event::iThembaEvent &event)
     // First time spectra. We use the RF as reference.
 
 
-    for ( auto &rfEntry : event.GetRF() ){
+    for ( auto &rfEntry : event.GetLabrF() ){
         if ( rfEntry.ID != 0 )
             continue;
 
