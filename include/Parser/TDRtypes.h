@@ -82,13 +82,13 @@ namespace Parser {
         friend bool operator==(const TDR_entry &lhs, const TDR_entry &rhs);
     };
 
-    bool operator==(const TDR_entry &lhs, const TDR_entry &rhs)
+    /*bool operator==(const TDR_entry &lhs, const TDR_entry &rhs)
     {
         bool req = (lhs.address == rhs.address);
         req = req & (lhs.timestamp == rhs.timestamp);
         req = req & (lhs.is_tdc != rhs.is_tdc);
         return req;
-    }
+    }*/
 
     struct TDR_explicit
     {
@@ -113,8 +113,8 @@ namespace Parser {
 
     };
 
-    std::ostream &operator<<(std::ostream &str, const TDR_event_type_t &event)
-    {
+    std::ostream &operator<<(std::ostream &str, const TDR_event_type_t &event);
+    /*{
         str << "\t\tTimestamp: " << event.timestamp << "\n";
         str << "\t\tADC_data: " << event.ADC_data << "\n";
         str << "\t\tchanID: " << event.chanID << "\n";
@@ -149,10 +149,10 @@ namespace Parser {
                 break;
         }
         return str;
-    }
+    }*/
 
-    std::ostream &operator<<(std::ostream &str, const TDR_explicit &entry)
-    {
+    std::ostream &operator<<(std::ostream &str, const TDR_explicit &entry);
+    /*{
         str << "\tTimestamp: " << "\t" << entry.timestamp << "\n";
         str << "\tAddress: " << "\t" << entry.address << "\n";
         str << "\tIs_TDC: " << "\t";
@@ -163,7 +163,7 @@ namespace Parser {
         str << "\n";
         str << "\tRaw event:\n" << entry.evt;
         return str;
-    }
+    }*/
 
 }
 

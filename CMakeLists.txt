@@ -103,9 +103,9 @@ target_link_libraries(Buffer
             Sort::Utilities
 )
 
-add_library(Parser SHARED
+add_library(Parser STATIC
         src/Parser/TDRparser.cpp
-        src/Parser/Parser.cpp)
+        src/Parser/Parser.cpp src/Parser/TDRtypes.cpp)
 
 add_library(Sort::Parser ALIAS Parser)
 
@@ -126,7 +126,7 @@ if( ENABLE_LOGGING )
     target_compile_definitions(Parser PRIVATE LOG_ENABLED=1)
 endif()
 
-add_library(Parameter SHARED
+add_library(Parameter STATIC
         src/Parameters/Calibration.cpp
         src/Parameters/experimentsetup.cpp
         src/Parameters/Parameters.cpp
@@ -149,7 +149,7 @@ target_compile_features(Parameter PRIVATE cxx_std_11)
 
 target_link_libraries(Parser Sort::Parameter)
 
-add_library(Event SHARED
+add_library(Event STATIC
     src/Event/iThembaEvent.cpp src/Event/iThembaEventBuilder.cpp src/Event/iTLEvent.cpp)
 
 add_library(Sort::Event ALIAS Event)
