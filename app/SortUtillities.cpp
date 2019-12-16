@@ -41,6 +41,8 @@
 // ROOT headers
 #include <ROOT/TBufferMerger.hxx>
 
+#include <spdlog/spdlog.h>
+
 
 extern ProgressUI progress;
 
@@ -90,6 +92,17 @@ void SpliterThread(const Settings_t *settings, const bool *running)
 
     while ( Split_entries(settings, entries) ){
         // Everyting done in function...
+    }
+}
+
+// #################################################################
+
+void RunSplitterThread(const Settings_t *settings, const bool *running)
+{
+    try {
+        SpliterThread(settings, running);
+    } catch (const std::exception &e){
+        spdlog::get("console")->error("Splitter thread got and exception {}", e.what());
     }
 }
 
@@ -150,6 +163,18 @@ void EventBuilderThread(const Settings_t *settings, const bool *running)
 
 // #################################################################
 
+void RunEventBuilder(const Settings_t *settings, const bool *running)
+{
+    try {
+        EventBuilderThread(settings, running);
+    } catch (const std::exception &e){
+        spdlog::get("console")->error("Event builder thread got and exception {}", e.what());
+    }
+
+}
+
+// #################################################################
+
 void RootFillerThread(const Settings_t *settings, const bool *running, const int thread_id)
 {
     char tmp[1024];
@@ -187,6 +212,8 @@ void RootFillerThread(const Settings_t *settings, const bool *running, const int
     }
 }
 
+// #################################################################
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wfor-loop-analysis"
 void RFT(const Settings_t *settings, const bool *running, ROOT::Experimental::TBufferMerger *fm)
@@ -220,6 +247,16 @@ void RFT(const Settings_t *settings, const bool *running, ROOT::Experimental::TB
 }
 #pragma clang diagnostic pop
 
+// #################################################################
+
+void RunRootThread(const Settings_t *settings, const bool *running, ROOT::Experimental::TBufferMerger *fm
+{
+    try {
+        RFT(settings, running, fm);
+    } catch (const std::exception &e){
+        spdlog::get("console")->error("ROOT filler thread got and exception {}", e.what());
+    }
+}
 
 // #################################################################
 

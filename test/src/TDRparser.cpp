@@ -8,11 +8,10 @@
 
 #include <catch.hpp>
 
+using namespace Parser;
+
 TEST_CASE("Test of the TDR parser", "[TDRparser]")
 {
-    Parser::TDRparser parser;
+    TDRparser parser;
 
-    Parser::Parser::Status status;
-    Parser::Entry_t entry = parser.GetEntry(status);
-    REQUIRE( status == Parser::Parser::Status::ERROR );
 }

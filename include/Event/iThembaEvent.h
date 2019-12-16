@@ -6,6 +6,7 @@
 #define TDR2TREE_ITHEMBAEVENT_H
 
 #include <vector>
+#include <cassert>
 
 #include "Event/Event.h"
 #include "Parser/Entry.h"
