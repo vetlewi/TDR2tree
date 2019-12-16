@@ -210,7 +210,8 @@ target_link_libraries(TDR2tree
         Sort::RootInterface
         ROOT::RIO
         ROOT::Hist
-        ROOT::Tree)
+        ROOT::Tree
+        ${ROOT_LIBRARIES})
 
 
 ##############################################
