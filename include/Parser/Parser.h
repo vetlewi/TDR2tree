@@ -9,6 +9,7 @@
 
 #include <stdexcept>
 #include <vector>
+#include <memory>
 
 
 namespace spdlog {
