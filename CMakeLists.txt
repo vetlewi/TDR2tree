@@ -167,7 +167,7 @@ target_compile_features(Event PRIVATE cxx_std_11)
 
 target_link_libraries(Event PRIVATE Sort::Parameter Sort::Parser ROOT::Tree ROOT::Hist)
 
-add_library(RootInterface SHARED
+add_library(RootInterface STATIC
     src/RootInterface/HistManager.cpp
     src/RootInterface/RootFileManager.cpp
     src/RootInterface/RootInterface.cpp
