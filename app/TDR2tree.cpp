@@ -156,7 +156,11 @@ int main(int argc, char* argv[])
 #pragma clang diagnostic pop
     }
 
+#if ROOT_MT_FLAG
     ROOT::EnableImplicitMT(settings.num_filler_threads);
+#else
+    std::cout << "INFO: FillThread flag ignored, single thread filler used." << std::endl;
+#endif // ROOT_MT_FLAG
 
     // Next we will start the converter.
     ConvertFiles(&settings);

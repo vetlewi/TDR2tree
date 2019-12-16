@@ -5,6 +5,7 @@ option(ENABLE_DOC "Generates the documentation target" OFF)
 option(ENABLE_COVERAGE "Generates the coverage build" OFF)
 option(ENABLE_TESTING "Turns on testing" OFF)
 option(ENABLE_LOGGING "Turn on additional logging" OFF)
+option(ENABLE_MT_FILL "Enable experimental multi-threading fill to root file" OFF)
 set(ENABLE_TESTING 1)
 
 #Make sure that custom modules are found
@@ -195,6 +196,10 @@ target_include_directories(TDR2tree
         ${CMAKE_SOURCE_DIR}/external)
 
 target_compile_features(TDR2tree PRIVATE cxx_std_11)
+
+if ( ENABLE_MT_FILL )
+    target_compile_definitions(TDR2tree PRIVATE ROOT_MT_FLAG=1)
+endif()
 
 target_link_libraries(TDR2tree
         Sort::Buffer

@@ -239,15 +239,22 @@ void ConvertFiles(const Settings_t *settings)
 
     std::thread split_thread(SpliterThread, settings, &splitter_running);
     std::list<std::thread> event_threads(settings->num_split_threads);
+#if ROOT_MT_FLAG
     std::list<std::thread> fill_threads(settings->num_filler_threads);
+#else
+    std::list<std::thread> fill_threads(1);
+#endif // ROOT_MT_FLAG
 
     for ( auto &thread : event_threads ){
         thread = std::thread(EventBuilderThread, settings, &builder_running);
     }
 
-    int thread_ID = ( settings->num_filler_threads > 1 ) ? 0 : -1;
     for ( auto &thread : fill_threads ){
+#if ROOT_MT_FLAG
         thread = std::thread(RFT, settings, &filler_running, &bufferMerger);
+#else
+        thread = std::thread(RootFillerThread, settings, &filler_running, -1);
+#endif // ROOT_MT_FLAG
     }
 
 
