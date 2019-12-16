@@ -208,7 +208,9 @@ target_link_libraries(TDR2tree
         Sort::Utilities
         Sort::Event
         Sort::RootInterface
-        ROOT::RIO ROOT::Hist)
+        ROOT::RIO
+        ROOT::Hist
+        ROOT::Tree)
 
 
 ##############################################
