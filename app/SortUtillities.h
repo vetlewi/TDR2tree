@@ -58,4 +58,6 @@ void RootFillerThread(const Settings_t *settings, const bool *running, int threa
  */
 void ConvertFiles(const Settings_t *settings);
 
+void ConvertPostgre(const Settings_t *settings);
+
 #endif // SORTUTILLITIES_H

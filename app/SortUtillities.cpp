@@ -45,6 +45,10 @@
 #include <spdlog/spdlog.h>
 #endif // LOG_ENABLED
 
+#if POSTGRESQL_ENABLED
+#include <tao/pq.hpp>
+#endif // POSTGRESQL_ENABLED
+
 
 extern ProgressUI progress;
 
@@ -267,6 +271,160 @@ void RunRootThread(const Settings_t *settings, const bool *running, ROOT::Experi
 }
 
 // #################################################################
+
+void GetEnumType(char *str, const DetectorInfo_t &dinfo)
+{
+    switch ( dinfo.type ) {
+        case rfchan :
+            sprintf(str, "rf");
+            break;
+        case labr_3x8 :
+            sprintf(str, "labrL");
+            break;
+        case labr_2x2_fs :
+            sprintf(str, "labrF");
+            break;
+        case labr_2x2_ss :
+            sprintf(str, "labrS");
+            break;
+        case clover :
+            sprintf(str, "clover");
+            break;
+        case de_ring :
+            sprintf(str, "siRing");
+            break;
+        case de_sect :
+            sprintf(str, "siSect");
+            break;
+        case eDet :
+            sprintf(str, "siBack");
+            break;
+        default :
+            sprintf(str, "unknown");
+            break;
+    }
+}
+
+// #################################################################
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wfor-loop-analysis"
+#if POSTGRESQL_ENABLED
+void SQLfill(const Settings_t *settings, const bool *running)
+{
+    const auto conn = tao::pq::connection::create("host=localhost port=5432 dbname=experiment");
+    conn->prepare("fill", "INSERT INTO real_data_exp (id, type, timestamp, energy, timecorr) VALUES ($1, $2, $3, $4, $5)");
+
+    Parser::Entry_t entry;
+    DetectorInfo_t dinfo;
+    char enum_type[1024];
+    std::string enum_str;
+    uint64_t id = 0;
+    std::shared_ptr<tao::pq::transaction> tr;
+    while ( (*running) ){
+        if ( id == 0 )
+            tr = conn->transaction();
+        if ( settings->input_queue->wait_dequeue_timed(entry, std::chrono::seconds(1)) ){
+            dinfo = GetDetector(entry.address);
+            GetEnumType(enum_type, dinfo);
+            enum_str = enum_type;
+            ++id;
+            if ( dinfo.type != clover )
+                tr->execute("fill", dinfo.detectorNum, enum_str, entry.timestamp, entry.energy, entry.cfdcorr);
+            else
+                tr->execute("fill", dinfo.detectorNum*4+dinfo.telNum, enum_str, entry.timestamp, entry.energy, entry.cfdcorr);
+        }
+        if ( id == 16384 ){
+            tr->commit();
+            id = 0;
+        }
+    }
+    tr->commit();
+    id = 0;
+    while ( settings->input_queue->wait_dequeue_timed(entry, std::chrono::seconds(1)) ){
+        if ( id == 0 )
+            tr = conn->transaction();
+        dinfo = GetDetector(entry.address);
+        GetEnumType(enum_type, dinfo);
+        enum_str = enum_type;
+        ++id;
+        if ( dinfo.type != clover )
+            tr->execute("fill", dinfo.detectorNum, enum_str, entry.timestamp, entry.energy, entry.cfdcorr);
+        else
+            tr->execute("fill", dinfo.detectorNum*4+dinfo.telNum, enum_str, entry.timestamp, entry.energy, entry.cfdcorr);
+        if ( id == 16384 ){
+            tr->commit();
+            id = 0;
+        }
+    }
+}
+#endif // POSTGRESQL_ENABLED
+#pragma clang diagnostic pop
+
+void RunPG(const Settings_t *settings, const bool *running)
+{
+    try {
+        SQLfill(settings, running);
+    } catch (const std::exception &e) {
+#if LOG_ENABLED
+        spdlog::get("console")->error("ROOT filler thread got and exception {}", e.what());
+#endif // LOG_ENABLED
+    }
+}
+
+void ConvertPostgre(const Settings_t *settings)
+{
+    // First we will setup all the required file fetchers, etc.
+    Fetcher::FileBufferFetcher *bf = new Fetcher::MTFileBufferFetcher(settings->buffer_type);
+    const Fetcher::Buffer *buf;
+    std::vector<Parser::Entry_t> entries;
+
+    // Setup threads
+    bool filler_thread_running = true;
+
+    const auto conn = tao::pq::connection::create("host=localhost port=5432 dbname=experiment");
+    conn->execute("DROP TABLE IF EXISTS real_data_exp");
+    conn->execute("CREATE TABLE real_data_exp( key SERIAL PRIMARY KEY, id INTEGER, type detType, timestamp BIGINT, energy DOUBLE PRECISION, timecorr DOUBLE PRECISION)");
+
+    std::list<std::thread> filler_thread(4);
+
+    for (auto &thread : filler_thread ){
+        thread = std::thread(SQLfill, settings, &filler_thread_running);
+    }
+
+
+
+    for ( auto &file : settings->input_files ){
+        Fetcher::BufferFetcher::Status status = bf->Open(file.c_str(), 0);
+
+        while ( true ){
+            buf = bf->Next(status);
+            if ( status != Fetcher::BufferFetcher::OKAY ){
+                break;
+            }
+            entries = settings->parser->GetEntry(buf);
+            settings->input_queue->enqueue_bulk(std::begin(entries), entries.size());
+        }
+    }
+
+    // Finish up all the data left
+
+    filler_thread_running = false;
+
+    std::cout << "Waiting for filler thread to finish...";
+    size_t approx_start_size = settings->input_queue->size_approx();
+    progress.StartFillingHistograms(approx_start_size);
+    while ( settings->input_queue->size_approx() > 1000 ){
+        progress.UpdateEventBuildingProgress(approx_start_size - settings->input_queue->size_approx());
+        std::this_thread::sleep_for(std::chrono::microseconds(250));
+    }
+    std::cout << "Waiting for filler thread to finish...";
+    for ( auto &thread : filler_thread ){
+        if ( thread.joinable() ) {
+            thread.join();
+        }
+    }
+    std::cout << " Done" << std::endl;
+}
 
 void ConvertFiles(const Settings_t *settings)
 {

@@ -6,7 +6,7 @@ option(ENABLE_COVERAGE "Generates the coverage build" OFF)
 option(ENABLE_TESTING "Turns on testing" OFF)
 option(ENABLE_LOGGING "Turn on additional logging" OFF)
 option(ENABLE_MT_FILL "Enable experimental multi-threading fill to root file" OFF)
-set(ENABLE_TESTING 1)
+option(ENABLE_POSTGRESQL, "Enable experimental support for filling PostgreSQL" OFF)
 
 #Make sure that custom modules are found
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
@@ -53,6 +53,27 @@ if( ENABLE_LOGGING )
 
     add_subdirectory(${CMAKE_BINARY_DIR}/spdlog-src ${CMAKE_BINARY_DIR}/spdlog-build EXCLUDE_FROM_ALL)
     find_package(spdlog REQUIRED)
+endif()
+
+if( ENABLE_POSTGRESQL )
+    configure_file(${CMAKE_SOURCE_DIR}/cmake/taopq-CMakeLists.txt.in ${CMAKE_BINARY_DIR}/taopq-download/CMakeLists.txt)
+    execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+            RESULT_VARIABLE result
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/taopq-download)
+
+    if ( result )
+        message(FATAL_ERROR "CMake step for taopq failed: ${result}")
+    endif()
+
+    execute_process(COMMAND ${CMAKE_COMMAND} --build .
+            RESULT_VARIABLE result
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/taopq-download)
+    if ( result )
+        message(FATAL_ERROR "Build step for taopq failed: ${result}")
+    endif ()
+
+    add_subdirectory(${CMAKE_BINARY_DIR}/taopq-src ${CMAKE_BINARY_DIR}/taopq-build EXCLUDE_FROM_ALL)
+    find_package(taopq REQUIRED)
 endif()
 
 ##############################################
@@ -201,6 +222,14 @@ if ( ENABLE_MT_FILL )
     target_compile_definitions(TDR2tree PRIVATE ROOT_MT_FLAG=1)
 endif()
 
+if ( ENABLE_POSTGRESQL )
+    target_compile_definitions(TDR2tree PRIVATE POSTGRESQL_ENABLED=1)
+endif()
+
+if ( ENABLE_LOGGING )
+    target_compile_definitions(TDR2tree PRIVATE LOG_ENABLED=1)
+endif()
+
 target_link_libraries(TDR2tree
         Sort::Buffer
         Sort::Parser
@@ -211,7 +240,8 @@ target_link_libraries(TDR2tree
         ROOT::RIO
         ROOT::Hist
         ROOT::Tree
-        ${ROOT_LIBRARIES})
+        ${ROOT_LIBRARIES}
+        taocpp::taopq)
 
 
 ##############################################

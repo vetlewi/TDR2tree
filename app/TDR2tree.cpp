@@ -169,7 +169,11 @@ int main(int argc, char* argv[])
 #endif // ROOT_MT_FLAG
 
     // Next we will start the converter.
+#if POSTGRESQL_ENABLED
+    ConvertPostgre(&settings);
+#else
     ConvertFiles(&settings);
+#endif // POSTGRESQL_ENABLED
     return 0;
 
 }
