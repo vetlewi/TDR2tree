@@ -360,6 +360,7 @@ void SQLfill(const Settings_t *settings, const bool *running)
 #endif // POSTGRESQL_ENABLED
 #pragma clang diagnostic pop
 
+#if POSTGRESQL_ENABLED
 void RunPG(const Settings_t *settings, const bool *running)
 {
     try {
@@ -370,6 +371,7 @@ void RunPG(const Settings_t *settings, const bool *running)
 #endif // LOG_ENABLED
     }
 }
+
 
 void ConvertPostgre(const Settings_t *settings)
 {
@@ -425,6 +427,7 @@ void ConvertPostgre(const Settings_t *settings)
     }
     std::cout << " Done" << std::endl;
 }
+#endif // POSTGRESQL_ENABLED
 
 void ConvertFiles(const Settings_t *settings)
 {

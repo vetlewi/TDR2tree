@@ -65,7 +65,7 @@ if( ENABLE_POSTGRESQL )
         message(FATAL_ERROR "CMake step for taopq failed: ${result}")
     endif()
 
-    execute_process(COMMAND ${CMAKE_COMMAND} --build .
+    execute_process(COMMAND ${CMAKE_COMMAND} --build -j8 .
             RESULT_VARIABLE result
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/taopq-download)
     if ( result )
@@ -223,7 +223,7 @@ if ( ENABLE_MT_FILL )
 endif()
 
 if ( ENABLE_POSTGRESQL )
-    target_compile_definitions(TDR2tree PRIVATE POSTGRESQL_ENABLED=1)
+    #target_compile_definitions(TDR2tree PRIVATE POSTGRESQL_ENABLED=1)
 endif()
 
 if ( ENABLE_LOGGING )
@@ -239,9 +239,7 @@ target_link_libraries(TDR2tree
         Sort::RootInterface
         ROOT::RIO
         ROOT::Hist
-        ROOT::Tree
-        ${ROOT_LIBRARIES}
-        taocpp::taopq)
+        ROOT::Tree)
 
 
 ##############################################
