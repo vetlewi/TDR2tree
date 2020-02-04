@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
             nullptr,
             nullptr,
             nullptr,
-            1,
+            2,
             1
     };
 
@@ -132,10 +132,10 @@ int main(int argc, char* argv[])
     app.add_option("--queue_size", Queue_size, "Maximum size of the internal queues. Default is 8192")
         ->default_val("8192");
     app.add_option("--SplitThreads", settings.num_split_threads, "Number of splitter threads. Default is 1")
-        ->default_val("1");
+        ->default_val("2");
     app.add_option("--FillThreads", settings.num_filler_threads,
             "Number of filler threads. Default is 1. Note that ROOT often causes errors when multiple threads tries to interact with ROOT")
-        ->default_val("1");
+        ->default_val("2");
 
     try {
         app.parse(argc, argv);
@@ -145,6 +145,13 @@ int main(int argc, char* argv[])
 
     SetCalibration(calfile.c_str());
 
+    std::cout << "Splitter threads: " << settings.num_split_threads << std::endl;
+    std::cout << "Filler threads: " << settings.num_filler_threads << std::endl;
+    std::cout << "Ouput format: ";
+    if ( settings.output_csv )
+        std::cout << " csv" << std::endl;
+    else
+        std::cout << " root" << std::endl;
     std::cout << "Output file: " << settings.output_file << std::endl;
 
     // First we need to check if the format is implemented.
