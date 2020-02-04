@@ -60,4 +60,6 @@ void ConvertFiles(const Settings_t *settings);
 
 void ConvertPostgre(const Settings_t *settings);
 
+void ConvertFilesCSV(const Settings_t *settings);
+
 #endif // SORTUTILLITIES_H

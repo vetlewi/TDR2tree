@@ -49,6 +49,8 @@
 #include <tao/pq.hpp>
 #endif // POSTGRESQL_ENABLED
 
+#include <zstr.hpp>
+
 
 extern ProgressUI progress;
 
@@ -272,6 +274,73 @@ void RunRootThread(const Settings_t *settings, const bool *running, ROOT::Experi
 
 // #################################################################
 
+void CSVString(const Settings_t *settings, bool *running)
+{
+    char data[2048];
+    Parser::Entry_t entry;
+
+    while ( (*running) ){
+        if ( settings->input_queue->wait_dequeue_timed(entry, std::chrono::seconds(1)) ){
+            sprintf(data, "%d,%d,%d,%lld,%d,%d", entry.address, entry.adcdata, entry.cfddata, entry.timestamp, entry.cfdfail, entry.finishcode);
+            settings->str_queue->enqueue(data);
+        }
+    }
+
+    while ( settings->input_queue->try_dequeue(entry) ){
+        sprintf(data, "%d,%d,%d,%lld,%d,%d", entry.address, entry.adcdata, entry.cfddata, entry.timestamp, entry.cfdfail, entry.finishcode);
+        settings->str_queue->enqueue(data);
+    }
+
+}
+
+// #################################################################
+
+void ConvertCSV(const Settings_t *settings, bool *running)
+{
+    try {
+        CSVString(settings, running);
+    } catch (const std::exception &e){
+#if LOG_ENABLED
+        spdlog::get("console")->error("CSV converter got an exception {}", e.what());
+#endif // LOG_ENABLED
+    }
+}
+
+// #################################################################
+
+void CSVwrite(const Settings_t *settings, const bool *running)
+{
+    // Open file and write
+    zstr::ofstream output(settings->output_file);
+    //std::ofstream output(settings->output_file);
+    std::string str;
+    output << "address,adcdata,cfddata,timestamp,cfdflag,finishflag";
+    while ( (*running) ){
+        if ( settings->str_queue->wait_dequeue_timed(str, std::chrono::seconds(1)) ){
+            output << "\n" << str;
+        }
+    }
+
+    while ( settings->str_queue->try_dequeue(str) ){
+        output  << "\n" << str;
+    }
+}
+
+// #################################################################
+
+void WriteCSV(const Settings_t *settings, const bool *running)
+{
+    try {
+        CSVwrite(settings, running);
+    } catch (const std::exception &e){
+#if LOG_ENABLED
+        spdlog::get("console")->error("CSV writer got an exception {}", e.what());
+#endif // LOG_ENABLED
+    }
+}
+
+// #################################################################
+
 void GetEnumType(char *str, const DetectorInfo_t &dinfo)
 {
     switch ( dinfo.type ) {
@@ -428,6 +497,67 @@ void ConvertPostgre(const Settings_t *settings)
     std::cout << " Done" << std::endl;
 }
 #endif // POSTGRESQL_ENABLED
+
+void ConvertFilesCSV(const Settings_t *settings)
+{
+    Fetcher::FileBufferFetcher *bf = new Fetcher::MTFileBufferFetcher(settings->buffer_type);
+    const Fetcher::Buffer *buf;
+    std::vector<Parser::Entry_t> entries;
+
+    bool converter_running = true;
+    bool outputter_running = true;
+
+    std::list<std::thread> converter_threads(settings->num_split_threads);
+    std::thread outputter_thread(WriteCSV, settings, &outputter_running);
+
+    for ( auto &thread : converter_threads ){
+        thread = std::thread(ConvertCSV, settings, &converter_running);
+    }
+
+    for ( auto &file : settings->input_files ){
+        Fetcher::BufferFetcher::Status status = bf->Open(file.c_str(), 0);
+
+        while ( true ){
+            buf = bf->Next(status);
+            if ( status != Fetcher::BufferFetcher::OKAY ){
+                break;
+            }
+            entries = settings->parser->GetEntry(buf);
+            settings->input_queue->enqueue_bulk(std::begin(entries), entries.size());
+        }
+    }
+
+    converter_running = false;
+
+    auto approx_start_size = settings->input_queue->size_approx();
+    progress.StartBuildingEvents(approx_start_size);
+    size_t current_size;
+    while ( settings->input_queue->size_approx() > 1000 ){
+        current_size = settings->input_queue->size_approx();
+        progress.UpdateTreeFillProgress(approx_start_size - current_size);
+        std::this_thread::sleep_for(std::chrono::microseconds(250));
+    }
+    progress.Finish();
+
+    for (auto &thread : converter_threads){
+        if ( thread.joinable() )
+            thread.join();
+    }
+
+    outputter_running = false;
+
+    approx_start_size = settings->str_queue->size_approx();
+    progress.StartFillingTree(approx_start_size);
+    while ( settings->str_queue->size_approx() > 1000 ){
+        current_size = settings->str_queue->size_approx();
+        progress.UpdateTreeFillProgress(approx_start_size - current_size);
+        std::this_thread::sleep_for(std::chrono::microseconds(250));
+    }
+
+    if ( outputter_thread.joinable() )
+        outputter_thread.join();
+
+}
 
 void ConvertFiles(const Settings_t *settings)
 {

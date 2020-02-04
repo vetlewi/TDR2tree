@@ -52,6 +52,12 @@ void SetupTDR(Settings_t &settings, const int &queue_size)
     settings.input_queue = new Entry_queue_t(queue_size);
     settings.split_queue = new Event_queue_t(queue_size);
     settings.built_queue = new Event_queue_t(queue_size);
+    settings.str_queue = new String_queue_t(queue_size);
+
+    if ( settings.build_tree && settings.output_csv ){
+        std::cerr << "Error: Cannot output CSV and tree at the same time." << std::endl;
+        exit(EXIT_FAILURE);
+    }
 }
 
 int main(int argc, char* argv[])
@@ -68,6 +74,7 @@ int main(int argc, char* argv[])
             "",
             "TDR2tree",
             false,
+            false,
             "events",
             "Events",
             nullptr,
@@ -76,6 +83,7 @@ int main(int argc, char* argv[])
             1500,
             1500,
             DetectorType::eDet,
+            nullptr,
             nullptr,
             nullptr,
             nullptr,
@@ -112,6 +120,7 @@ int main(int argc, char* argv[])
     app.add_option("-e,--EventTime", settings.event_time,
             "Maximum time difference for an entry to be included in an event. Default is 1500 ns")->default_val("1500");
     app.add_flag("-t,--tree", settings.build_tree, "Flag to indicate that a tree should be built");
+    app.add_flag("--csv", settings.output_csv, "Flag to indicate that output should be compressed CSV (zlib). Cannot be selected together with -t,--tree");
     app.add_option("--TreeName", settings.tree_name, "Name of the tree. Default is 'events'")->default_str("events");
     app.add_option("--TreeTitle", settings.tree_title, "Title of the tree. Default is 'Events'")->default_str("Events");
     app.add_option("-f,--format", format, "Input file format. Default TDR.")
@@ -172,7 +181,11 @@ int main(int argc, char* argv[])
 #if POSTGRESQL_ENABLED
     ConvertPostgre(&settings);
 #else
-    ConvertFiles(&settings);
+    if ( settings.output_csv )
+        ConvertFilesCSV(&settings);
+    else
+        ConvertFiles(&settings);
+
 #endif // POSTGRESQL_ENABLED
     return 0;
 

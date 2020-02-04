@@ -23,12 +23,14 @@ namespace Parser {
 // Typedefs
 typedef moodycamel::BlockingConcurrentQueue<Parser::Entry_t> Entry_queue_t;
 typedef moodycamel::BlockingConcurrentQueue< std::vector<Parser::Entry_t> > Event_queue_t;
+typedef moodycamel::BlockingConcurrentQueue<std::string> String_queue_t;
 
 struct Settings_t {
     std::vector<std::string> input_files;   //!< List of all files to read from
     std::string output_file;                //!< File to write to
     std::string file_title;                 //!< Title of the output file
     bool build_tree;                        //!< Flag to indicate output to a tree
+    bool output_csv;                        //!< Flag to indicate output to CSV
     std::string tree_name;                  //!< Name of the output tree
     std::string tree_title;                 //!< Title of the output tree
     Fetcher::Buffer *buffer_type;           //!< Defines the buffer type (and the format)
@@ -40,6 +42,7 @@ struct Settings_t {
     Entry_queue_t *input_queue;             //!< Queue with sorted entries from the parser
     Event_queue_t *split_queue;             //!< Queue with grouped entries after splitting
     Event_queue_t *built_queue;             //!< Queue with finished built entries
+    String_queue_t *str_queue;              //!< Queue for storing strings to a CSV writer
     size_t num_split_threads;               //!< Number of splitter threads
     size_t num_filler_threads;              //!< Number of filler threads
 

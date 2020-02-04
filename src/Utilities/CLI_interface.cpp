@@ -16,4 +16,5 @@ Settings_t::~Settings_t()
     delete input_queue;
     delete split_queue;
     delete built_queue;
+    delete str_queue;
 }
