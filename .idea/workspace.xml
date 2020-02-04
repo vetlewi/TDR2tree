@@ -2,56 +2,61 @@
 <project version="4">
   <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
     <generated>
-      <config projectName="TDR2tree" targetName="TDRtools_dic" />
+      <config projectName="TDR2tree" targetName="Experimental" />
+      <config projectName="TDR2tree" targetName="ExperimentalMemCheck" />
+      <config projectName="TDR2tree" targetName="NightlyUpdate" />
+      <config projectName="TDR2tree" targetName="ExperimentalUpdate" />
+      <config projectName="TDR2tree" targetName="Nightly" />
+      <config projectName="TDR2tree" targetName="Continuous" />
+      <config projectName="TDR2tree" targetName="ContinuousConfigure" />
+      <config projectName="TDR2tree" targetName="Utilities" />
       <config projectName="TDR2tree" targetName="TDR2tree" />
+      <config projectName="TDR2tree" targetName="ExperimentalConfigure" />
+      <config projectName="TDR2tree" targetName="spdlog-utests" />
+      <config projectName="TDR2tree" targetName="ExperimentalStart" />
+      <config projectName="TDR2tree" targetName="NightlySubmit" />
+      <config projectName="TDR2tree" targetName="Parser" />
+      <config projectName="TDR2tree" targetName="ExperimentalBuild" />
+      <config projectName="TDR2tree" targetName="RootInterface" />
+      <config projectName="TDR2tree" targetName="ContinuousMemCheck" />
+      <config projectName="TDR2tree" targetName="ExperimentalSubmit" />
+      <config projectName="TDR2tree" targetName="ExperimentalCoverage" />
+      <config projectName="TDR2tree" targetName="Parameter" />
+      <config projectName="TDR2tree" targetName="TDRtools_dic" />
+      <config projectName="TDR2tree" targetName="spdlog_headers_for_ide" />
+      <config projectName="TDR2tree" targetName="NightlyBuild" />
+      <config projectName="TDR2tree" targetName="NightlyStart" />
+      <config projectName="TDR2tree" targetName="ContinuousTest" />
+      <config projectName="TDR2tree" targetName="ContinuousStart" />
+      <config projectName="TDR2tree" targetName="NightlyMemoryCheck" />
+      <config projectName="TDR2tree" targetName="Buffer" />
+      <config projectName="TDR2tree" targetName="NightlyMemCheck" />
+      <config projectName="TDR2tree" targetName="NightlyTest" />
+      <config projectName="TDR2tree" targetName="ContinuousCoverage" />
+      <config projectName="TDR2tree" targetName="NightlyCoverage" />
+      <config projectName="TDR2tree" targetName="ContinuousSubmit" />
+      <config projectName="TDR2tree" targetName="ContinuousUpdate" />
+      <config projectName="TDR2tree" targetName="ContinuousBuild" />
+      <config projectName="TDR2tree" targetName="NightlyConfigure" />
+      <config projectName="TDR2tree" targetName="Event" />
+      <config projectName="TDR2tree" targetName="ExperimentalTest" />
     </generated>
   </component>
   <component name="CMakeSettings" AUTO_RELOAD="true">
     <configurations>
-      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
-      <configuration PROFILE_NAME="Release" CONFIG_NAME="Release" />
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" GENERATION_OPTIONS="-DENABLE_LOGGING=ON" />
+      <configuration PROFILE_NAME="Release" CONFIG_NAME="Release" GENERATION_OPTIONS="-DENABLE_LOGGING=ON" />
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ff6b2c24-70e8-487b-a383-3f33126f0a92" name="Default Changelist" comment="Various changes">
-      <change afterPath="$PROJECT_DIR$/Containers/Event_old.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Containers/Event_old.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Containers/TDREvent.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Containers/TDREvent.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Converter.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Converter.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/RootInterface/TreeManager.cpp" afterDir="false" />
+    <list default="true" id="ff6b2c24-70e8-487b-a383-3f33126f0a92" name="Default Changelist" comment="Added old lib flag, since linker fails on Ubuntu.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configuration/CMakeLists.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configuration/Options.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Containers/BasicStruct.h" beforeDir="false" afterPath="$PROJECT_DIR$/Containers/BasicStruct.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Containers/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Containers/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Containers/Event.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Containers/Event.h" beforeDir="false" afterPath="$PROJECT_DIR$/Containers/Event.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileReader/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/FileReader/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileReader/FileReader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/FileReader/FileReader.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileReader/MTFileBufferFetcher.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/FileReader/MTFileBufferFetcher.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileReader/TDRFileReader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/FileReader/TDRFileReader.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileReader/XIA_CFD.c" beforeDir="false" afterPath="$PROJECT_DIR$/PhysicalParam/XIA_CFD.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileReader/XIA_CFD.h" beforeDir="false" afterPath="$PROJECT_DIR$/PhysicalParam/XIA_CFD.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileReader/aptr.h" beforeDir="false" afterPath="$PROJECT_DIR$/Tools/aptr.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileReader/aptr.ipp" beforeDir="false" afterPath="$PROJECT_DIR$/Tools/aptr.ipp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PhysicalParam/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/PhysicalParam/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PhysicalParam/Calibration.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/PhysicalParam/Calibration.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PhysicalParam/Calibration.h" beforeDir="false" afterPath="$PROJECT_DIR$/PhysicalParam/Calibration.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PhysicalParam/experimentsetup.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/PhysicalParam/experimentsetup.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PhysicalParam/experimentsetup.h" beforeDir="false" afterPath="$PROJECT_DIR$/PhysicalParam/experimentsetup.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RootInterface/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/RootInterface/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RootInterface/HistManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/RootInterface/HistManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RootInterface/HistManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/RootInterface/HistManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RootInterface/RootFileManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/RootInterface/RootFileManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RootInterface/RootInterface.h" beforeDir="false" afterPath="$PROJECT_DIR$/RootInterface/RootInterface.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RootInterface/TreeManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/RootInterface/TreeManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tools/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Tools/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/SortUtillities.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/app/SortUtillities.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/SortUtillities.h" beforeDir="false" afterPath="$PROJECT_DIR$/app/SortUtillities.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/TDR2tree.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/app/TDR2tree.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/Utilities/CLI_interface.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Utilities/CLI_interface.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Utilities/CLI_interface.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Utilities/CLI_interface.cpp" afterDir="false" />
     </list>
-    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -74,7 +79,7 @@
     <expand />
     <select />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Release" />
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -88,55 +93,289 @@
         <option value="Vetle Wegner Ingeberg &lt;vetlewi@fys.uio.no&gt;" />
       </list>
     </option>
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
         <entry key="$PROJECT_DIR$" value="PR282" />
       </map>
     </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="ROOT_SYNC" value="DONT_SYNC" />
+    <option name="UPDATE_TYPE" value="MERGE" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/app/SortUtillities.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/Event/iThembaEvent.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/RootInterface/RootFileManager.cpp" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
-  <component name="OCResolveContextSettings">
-    <option name="configuration" value="1-TDR2tree" />
-  </component>
   <component name="ProjectId" id="1Q6BN62yrrXu8vPvfHJGzik8xyC" />
-  <component name="ProjectLevelVcsManager">
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="cf.advertisement.text.has.clang-format" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../Qkinz" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
-    <property name="settings.editor.selected.configurable" value="reference.settings.deploy.options" />
+    <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
+    <property name="settings.editor.selected.configurable" value="CMakeSettings" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/PhysicalParam" />
-      <recent name="$PROJECT_DIR$/Tools" />
+      <recent name="$PROJECT_DIR$/external" />
+      <recent name="$PROJECT_DIR$/include/RootInterface" />
+      <recent name="$PROJECT_DIR$/src/RootInterface" />
+      <recent name="$PROJECT_DIR$/src/Utilities" />
+      <recent name="$PROJECT_DIR$/include/Utilities" />
     </key>
   </component>
-  <component name="RunDashboard">
-    <option name="ruleStates">
-      <list>
-        <RuleState>
-          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
-        </RuleState>
-        <RuleState>
-          <option name="name" value="StatusDashboardGroupingRule" />
-        </RuleState>
-      </list>
-    </option>
-  </component>
-  <component name="RunManager">
-    <configuration name="TDR2tree" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-i $USER_HOME$/Desktop/R57_0.dms -o r134.root -npg" WORKING_DIR="file://$PROJECT_DIR$/cmake-build-debug" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="TDR2tree" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="TDR2tree">
+  <component name="RunManager" selected="CMake Application.TDR2tree">
+    <configuration name="Buffer" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="Buffer" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="Continuous" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="Continuous" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ContinuousBuild" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="ContinuousBuild" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="ContinuousBuild">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ContinuousConfigure" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="ContinuousConfigure" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="ContinuousConfigure">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ContinuousCoverage" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="ContinuousCoverage" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="ContinuousCoverage">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ContinuousMemCheck" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="ContinuousMemCheck" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="ContinuousMemCheck">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ContinuousStart" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="ContinuousStart" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="ContinuousStart">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ContinuousSubmit" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="ContinuousSubmit" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="ContinuousSubmit">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ContinuousTest" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="ContinuousTest" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="ContinuousTest">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ContinuousUpdate" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="ContinuousUpdate" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="ContinuousUpdate">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Event" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="Event" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Experimental" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="Experimental" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ExperimentalBuild" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="ExperimentalBuild" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="ExperimentalBuild">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ExperimentalConfigure" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="ExperimentalConfigure" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="ExperimentalConfigure">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ExperimentalCoverage" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="ExperimentalCoverage" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="ExperimentalCoverage">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ExperimentalMemCheck" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="ExperimentalMemCheck" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="ExperimentalMemCheck">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ExperimentalStart" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="ExperimentalStart" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="ExperimentalStart">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ExperimentalSubmit" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="ExperimentalSubmit" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="ExperimentalSubmit">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ExperimentalTest" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="ExperimentalTest" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="ExperimentalTest">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ExperimentalUpdate" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="ExperimentalUpdate" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="ExperimentalUpdate">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Nightly" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="Nightly" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="NightlyBuild" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="NightlyBuild" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="NightlyBuild">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="NightlyConfigure" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="NightlyConfigure" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="NightlyConfigure">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="NightlyCoverage" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="NightlyCoverage" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="NightlyCoverage">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="NightlyMemCheck" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="NightlyMemCheck" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="NightlyMemCheck">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="NightlyMemoryCheck" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="NightlyMemoryCheck" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="NightlyMemoryCheck">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="NightlyStart" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="NightlyStart" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="NightlyStart">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="NightlySubmit" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="NightlySubmit" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="NightlySubmit">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="NightlyTest" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="NightlyTest" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="NightlyTest">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="NightlyUpdate" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="NightlyUpdate" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="NightlyUpdate">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Parameter" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="Parameter" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Parser" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="Parser" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RootInterface" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="RootInterface" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TDR2tree" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-i $USER_HOME$/Desktop/R77_9 -o test.csv --csv --SplitThreads=4 --FillThreads=4" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="TDR2tree" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="TDR2tree">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Utilities" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="Utilities" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="spdlog-utests" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="spdlog-utests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="TDR2tree" RUN_TARGET_NAME="spdlog-utests">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="spdlog_headers_for_ide" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="TDR2tree" TARGET_NAME="spdlog_headers_for_ide" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="CMake Application.Buffer" />
+      <item itemvalue="CMake Application.Event" />
+      <item itemvalue="CMake Application.Parameter" />
+      <item itemvalue="CMake Application.Parser" />
+      <item itemvalue="CMake Application.RootInterface" />
+      <item itemvalue="CMake Application.TDR2tree" />
+      <item itemvalue="CMake Application.Utilities" />
+      <item itemvalue="CMake Application.Continuous" />
+      <item itemvalue="CMake Application.ContinuousBuild" />
+      <item itemvalue="CMake Application.ContinuousConfigure" />
+      <item itemvalue="CMake Application.ContinuousCoverage" />
+      <item itemvalue="CMake Application.ContinuousMemCheck" />
+      <item itemvalue="CMake Application.ContinuousStart" />
+      <item itemvalue="CMake Application.ContinuousSubmit" />
+      <item itemvalue="CMake Application.ContinuousTest" />
+      <item itemvalue="CMake Application.ContinuousUpdate" />
+      <item itemvalue="CMake Application.Experimental" />
+      <item itemvalue="CMake Application.ExperimentalBuild" />
+      <item itemvalue="CMake Application.ExperimentalConfigure" />
+      <item itemvalue="CMake Application.ExperimentalCoverage" />
+      <item itemvalue="CMake Application.ExperimentalMemCheck" />
+      <item itemvalue="CMake Application.ExperimentalStart" />
+      <item itemvalue="CMake Application.ExperimentalSubmit" />
+      <item itemvalue="CMake Application.ExperimentalTest" />
+      <item itemvalue="CMake Application.ExperimentalUpdate" />
+      <item itemvalue="CMake Application.Nightly" />
+      <item itemvalue="CMake Application.NightlyBuild" />
+      <item itemvalue="CMake Application.NightlyConfigure" />
+      <item itemvalue="CMake Application.NightlyCoverage" />
+      <item itemvalue="CMake Application.NightlyMemCheck" />
+      <item itemvalue="CMake Application.NightlyMemoryCheck" />
+      <item itemvalue="CMake Application.NightlyStart" />
+      <item itemvalue="CMake Application.NightlySubmit" />
+      <item itemvalue="CMake Application.NightlyTest" />
+      <item itemvalue="CMake Application.NightlyUpdate" />
+      <item itemvalue="CMake Application.spdlog_headers_for_ide" />
+      <item itemvalue="CMake Application.spdlog-utests" />
+    </list>
+  </component>
+  <component name="ServiceViewManager">
+    <option name="viewStates">
+      <list>
+        <serviceView>
+          <treeState>
+            <expand />
+            <select />
+          </treeState>
+        </serviceView>
+      </list>
+    </option>
   </component>
   <component name="SvnConfiguration">
     <configuration>$USER_HOME$/.subversion</configuration>
@@ -168,6 +407,33 @@
       <workItem from="1568628590181" duration="322000" />
       <workItem from="1568628988872" duration="18594000" />
       <workItem from="1568979052260" duration="1240000" />
+      <workItem from="1571308501573" duration="18123000" />
+      <workItem from="1571654533123" duration="8148000" />
+      <workItem from="1571839732130" duration="2249000" />
+      <workItem from="1571997448657" duration="2872000" />
+      <workItem from="1572344533948" duration="5000" />
+      <workItem from="1572349484887" duration="12666000" />
+      <workItem from="1572378148048" duration="5844000" />
+      <workItem from="1572524066815" duration="2275000" />
+      <workItem from="1572526552816" duration="511000" />
+      <workItem from="1572536729011" duration="7159000" />
+      <workItem from="1572602950093" duration="3618000" />
+      <workItem from="1572698888699" duration="1563000" />
+      <workItem from="1572706310545" duration="1227000" />
+      <workItem from="1572708155648" duration="7021000" />
+      <workItem from="1573479530453" duration="25610000" />
+      <workItem from="1573598353333" duration="4225000" />
+      <workItem from="1573644748650" duration="5768000" />
+      <workItem from="1574263325456" duration="28000" />
+      <workItem from="1574337791820" duration="22000" />
+      <workItem from="1574349759382" duration="2000" />
+      <workItem from="1574633450160" duration="173000" />
+      <workItem from="1575491852572" duration="707000" />
+      <workItem from="1576490050284" duration="1768000" />
+      <workItem from="1576494852844" duration="3746000" />
+      <workItem from="1576510078890" duration="4575000" />
+      <workItem from="1576575222403" duration="1361000" />
+      <workItem from="1576840271981" duration="6278000" />
     </task>
     <task id="LOCAL-00001" summary="Updates.">
       <created>1559134323834</created>
@@ -365,17 +631,86 @@
       <option name="project" value="LOCAL" />
       <updated>1568633516344</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL−00029" summary="Loads of updates!">
+      <created>1573601910169</created>
+      <option name="number" value="LOCAL−00029" />
+      <option name="presentableId" value="LOCAL−00029" />
+      <updated>1573601910169</updated>
+    </task>
+    <task id="LOCAL−00030" summary="Tiny fix!">
+      <created>1573602159663</created>
+      <option name="number" value="LOCAL−00030" />
+      <option name="presentableId" value="LOCAL−00030" />
+      <updated>1573602159663</updated>
+    </task>
+    <task id="LOCAL−00031" summary="Logger is now a build option">
+      <created>1575492555863</created>
+      <option name="number" value="LOCAL−00031" />
+      <option name="presentableId" value="LOCAL−00031" />
+      <updated>1575492555863</updated>
+    </task>
+    <task id="LOCAL−00032" summary="Usage of the MT buffered ROOT filler are now an optional feature. The functionality seems to be unstable on linux, but works fine with 6.18 and macOS">
+      <created>1576491330397</created>
+      <option name="number" value="LOCAL−00032" />
+      <option name="presentableId" value="LOCAL−00032" />
+      <updated>1576491330397</updated>
+    </task>
+    <task id="LOCAL−00033" summary="Fixed such that all refs. to spd are now hidded if logger is not enabled.">
+      <created>1576495447404</created>
+      <option name="number" value="LOCAL−00033" />
+      <option name="presentableId" value="LOCAL−00033" />
+      <updated>1576495447404</updated>
+    </task>
+    <task id="LOCAL−00034" summary="Added missing memory header">
+      <created>1576495746209</created>
+      <option name="number" value="LOCAL−00034" />
+      <option name="presentableId" value="LOCAL−00034" />
+      <updated>1576495746209</updated>
+    </task>
+    <task id="LOCAL−00035" summary="Added missing TTree dependency">
+      <created>1576495863011</created>
+      <option name="number" value="LOCAL−00035" />
+      <option name="presentableId" value="LOCAL−00035" />
+      <updated>1576495863011</updated>
+    </task>
+    <task id="LOCAL−00036" summary="Building all as static libraries">
+      <created>1576496892288</created>
+      <option name="number" value="LOCAL−00036" />
+      <option name="presentableId" value="LOCAL−00036" />
+      <updated>1576496892288</updated>
+    </task>
+    <task id="LOCAL−00037" summary="Root interface now static as well">
+      <created>1576497054380</created>
+      <option name="number" value="LOCAL−00037" />
+      <option name="presentableId" value="LOCAL−00037" />
+      <updated>1576497054380</updated>
+    </task>
+    <task id="LOCAL−00038" summary="Added old lib flag, since linker fails on Ubuntu.">
+      <created>1576497575069</created>
+      <option name="number" value="LOCAL−00038" />
+      <option name="presentableId" value="LOCAL−00038" />
+      <updated>1576497575069</updated>
+    </task>
+    <task id="LOCAL−00039" summary="Changed time ref. to be fast labr 0">
+      <created>1576499326081</created>
+      <option name="number" value="LOCAL−00039" />
+      <option name="presentableId" value="LOCAL−00039" />
+      <updated>1576499326081</updated>
+    </task>
+    <task id="LOCAL−00040" summary="Added an option to fill SQL server">
+      <created>1576840753800</created>
+      <option name="number" value="LOCAL−00040" />
+      <option name="presentableId" value="LOCAL−00040" />
+      <updated>1576840753800</updated>
+    </task>
+    <task id="LOCAL−00041" summary="Stuff...">
+      <created>1576841188392</created>
+      <option name="number" value="LOCAL−00041" />
+      <option name="presentableId" value="LOCAL−00041" />
+      <updated>1576841188392</updated>
+    </task>
+    <option name="localTasksCounter" value="42" />
     <servers />
-  </component>
-  <component name="TodoView">
-    <todo-panel id="selected-file">
-      <is-autoscroll-to-source value="true" />
-    </todo-panel>
-    <todo-panel id="all">
-      <are-packages-shown value="true" />
-      <is-autoscroll-to-source value="true" />
-    </todo-panel>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
@@ -408,21 +743,10 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="CHECK_NEW_TODO" value="false" />
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="Fixed an error where the width of a channel (± 0.5) was not taken into account." />
-    <MESSAGE value="Fixed wrong type." />
-    <MESSAGE value="Added install path. Currently this is a static path." />
-    <MESSAGE value="Added badge for the license." />
-    <MESSAGE value="Added a method to check if the particle energies are within the required timings." />
-    <MESSAGE value="Fixed a bug where it would give a segerr if the file doesnt exist." />
-    <MESSAGE value="Changed the detector numeration of the dE rings to correspond to the real dE ring numbers." />
-    <MESSAGE value="Added a 2D graphical gate class in case it might be of use. If not, then it might be removed later." />
-    <MESSAGE value="Added time vs. energy spectra for particles." />
-    <MESSAGE value="Added dependency on GCAL for the PolygonGate." />
-    <MESSAGE value="Changes to make output files smaller." />
-    <MESSAGE value="Working on implementing the 2D gate." />
-    <MESSAGE value="Removed dependency on CGAL" />
     <MESSAGE value="Updated with MT buffer fetching. Hopefully this will reduce the memory requirements a lot." />
     <MESSAGE value="Added a missing header giving build errors on Ubuntu." />
     <MESSAGE value="Fixed an error that caused weird progress output to the terminal when running in npg mode." />
@@ -435,7 +759,127 @@
     <MESSAGE value="Removed some lines that is no longer needed." />
     <MESSAGE value="Marked constructor as explicit" />
     <MESSAGE value="Various changes" />
-    <option name="LAST_COMMIT_MESSAGE" value="Various changes" />
+    <MESSAGE value="Loads of updates!" />
+    <MESSAGE value="Tiny fix!" />
+    <MESSAGE value="Logger is now a build option" />
+    <MESSAGE value="Usage of the MT buffered ROOT filler are now an optional feature. The functionality seems to be unstable on linux, but works fine with 6.18 and macOS" />
+    <MESSAGE value="Fixed such that all refs. to spd are now hidded if logger is not enabled." />
+    <MESSAGE value="Added missing memory header" />
+    <MESSAGE value="Added missing TTree dependency" />
+    <MESSAGE value="Building all as static libraries" />
+    <MESSAGE value="Root interface now static as well" />
+    <MESSAGE value="Added old lib flag, since linker fails on Ubuntu." />
+    <MESSAGE value="Changed time ref. to be fast labr 0" />
+    <MESSAGE value="Added an option to fill SQL server" />
+    <MESSAGE value="Stuff..." />
+    <option name="LAST_COMMIT_MESSAGE" value="Stuff..." />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="160" y="70" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1576879631586">
+      <screen x="0" y="23" width="1440" height="822" />
+    </state>
+    <state x="160" y="70" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.23.1440.822@0.23.1440.822" timestamp="1576879631586" />
+    <state x="184" y="97" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.23.1440.823@0.23.1440.823" timestamp="1576840785222" />
+    <state x="184" y="97" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.23.1440.824@0.23.1440.824" timestamp="1576490997238" />
+    <state x="184" y="97" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.23.1440.825@0.23.1440.825" timestamp="1576494933473" />
+    <state x="360" y="23" key="CommitChangelistDialog2" timestamp="1580830075971">
+      <screen x="0" y="23" width="1440" height="822" />
+    </state>
+    <state x="360" y="23" key="CommitChangelistDialog2/0.23.1440.822@0.23.1440.822" timestamp="1580830075971" />
+    <state x="311" y="23" key="CommitChangelistDialog2/0.23.1440.823@0.23.1440.823" timestamp="1576840753614" />
+    <state x="299" y="36" key="CommitChangelistDialog2/0.23.1440.824@0.23.1440.824" timestamp="1576491438580" />
+    <state x="299" y="35" key="CommitChangelistDialog2/0.23.1440.825@0.23.1440.825" timestamp="1576497581517" />
+    <state width="1398" height="201" key="GridCell.Tab.0.bottom" timestamp="1577132992979">
+      <screen x="0" y="23" width="1440" height="822" />
+    </state>
+    <state width="1398" height="201" key="GridCell.Tab.0.bottom/0.23.1440.822@0.23.1440.822" timestamp="1577132992979" />
+    <state width="1398" height="201" key="GridCell.Tab.0.bottom/0.23.1440.823@0.23.1440.823" timestamp="1576576017963" />
+    <state width="1398" height="202" key="GridCell.Tab.0.bottom/0.23.1440.824@0.23.1440.824" timestamp="1576491983311" />
+    <state width="1398" height="201" key="GridCell.Tab.0.center" timestamp="1577132992979">
+      <screen x="0" y="23" width="1440" height="822" />
+    </state>
+    <state width="1398" height="201" key="GridCell.Tab.0.center/0.23.1440.822@0.23.1440.822" timestamp="1577132992979" />
+    <state width="1398" height="201" key="GridCell.Tab.0.center/0.23.1440.823@0.23.1440.823" timestamp="1576576017963" />
+    <state width="1398" height="202" key="GridCell.Tab.0.center/0.23.1440.824@0.23.1440.824" timestamp="1576491983309" />
+    <state width="1398" height="201" key="GridCell.Tab.0.left" timestamp="1577132992978">
+      <screen x="0" y="23" width="1440" height="822" />
+    </state>
+    <state width="1398" height="201" key="GridCell.Tab.0.left/0.23.1440.822@0.23.1440.822" timestamp="1577132992978" />
+    <state width="1398" height="201" key="GridCell.Tab.0.left/0.23.1440.823@0.23.1440.823" timestamp="1576576017962" />
+    <state width="1398" height="202" key="GridCell.Tab.0.left/0.23.1440.824@0.23.1440.824" timestamp="1576491983302" />
+    <state width="1398" height="201" key="GridCell.Tab.0.right" timestamp="1577132992979">
+      <screen x="0" y="23" width="1440" height="822" />
+    </state>
+    <state width="1398" height="201" key="GridCell.Tab.0.right/0.23.1440.822@0.23.1440.822" timestamp="1577132992979" />
+    <state width="1398" height="201" key="GridCell.Tab.0.right/0.23.1440.823@0.23.1440.823" timestamp="1576576017963" />
+    <state width="1398" height="202" key="GridCell.Tab.0.right/0.23.1440.824@0.23.1440.824" timestamp="1576491983310" />
+    <state x="144" y="95" key="MergeDialog" timestamp="1576491399857">
+      <screen x="0" y="23" width="1440" height="824" />
+    </state>
+    <state x="144" y="95" key="MergeDialog/0.23.1440.824@0.23.1440.824" timestamp="1576491399857" />
+    <state x="431" y="158" key="MultipleFileMergeDialog" timestamp="1576491399897">
+      <screen x="0" y="23" width="1440" height="824" />
+    </state>
+    <state x="431" y="158" key="MultipleFileMergeDialog/0.23.1440.824@0.23.1440.824" timestamp="1576491399897" />
+    <state x="206" y="23" key="SettingsEditor" timestamp="1576841024849">
+      <screen x="0" y="23" width="1440" height="823" />
+    </state>
+    <state x="206" y="23" key="SettingsEditor/0.23.1440.822@0.23.1440.822" timestamp="1576510696093" />
+    <state x="206" y="23" key="SettingsEditor/0.23.1440.823@0.23.1440.823" timestamp="1576841024849" />
+    <state x="98" y="80" key="SettingsEditor/0.23.1440.825@0.23.1440.825" timestamp="1576494982728" />
+    <state x="320" y="162" key="Vcs.Push.Dialog.v2" timestamp="1580830083928">
+      <screen x="0" y="23" width="1440" height="822" />
+    </state>
+    <state x="320" y="162" key="Vcs.Push.Dialog.v2/0.23.1440.822@0.23.1440.822" timestamp="1580830083928" />
+    <state x="320" y="162" key="Vcs.Push.Dialog.v2/0.23.1440.823@0.23.1440.823" timestamp="1576840755737" />
+    <state x="320" y="163" key="Vcs.Push.Dialog.v2/0.23.1440.824@0.23.1440.824" timestamp="1576491449074" />
+    <state x="320" y="163" key="Vcs.Push.Dialog.v2/0.23.1440.825@0.23.1440.825" timestamp="1576497595709" />
+    <state x="397" y="266" key="com.intellij.ide.util.TipDialog" timestamp="1576840272116">
+      <screen x="0" y="23" width="1440" height="823" />
+    </state>
+    <state x="397" y="266" key="com.intellij.ide.util.TipDialog/0.23.1440.822@0.23.1440.822" timestamp="1576575222388" />
+    <state x="397" y="266" key="com.intellij.ide.util.TipDialog/0.23.1440.823@0.23.1440.823" timestamp="1576840272116" />
+    <state x="397" y="267" key="com.intellij.ide.util.TipDialog/0.23.1440.824@0.23.1440.824" timestamp="1576490050811" />
+    <state x="397" y="267" key="com.intellij.ide.util.TipDialog/0.23.1440.825@0.23.1440.825" timestamp="1576494852872" />
+    <state x="503" y="359" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1576491433545">
+      <screen x="0" y="23" width="1440" height="824" />
+    </state>
+    <state x="503" y="359" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.23.1440.824@0.23.1440.824" timestamp="1576491433545" />
+    <state x="385" y="170" width="670" height="676" key="search.everywhere.popup" timestamp="1576512765382">
+      <screen x="0" y="23" width="1440" height="823" />
+    </state>
+    <state x="385" y="170" width="670" height="676" key="search.everywhere.popup/0.23.1440.823@0.23.1440.823" timestamp="1576512765382" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/Event/iThembaEventBuilder.cpp</url>
+          <line>107</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/Event/iThembaEventBuilder.cpp</url>
+          <line>59</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/Event/iThembaEventBuilder.cpp</url>
+          <line>68</line>
+          <option name="timeStamp" value="10" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/Event/iTLEvent.cpp</url>
+          <line>108</line>
+          <option name="timeStamp" value="15" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/include/Event/Event.h</url>
+          <line>36</line>
+          <option name="timeStamp" value="24" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

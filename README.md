@@ -1,10 +1,7 @@
 # TDR2tree
 [![License](https://img.shields.io/github/license/vetlewi/TDR2tree.svg)](https://github.com/vetlewi/TDR2tree/blob/master/LICENSE)
 
-This is a small tool for converting TDR format files to ROOT trees.
+This is a tool for converting list mode data in the TDR format to ROOT trees.
+Over time different format parsers should be included as plugins.
 
-The following input is required:
-´´´
-	>> TDR2tree -i /path/to/tdr/file -o /path/to/output/file -c /path/to/cal/file
-´´´
-For sorting 
+The code is avalible under GPL license.

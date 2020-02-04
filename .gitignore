@@ -132,7 +132,7 @@ CMakeLists.txt.user*
 *.creator.user*
 
 # Qt Creator backups
-
+*.idea*
 
 # End of https://www.gitignore.io/api/c,qt,c++,qtcreator
 
