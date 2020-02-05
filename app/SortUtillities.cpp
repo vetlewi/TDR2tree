@@ -126,6 +126,11 @@ bool Make_events(const Settings_t *settings)
     if ( !settings->split_queue->wait_dequeue_timed(entries, std::chrono::seconds(1)) )
         return false;
 
+    if ( settings->trigger_type == any ) {
+        settings->built_queue->enqueue(entries);
+        return true;
+    }
+
     auto entry = std::begin(entries);
 
     while ( entry != std::end(entries) ){

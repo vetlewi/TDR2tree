@@ -20,12 +20,13 @@ enum DetectorType {
     invalid,        //!< Invalid address
     labr_3x8,       //!< Is a 3.5x8 inch labr detector
     labr_2x2_ss,    //!< Is a 2x2 labr detector, slow signal
-    labr_2x2_fs,    //! Is a 2x2 labr detector, fast signal
+    labr_2x2_fs,    //!< Is a 2x2 labr detector, fast signal
     clover,         //!< Is a clover crystal
     de_ring,        //!< Is a Delta-E ring
     de_sect,        //!< Is a Delta-E sector
     eDet,           //!< Is a E detector
-    rfchan,         //! The channel where the RF is connected
+    rfchan,         //!< The channel where the RF is connected
+    any,            //!< Any type
     unused          //!< Is a unused XIA channel
 };
 
