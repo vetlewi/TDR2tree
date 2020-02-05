@@ -19,7 +19,7 @@ list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 #   - ROOT built with CMake. Add in CMAKE_PREFIX_PATH the installation prefix for ROOT
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 
-find_package(ROOT REQUIRED COMPONENTS RIO Net Hist)
+find_package(ROOT 6.16 CONFIG REQUIRED COMPONENTS RIO Net Hist)
 
 find_package(ZLIB)
 if ( ZLIB_FOUND )
