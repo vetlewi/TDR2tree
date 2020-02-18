@@ -86,39 +86,69 @@ bool SetCalibration(const char *calfile)
     return true;
 }
 
-Parser::Entry_t &CalibrateEnergy(Parser::Entry_t &detector)
+double CalibrateEnergy(const Parser::Entry_t &detector)
 {
+    double energy = 0;
     DetectorInfo_t dinfo = GetDetector(detector.address);
     switch (dinfo.type) {
         case labr_3x8 :
-            detector.energy = gain_labrL[dinfo.detectorNum]*(detector.adcdata + drand48() - 0.5) + shift_labrL[dinfo.detectorNum];
+            energy = gain_labrL[dinfo.detectorNum]*(detector.adcdata + drand48() - 0.5) + shift_labrL[dinfo.detectorNum];
             break;
         case labr_2x2_ss :
-            detector.energy = gain_labrS[dinfo.detectorNum]*(detector.adcdata + drand48() - 0.5) + shift_labrS[dinfo.detectorNum];
+            energy = gain_labrS[dinfo.detectorNum]*(detector.adcdata + drand48() - 0.5) + shift_labrS[dinfo.detectorNum];
             break;
         case labr_2x2_fs :
-            detector.energy = gain_labrF[dinfo.detectorNum]*(detector.adcdata + drand48() - 0.5) + shift_labrF[dinfo.detectorNum];
+            energy = gain_labrF[dinfo.detectorNum]*(detector.adcdata + drand48() - 0.5) + shift_labrF[dinfo.detectorNum];
             break;
         case clover :
-            detector.energy = gain_clover[dinfo.detectorNum*NUM_CLOVER_CRYSTALS+dinfo.telNum]*(detector.adcdata + drand48() - 0.5) + shift_clover[dinfo.detectorNum*NUM_CLOVER_CRYSTALS+dinfo.telNum];
+            energy = gain_clover[dinfo.detectorNum*NUM_CLOVER_CRYSTALS+dinfo.telNum]*(detector.adcdata + drand48() - 0.5) + shift_clover[dinfo.detectorNum*NUM_CLOVER_CRYSTALS+dinfo.telNum];
             break;
         case de_ring :
-            detector.energy = gain_ring[dinfo.detectorNum]*(detector.adcdata + drand48() - 0.5) + shift_ring[dinfo.detectorNum];
+            energy = gain_ring[dinfo.detectorNum]*(detector.adcdata + drand48() - 0.5) + shift_ring[dinfo.detectorNum];
             break;
         case de_sect :
-            detector.energy = gain_sect[dinfo.detectorNum]*(detector.adcdata + drand48() - 0.5) + shift_sect[dinfo.detectorNum];
+            energy = gain_sect[dinfo.detectorNum]*(detector.adcdata + drand48() - 0.5) + shift_sect[dinfo.detectorNum];
             break;
         case eDet :
-            detector.energy = gain_back[dinfo.detectorNum]*(detector.adcdata + drand48() - 0.5) + shift_back[dinfo.detectorNum];
+            energy = gain_back[dinfo.detectorNum]*(detector.adcdata + drand48() - 0.5) + shift_back[dinfo.detectorNum];
             break;
         default :
-            detector.energy = detector.adcdata;
+            energy = detector.adcdata;
             break;
     }
-    return detector;
+    return energy;
 }
 
-Parser::Entry_t &CalibrateCFD(Parser::Entry_t &detector)
+double CalibrateCFD(const Parser::Entry_t &detector, int64_t &timestamp, bool &cfdfail)
+{
+    double cfdcorr = 0;
+    switch ( GetSamplingFrequency(detector.address) ){
+        case f000MHz :
+            cfdfail = true;
+            break;
+        case f100MHz :
+            cfdcorr = XIA_CFD_Fraction_100MHz(detector.cfddata, cfdfail);
+            timestamp *= 10;
+            if ( detector.cfddata == 0 )
+                cfdfail = true;
+            break;
+        case f250MHz :
+            cfdcorr = XIA_CFD_Fraction_250MHz(detector.cfddata, cfdfail);
+            timestamp *= 8;
+            if ( detector.cfddata == 0 )
+                cfdfail = true;
+            break;
+        case f500MHz :
+            cfdcorr = XIA_CFD_Fraction_500MHz(detector.cfddata, cfdfail);
+            timestamp *= 10;
+            if ( detector.cfddata == 0 )
+                cfdfail = true;
+            break;
+    }
+    return cfdcorr;
+}
+
+/*Parser::Entry_t &CalibrateCFD(Parser::Entry_t &detector)
 {
     switch ( GetSamplingFrequency(detector.address) ) {
         case f100MHz :
@@ -146,45 +176,46 @@ Parser::Entry_t &CalibrateCFD(Parser::Entry_t &detector)
             break;
     }
     return detector;
-}
+}*/
 
-Parser::Entry_t &CalibrateTime(Parser::Entry_t &detector)
+double CalTime(const Parser::Entry_t &detector)
 {
     DetectorInfo_t dinfo = GetDetector(detector.address);
+    double time = 0;
     switch (dinfo.type) {
         case labr_3x8 :
-            detector.cfdcorr = detector.cfdcorr + shift_t_labrL[dinfo.detectorNum];
+            time = detector.cfdcorr + shift_t_labrL[dinfo.detectorNum];
             break;
         case labr_2x2_ss :
-            detector.cfdcorr = detector.cfdcorr + shift_t_labrS[dinfo.detectorNum];
+            time = detector.cfdcorr + shift_t_labrS[dinfo.detectorNum];
             break;
         case labr_2x2_fs :
-            detector.cfdcorr = detector.cfdcorr + shift_t_labrF[dinfo.detectorNum];
+            time = detector.cfdcorr + shift_t_labrF[dinfo.detectorNum];
             break;
         case clover :
-            detector.cfdcorr = detector.cfdcorr + shift_t_clover[dinfo.detectorNum*NUM_CLOVER_CRYSTALS + dinfo.telNum];
+            time = detector.cfdcorr + shift_t_clover[dinfo.detectorNum*NUM_CLOVER_CRYSTALS + dinfo.telNum];
             break;
         case de_ring :
-            detector.cfdcorr = detector.cfdcorr + shift_t_ring[dinfo.detectorNum];
+            time = detector.cfdcorr + shift_t_ring[dinfo.detectorNum];
             break;
         case de_sect :
-            detector.cfdcorr = detector.cfdcorr + shift_t_sect[dinfo.detectorNum];
+            time = detector.cfdcorr + shift_t_sect[dinfo.detectorNum];
             break;
         case eDet :
-            detector.cfdcorr = detector.cfdcorr + shift_t_back[dinfo.detectorNum];
+            time = detector.cfdcorr + shift_t_back[dinfo.detectorNum];
             break;
         default :
-            detector.cfdcorr = detector.cfdcorr;
+            time = detector.cfdcorr;
             break;
     }
-    return detector;
+    return time;
 }
 
 Parser::Entry_t &Calibrate(Parser::Entry_t &entry)
 {
-    entry = CalibrateEnergy(entry);
-    entry = CalibrateCFD(entry);
-    entry = CalibrateTime(entry);
+    entry.energy = CalibrateEnergy(entry);
+    entry.cfdcorr = CalibrateCFD(entry, entry.timestamp, entry.cfdfail);
+    entry.cfdcorr = CalTime(entry);
     return entry;
 }
 

@@ -25,7 +25,6 @@ Entry_t MakeEntry(const TDR_entry &adc, const TDR_entry &tdc)
     assert( adc.address == tdc.address );
     assert( adc.timestamp == tdc.timestamp );
 
-
     Entry_t ret = {adc.address,
                    static_cast<uint16_t>(adc.evt->ADC_data),
                    static_cast<uint16_t>(tdc.evt->ADC_data),

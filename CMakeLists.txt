@@ -208,7 +208,7 @@ target_include_directories(RootInterface
 target_compile_features(RootInterface PRIVATE cxx_std_11)
 target_link_libraries(RootInterface ROOT::RIO ROOT::Hist ROOT::Tree Sort::Parameter)
 
-add_executable(TDR2tree ${CMAKE_SOURCE_DIR}/app/TDR2tree.cpp app/SortUtillities.h app/SortUtillities.cpp)
+add_executable(TDR2tree ${CMAKE_SOURCE_DIR}/app/TDR2tree.cpp app/SortUtillities.cpp app/SortUtillities.h)
 
 target_include_directories(TDR2tree
     PRIVATE
