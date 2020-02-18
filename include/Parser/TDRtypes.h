@@ -79,7 +79,13 @@ namespace Parser {
             assert(evt != nullptr);
         }
 
-        friend bool operator==(const TDR_entry &lhs, const TDR_entry &rhs);
+        friend bool operator==(const TDR_entry &lhs, const TDR_entry &rhs)
+        {
+            bool req = (lhs.address == rhs.address);
+            req = req & (lhs.timestamp == rhs.timestamp);
+            req = req & (lhs.is_tdc != rhs.is_tdc);
+            return req;
+        }
     };
 
     /*bool operator==(const TDR_entry &lhs, const TDR_entry &rhs)

@@ -6,13 +6,13 @@
 
 using namespace Parser;
 
-bool Parser::operator==(const TDR_entry &lhs, const TDR_entry &rhs)
+/*bool Parser::operator==(const TDR_entry &lhs, const TDR_entry &rhs)
 {
     bool req = (lhs.address == rhs.address);
     req = req & (lhs.timestamp == rhs.timestamp);
     req = req & (lhs.is_tdc != rhs.is_tdc);
     return req;
-}
+}*/
 
 std::ostream &Parser::operator<<(std::ostream &str, const TDR_event_type_t &event)
 {
