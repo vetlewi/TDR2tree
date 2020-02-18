@@ -141,6 +141,7 @@ target_include_directories(Parser
 )
 
 target_compile_features(Parser PRIVATE cxx_std_11)
+target_compile_options(Parser PRIVATE -Wall)
 
 if( ENABLE_LOGGING )
     target_link_libraries(Parser spdlog::spdlog)
