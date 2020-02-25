@@ -83,7 +83,7 @@ TH2 *RootFileManager::CreateTH2(const char *name, const char *title, int xbin, d
     return m;
 }
 
-
+#if ROOT_MT_FLAG
 RootMergeFileManager::RootMergeFileManager(ROOT::Experimental::TBufferMerger *bm)
         : file( bm->GetFile() ){}
 
@@ -136,3 +136,4 @@ TH2 *RootMergeFileManager::CreateTH2(const char *name, const char *title, int xb
     list.push_back(m);
     return m;
 }
+#endif // ROOT_MT_FLAG

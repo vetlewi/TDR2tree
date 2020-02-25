@@ -53,6 +53,7 @@ HistManager::HistManager(RootFileManager *fm)
 {
 }
 
+#if ROOT_MT_FLAG
 HistManager::HistManager(RootMergeFileManager *fm)
         : time_ring( fm->CreateTH2("time_ring", "Time spectra rings", 3000, -1500, 1500, "Time [ns]", NUM_SI_RING, 0, NUM_SI_RING, "Ring ID") )
         , time_sect( fm->CreateTH2("time_sect", "Time spectra sectors", 3000, -1500, 1500, "Time [ns]", NUM_SI_SECT, 0, NUM_SI_SECT, "Sector ID") )
@@ -80,6 +81,7 @@ HistManager::HistManager(RootMergeFileManager *fm)
         , addback_hist( fm->CreateTH2("time_self_clover", "Time spectra, clover self timing",3000, -1500, 1500, "Time [ns]",NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") )
 {
 }
+#endif // ROOT_MT_FLAG
 
 void HistManager::FillTDiff(const Event::iThembaEntry &start, const std::vector<Event::iThembaEntry> &entries, TH2 *hist)
 {

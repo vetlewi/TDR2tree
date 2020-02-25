@@ -72,9 +72,10 @@ public:
     //! Constructor.
     explicit HistManager(RootFileManager *fileManager    /*!< ROOT file where the histograms will reside.    */);
 
+#if ROOT_MT_FLAG
     //! Constructor.
     explicit HistManager(RootMergeFileManager *fileManager    /*!< ROOT file where the histograms will reside.    */);
-
+#endif // ROOT_MT_FLAG
 
     //! Fill spectra with an event.
     void AddEntry(const Event::iThembaEvent &event  /*!< Event to read from    */);

@@ -30,12 +30,14 @@ class TH2;
 class TTree;
 class TObject;
 
+#if ROOT_MT_FLAG
 namespace ROOT {
     namespace Experimental {
         class TBufferMerger;
         class TBufferMergerFile;
     }
 }
+#endif // ROOT_MT_FLAG
 
 #include <vector>
 
@@ -106,6 +108,7 @@ public:
 
 };
 
+#if ROOT_MT_FLAG
 class RootMergeFileManager {
 
 private:
@@ -163,6 +166,6 @@ public:
                    int ybin, double ymin, double ymax, const char *ytitle, const char *dir="");
 
 };
-
+#endif // ROOT_MT_FLAG
 
 #endif // ROOTFILEMANAGER_H

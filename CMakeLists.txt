@@ -220,6 +220,7 @@ target_include_directories(TDR2tree
 target_compile_features(TDR2tree PRIVATE cxx_std_11)
 
 if ( ENABLE_MT_FILL )
+    target_compile_definitions(RootInterface PRIVATE ROOT_MT_FLAG=1)
     target_compile_definitions(TDR2tree PRIVATE ROOT_MT_FLAG=1)
 endif()
 

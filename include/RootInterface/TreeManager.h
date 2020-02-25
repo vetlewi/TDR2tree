@@ -45,12 +45,14 @@ public:
             entry_obj->SetupTree(tree);
         }
 
+#if ROOT_MT_FLAG
     TreeManager(RootMergeFileManager *fm, const char *name, const char *title, Event::Base *type)
             : tree( fm->CreateTree(name, title) )
             , entry_obj( type )
     {
         entry_obj->SetupTree(tree);
     }
+#endif // ROOT_MT_FLAG
 
     ~TreeManager()
     {

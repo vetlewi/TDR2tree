@@ -230,7 +230,7 @@ void RootFillerThread(const Settings_t *settings, const bool *running, const int
 }
 
 // #################################################################
-
+#if ROOT_MT_FLAG
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wfor-loop-analysis"
 void RFT(const Settings_t *settings, const bool *running, ROOT::Experimental::TBufferMerger *fm)
@@ -276,7 +276,7 @@ void RunRootThread(const Settings_t *settings, const bool *running, ROOT::Experi
 #endif // LOG_ENABLED
     }
 }
-
+#endif // ROOT_MT_FLAG
 // #################################################################
 
 void CSVString(const Settings_t *settings, bool *running)
