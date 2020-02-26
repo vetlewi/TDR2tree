@@ -91,6 +91,8 @@ int main(int argc, char* argv[])
             1
     };
 
+    std::string config_out = "";
+
     CLI::App app{"TDR2tree - a list-mode converter and event builder"};
 
     std::string calfile;
@@ -107,6 +109,7 @@ int main(int argc, char* argv[])
         {"de_sect", DetectorType::de_sect},
         {"eDet", DetectorType::eDet},
         {"rfchan", DetectorType::rfchan},
+        {"any", DetectorType::any},
         {"unused", DetectorType::unused}
     };
 
@@ -136,7 +139,9 @@ int main(int argc, char* argv[])
     app.add_option("--FillThreads", settings.num_filler_threads,
             "Number of filler threads. Default is 1. Note that ROOT often causes errors when multiple threads tries to interact with ROOT")
         ->default_val("2");
-
+    app.add_option("--write-config", config_out, "File to write config to.");
+    app.set_config("--config");
+    app.config_formatter(std::make_shared<CLI::ConfigTOML>());
     try {
         app.parse(argc, argv);
     } catch ( const CLI::ParseError &e ){
@@ -144,6 +149,11 @@ int main(int argc, char* argv[])
     }
 
     SetCalibration(calfile.c_str());
+
+    if ( !config_out.empty() ){
+        std::ofstream outfile(config_out);
+        outfile << app.config_to_str(true, true);
+    }
 
     std::cout << "Splitter threads: " << settings.num_split_threads << std::endl;
     std::cout << "Filler threads: " << settings.num_filler_threads << std::endl;
