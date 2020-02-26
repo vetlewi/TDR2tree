@@ -89,6 +89,8 @@ bool FileReader::Open(const char *filename, size_t want)
 #endif
     } else {
         file_stdio = fopen(filename, "rb");
+        if ( !file_stdio )
+            return false;
 
         fseek(file_stdio, 0, SEEK_END);
         progress.StartNewFile(filename, ftell(file_stdio));

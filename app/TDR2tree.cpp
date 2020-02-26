@@ -127,11 +127,9 @@ int main(int argc, char* argv[])
     app.add_option("--TreeName", settings.tree_name, "Name of the tree. Default is 'events'")->default_str("events");
     app.add_option("--TreeTitle", settings.tree_title, "Title of the tree. Default is 'Events'")->default_str("Events");
     app.add_option("-f,--format", format, "Input file format. Default TDR.")
-        ->default_str("TDR")
-        ;//->transform(CLI::CheckedTransformer(format_map, CLI::ignore_case));
+        ->default_str("TDR")->transform(CLI::CheckedTransformer(format_map, CLI::ignore_case));
     app.add_option("--trigger", settings.trigger_type, "Detector event trigger. Default is eDet")
-        ->default_str("eDet")
-        ;//->transform(CLI::CheckedTransformer(trigger_map, CLI::ignore_case));
+        ->default_str("eDet")->transform(CLI::CheckedTransformer(trigger_map, CLI::ignore_case));
     app.add_option("--queue_size", Queue_size, "Maximum size of the internal queues. Default is 8192")
         ->default_val("8192");
     app.add_option("--SplitThreads", settings.num_split_threads, "Number of splitter threads. Default is 1")
@@ -147,6 +145,12 @@ int main(int argc, char* argv[])
     } catch ( const CLI::ParseError &e ){
         return app.exit(e);
     }
+    auto input_files = settings.input_files;
+    settings.input_files.clear();
+    for ( auto &input : input_files ){
+        if ( !input.empty() )
+            settings.input_files.push_back(input);
+    }
 
     SetCalibration(calfile.c_str());
 
@@ -155,38 +159,48 @@ int main(int argc, char* argv[])
         outfile << app.config_to_str(true, true);
     }
 
+    std::cout << "Calibration file: " << calfile << std::endl;
+    auto trig = std::find_if(std::begin(trigger_map), std::end(trigger_map),
+            [&settings](const std::pair<std::string, DetectorType> &i){
+        return i.second == settings.trigger_type; });
+    std::cout << "Trigger: " << trig->first << std::endl;
+
     std::cout << "Splitter threads: " << settings.num_split_threads << std::endl;
     std::cout << "Filler threads: " << settings.num_filler_threads << std::endl;
-    std::cout << "Ouput format: ";
-    if ( settings.output_csv )
-        std::cout << " csv" << std::endl;
-    else
-        std::cout << " root" << std::endl;
-    std::cout << "Output file: " << settings.output_file << std::endl;
-
+    std::cout << "Input format: ";
     // First we need to check if the format is implemented.
     switch ( format ){
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCDFAInspection"
         case Sirius : {
+            //std::cout << "Sirius" << std::endl;
             std::cout << "Sirius format is not yet implemented." << std::endl;
             return 0;
         }
 #pragma clang diagnostic pop
 
         case TDR : {
+            std::cout << "TDR" << std::endl;
             SetupTDR(settings, Queue_size);
             break;
         }
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCDFAInspection"
         case XIA : {
+            //std::cout << "XIA" << std::endl;
             std::cout << "XIA format is not yet implemented." << std::endl;
             return 0;
         }
 #pragma clang diagnostic pop
     }
+
+    std::cout << "Ouput format: ";
+    if ( settings.output_csv )
+        std::cout << " CSV" << std::endl;
+    else
+        std::cout << " ROOT" << std::endl;
+    std::cout << "Output file: " << settings.output_file << std::endl;
 
 #if ROOT_MT_FLAG
     ROOT::EnableImplicitMT(settings.num_filler_threads);
