@@ -133,10 +133,10 @@ int main(int argc, char* argv[])
     app.add_option("--queue_size", Queue_size, "Maximum size of the internal queues. Default is 8192")
         ->default_val("8192");
     app.add_option("--SplitThreads", settings.num_split_threads, "Number of splitter threads. Default is 1")
-        ->default_val("2");
+        ->default_val("1");
     app.add_option("--FillThreads", settings.num_filler_threads,
             "Number of filler threads. Default is 1. Note that ROOT often causes errors when multiple threads tries to interact with ROOT")
-        ->default_val("2");
+        ->default_val("1");
     app.add_option("--write-config", config_out, "File to write config to.");
     app.set_config("--config");
     app.config_formatter(std::make_shared<CLI::ConfigTOML>());

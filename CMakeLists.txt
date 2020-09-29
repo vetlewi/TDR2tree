@@ -126,7 +126,7 @@ target_link_libraries(Buffer
 
 add_library(Parser STATIC
         src/Parser/TDRparser.cpp
-        src/Parser/Parser.cpp src/Parser/TDRtypes.cpp)
+        src/Parser/Parser.cpp src/Parser/TDRtypes.cpp src/Parser/XIAparser.cpp)
 
 add_library(Sort::Parser ALIAS Parser)
 

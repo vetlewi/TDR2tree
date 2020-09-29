@@ -152,8 +152,10 @@ bool Make_events(const Settings_t *settings)
                     break;
             }
             settings->built_queue->enqueue(std::vector<Parser::Entry_t>(start, stop));
+            entry = stop;
+        } else {
+            ++entry;
         }
-        ++entry;
     }
     return true;
 }
