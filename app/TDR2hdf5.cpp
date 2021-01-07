@@ -9,7 +9,7 @@
 #include <exception>
 
 #include <spdlog/spdlog.h>
-#include <CLI11.hpp>
+#include <CLI/CLI.hpp>
 
 #include <Buffer/Buffer.h>
 #include <Buffer/BufferFetcher.h>
@@ -69,14 +69,12 @@ void SetupCLI(CLI::App &app, RunSettings *settings)
                    "Input file(s).")->required(true);
     app.add_option("-o,--output", settings->output_file,
                    "Output file.")->required(true);
-    std::map<std::string, spdlog::level::level_enum> log_map;
-    for (auto & level_name : spdlog::level::level_string_views){
-        log_map[level_name.data()] = spdlog::level::from_str(level_name.data());
-    }
-    app.add_option("-l,--level", settings->log_level,
+
+    std::string lvl;
+    app.add_option("-l,--level", lvl,
                    "Set logging level.")
-                   ->default_str("info")
-                   ->transform(CLI::CheckedTransformer(log_map, CLI::ignore_case));
+                   ->default_str("info");
+    settings->log_level = spdlog::level::from_str(lvl);
 
     app.add_option("-t,--threads",
                    settings->threads)->default_val(std::thread::hardware_concurrency());

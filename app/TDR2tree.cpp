@@ -11,8 +11,8 @@
 // External dependencies
 #if LOG_ENABLED
 #include <spdlog/spdlog.h>
-#include <spdlog/sinks/file_sinks.h>
-//#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 #endif // LOG_ENABLED
 
 // Buffer library
@@ -34,7 +34,7 @@
 ProgressUI progress; // NOLINT(cert-err58-cpp)
 
 #include <Utilities/CLI_interface.h>
-#include <CLI11.hpp>
+#include <CLI/CLI.hpp>
 
 #include "SortUtillities.h"
 

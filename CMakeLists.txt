@@ -29,14 +29,14 @@ else()
     set(ZLIB_flag 0)
 endif()
 
+# External dependencies
+add_subdirectory(external EXCLUDE_FROM_ALL)
+
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 ##############################################
 # Download and unpack the project
-
-if( ENABLE_LOGGING )
-endif()
 
 if( ENABLE_POSTGRESQL )
     configure_file(${CMAKE_SOURCE_DIR}/cmake/taopq-CMakeLists.txt.in ${CMAKE_BINARY_DIR}/taopq-download/CMakeLists.txt)
@@ -75,11 +75,12 @@ target_include_directories(Utilities
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
     PRIVATE
         ${CMAKE_SOURCE_DIR}/src/Utilities
-        ${CMAKE_SOURCE_DIR}/external
         ${HDF5_INCLUDE_DIRS}
 )
 
 target_compile_features(Utilities PRIVATE cxx_std_11)
+
+target_link_libraries(Utilities PUBLIC readerwriterqueue concurrentqueue spdlog::spdlog)
 
 add_library(Buffer STATIC
         src/Buffer/aptr.cpp
@@ -129,10 +130,7 @@ target_include_directories(Parser
 target_compile_features(Parser PRIVATE cxx_std_11)
 target_compile_options(Parser PRIVATE -Wall)
 
-if( ENABLE_LOGGING )
-    target_link_libraries(Parser spdlog::spdlog)
-    target_compile_definitions(Parser PRIVATE LOG_ENABLED=1)
-endif()
+target_compile_definitions(Parser PUBLIC LOG_ENABLED=1)
 
 add_library(Parameter STATIC
         src/Parameters/Calibration.cpp
@@ -155,7 +153,7 @@ target_include_directories(Parameter
 
 target_compile_features(Parameter PRIVATE cxx_std_11)
 
-target_link_libraries(Parser Sort::Parameter)
+target_link_libraries(Parser PRIVATE Sort::Parameter PUBLIC spdlog::spdlog)
 
 add_library(Event STATIC
     src/Event/iThembaEvent.cpp src/Event/iThembaEventBuilder.cpp src/Event/iTLEvent.cpp)
@@ -168,7 +166,6 @@ target_include_directories(Event
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
     PRIVATE
         ${CMAKE_SOURCE_DIR}/src/Event
-        ${CMAKE_SOURCE_DIR}/external
 )
 
 target_compile_features(Event PRIVATE cxx_std_11)
@@ -211,7 +208,8 @@ if ( HDF5_FOUND )
             Sort::Parameter
             Sort::Utilities
             Sort::Event
-            ${HDF5_LIBRARIES})
+            ${HDF5_LIBRARIES}
+            CLI11::CLI11)
 
     #target_link_directories(TDR2hdf5 PRIVATE HDF5_)
 
@@ -238,11 +236,9 @@ if ( ENABLE_POSTGRESQL )
     #target_compile_definitions(TDR2tree PRIVATE POSTGRESQL_ENABLED=1)
 endif()
 
-if ( ENABLE_LOGGING )
-    target_compile_definitions(TDR2tree PRIVATE LOG_ENABLED=1)
-endif()
+target_compile_definitions(TDR2tree PRIVATE LOG_ENABLED=1)
 
-target_link_libraries(TDR2tree
+target_link_libraries(TDR2tree PUBLIC
         Sort::Buffer
         Sort::Parser
         Sort::Parameter
@@ -251,7 +247,9 @@ target_link_libraries(TDR2tree
         Sort::RootInterface
         ROOT::RIO
         ROOT::Hist
-        ROOT::Tree)
+        ROOT::Tree
+        spdlog::spdlog
+        CLI11::CLI11)
 
 
 ##############################################

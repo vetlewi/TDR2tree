@@ -12,6 +12,7 @@
 
 #include <spdlog/spdlog.h>
 
+#include <unistd.h>
 #include <sys/fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
