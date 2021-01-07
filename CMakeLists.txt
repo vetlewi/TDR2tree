@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(TDR2tree VERSION 1.5.0 LANGUAGES CXX)
+project(TDR2tree VERSION 1.5.0 LANGUAGES C CXX)
 
 option(ENABLE_DOC "Generates the documentation target" OFF)
 option(ENABLE_COVERAGE "Generates the coverage build" OFF)
@@ -20,6 +20,7 @@ list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 
 find_package(ROOT 6.16 CONFIG REQUIRED COMPONENTS RIO Net Hist)
+find_package(HDF5)
 
 find_package(ZLIB)
 if ( ZLIB_FOUND )
@@ -35,24 +36,6 @@ find_package(Threads REQUIRED)
 # Download and unpack the project
 
 if( ENABLE_LOGGING )
-    configure_file(${CMAKE_SOURCE_DIR}/cmake/spdlog-CMakeLists.txt.in ${CMAKE_BINARY_DIR}/spdlog-download/CMakeLists.txt)
-    execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-            RESULT_VARIABLE result
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/spdlog-download)
-
-    if (result)
-        message(FATAL_ERROR "CMake step for spdlog failed: ${result}")
-    endif ()
-
-    execute_process(COMMAND ${CMAKE_COMMAND} --build .
-            RESULT_VARIABLE result
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/spdlog-download)
-    if (result)
-        message(FATAL_ERROR "Build step for spdlog failed: ${result}")
-    endif ()
-
-    add_subdirectory(${CMAKE_BINARY_DIR}/spdlog-src ${CMAKE_BINARY_DIR}/spdlog-build EXCLUDE_FROM_ALL)
-    find_package(spdlog REQUIRED)
 endif()
 
 if( ENABLE_POSTGRESQL )
@@ -80,7 +63,9 @@ endif()
 # Create targets and set properties
 
 add_library(Utilities STATIC
-        src/Utilities/ProgressUI.cpp src/Utilities/CLI_interface.cpp)
+        src/Utilities/ProgressUI.cpp
+        src/Utilities/CLI_interface.cpp
+        src/Utilities/HDF5_writer.cpp)
 
 add_library(Sort::Utilities ALIAS Utilities)
 
@@ -91,6 +76,7 @@ target_include_directories(Utilities
     PRIVATE
         ${CMAKE_SOURCE_DIR}/src/Utilities
         ${CMAKE_SOURCE_DIR}/external
+        ${HDF5_INCLUDE_DIRS}
 )
 
 target_compile_features(Utilities PRIVATE cxx_std_11)
@@ -208,6 +194,30 @@ target_include_directories(RootInterface
 
 target_compile_features(RootInterface PRIVATE cxx_std_11)
 target_link_libraries(RootInterface ROOT::RIO ROOT::Hist ROOT::Tree Sort::Parameter)
+
+if ( HDF5_FOUND )
+    add_executable(TDR2hdf5 ${CMAKE_SOURCE_DIR}/app/TDR2hdf5.cpp)
+
+    target_include_directories(TDR2hdf5
+        PRIVATE
+            ${CMAKE_SOURCE_DIR}/app
+            ${CMAKE_SOURCE_DIR}/external
+            ${HDF5_INCLUDE_DIRS})
+
+    target_link_libraries(TDR2hdf5
+        PRIVATE
+            Sort::Buffer
+            Sort::Parser
+            Sort::Parameter
+            Sort::Utilities
+            Sort::Event
+            ${HDF5_LIBRARIES})
+
+    #target_link_directories(TDR2hdf5 PRIVATE HDF5_)
+
+    target_compile_features(TDR2hdf5 PRIVATE cxx_std_17)
+
+endif()
 
 add_executable(TDR2tree ${CMAKE_SOURCE_DIR}/app/TDR2tree.cpp app/SortUtillities.cpp app/SortUtillities.h)
 

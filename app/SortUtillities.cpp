@@ -578,6 +578,7 @@ void ConvertFiles(const Settings_t *settings)
     bool builder_running = true;
     bool filler_running = true;
 
+
     ROOT::Experimental::TBufferMerger bufferMerger(settings->output_file.c_str(), "RECREATE");
 
     std::thread split_thread(SpliterThread, settings, &splitter_running);
