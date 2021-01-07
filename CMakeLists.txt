@@ -65,7 +65,7 @@ endif()
 add_library(Utilities STATIC
         src/Utilities/ProgressUI.cpp
         src/Utilities/CLI_interface.cpp
-        src/Utilities/HDF5_writer.cpp)
+        )#src/Utilities/HDF5_writer.cpp)
 
 add_library(Sort::Utilities ALIAS Utilities)
 
@@ -75,7 +75,7 @@ target_include_directories(Utilities
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
     PRIVATE
         ${CMAKE_SOURCE_DIR}/src/Utilities
-        ${HDF5_INCLUDE_DIRS}
+        #${HDF5_INCLUDE_DIRS}
 )
 
 target_compile_features(Utilities PRIVATE cxx_std_11)
