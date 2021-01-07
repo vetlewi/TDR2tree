@@ -20,7 +20,7 @@ list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 
 find_package(ROOT 6.16 CONFIG REQUIRED COMPONENTS RIO Net Hist)
-find_package(HDF5)
+#find_package(HDF5)
 
 find_package(ZLIB)
 if ( ZLIB_FOUND )
