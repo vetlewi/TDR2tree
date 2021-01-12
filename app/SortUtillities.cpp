@@ -19,6 +19,7 @@
 
 // Buffer library
 #include <Buffer/MTFileBufferFetcher.h>
+#include <Buffer/STFileBufferFetcher.h>
 
 // Parser library
 #include <Parser/Parser.h>
@@ -576,7 +577,7 @@ void ConvertFilesCSV(const Settings_t *settings)
 void ConvertFiles(const Settings_t *settings)
 {
     // First we will setup all the required file fetchers, etc.
-    Fetcher::FileBufferFetcher *bf = new Fetcher::MTFileBufferFetcher(settings->buffer_type);
+    Fetcher::FileBufferFetcher *bf = new Fetcher::STFileBufferFetcher(settings->buffer_type);
     const Fetcher::Buffer *buf;
     std::vector<Parser::Entry_t> entries;
 
@@ -667,4 +668,18 @@ void ConvertFiles(const Settings_t *settings)
         }
     }
     std::cout << " Done" << std::endl;
+}
+
+void ConvertROOT(const Settings_t *settings)
+{
+    // First we will setup all the required file fetchers, etc.
+    Fetcher::FileBufferFetcher *bf = new Fetcher::MTFileBufferFetcher(settings->buffer_type);
+    const Fetcher::Buffer *buf;
+    std::vector<Parser::Entry_t> entries;
+
+    // Next we will setup threads
+    std::thread reader_thread;
+    std::thread split_thread;
+    std::thread builder_thread;
+
 }
