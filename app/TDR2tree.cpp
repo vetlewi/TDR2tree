@@ -88,7 +88,8 @@ int main(int argc, char* argv[])
             nullptr,
             nullptr,
             2,
-            1
+            1,
+            false
     };
 
     std::string config_out = "";
@@ -137,6 +138,7 @@ int main(int argc, char* argv[])
     app.add_option("--FillThreads", settings.num_filler_threads,
             "Number of filler threads. Default is 1. Note that ROOT often causes errors when multiple threads tries to interact with ROOT")
         ->default_val("1");
+    app.add_flag("--PR271", settings.PR271, "Exp. PR271 - removes the pulser");
     app.add_option("--write-config", config_out, "File to write config to.");
     app.set_config("--config");
     app.config_formatter(std::make_shared<CLI::ConfigTOML>());

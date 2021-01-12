@@ -46,6 +46,8 @@ struct Settings_t {
     size_t num_split_threads;               //!< Number of splitter threads
     size_t num_filler_threads;              //!< Number of filler threads
 
+    bool PR271;                             //!< Exp. PR271, remove pulser
+
     ~Settings_t(); // Clean-up
 };
 

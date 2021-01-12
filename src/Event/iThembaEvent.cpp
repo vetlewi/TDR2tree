@@ -204,6 +204,8 @@ iThembaEvent::iThembaEvent(const std::vector<Parser::Entry_t> &data)
             }
 
             case eDet : {
+                if ( entry.address == 486 )
+                    break;
                 if ( !backData.Add(entry) ){
                     std::cerr << __PRETTY_FUNCTION__ << ": Too many back words." << std::endl;
                 }
