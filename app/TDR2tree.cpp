@@ -9,7 +9,9 @@
 #include <cstdio>
 
 // ROOT stuff first?!
+#if ROOT_MT_FLAG
 #include <TROOT.h>
+#endif // ROOT_MT_FLAG
 
 // External dependencies
 #if LOG_ENABLED
