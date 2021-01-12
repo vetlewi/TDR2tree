@@ -59,6 +59,14 @@ if( ENABLE_POSTGRESQL )
     find_package(taopq REQUIRED)
 endif()
 
+add_library(logging INTERFACE)
+if ( ENABLE_LOGGING )
+    target_compile_definitions(logging PUBLIC LOG_ENABLED=1)
+    target_link_libraries(logging PUBLIC spdlog::spdlog)
+else()
+endif()
+
+
 ##############################################
 # Create targets and set properties
 
@@ -79,8 +87,7 @@ target_include_directories(Utilities
 )
 
 target_compile_features(Utilities PRIVATE cxx_std_11)
-
-target_link_libraries(Utilities PUBLIC readerwriterqueue concurrentqueue spdlog::spdlog)
+target_link_libraries(Utilities PUBLIC readerwriterqueue concurrentqueue logging)
 
 add_library(Buffer STATIC
         src/Buffer/aptr.cpp
@@ -109,6 +116,7 @@ target_link_libraries(Buffer
             Threads::Threads
         PUBLIC
             Sort::Utilities
+            logging
 )
 
 add_library(Parser STATIC
@@ -129,8 +137,6 @@ target_include_directories(Parser
 
 target_compile_features(Parser PRIVATE cxx_std_11)
 target_compile_options(Parser PRIVATE -Wall)
-
-target_compile_definitions(Parser PUBLIC LOG_ENABLED=1)
 
 add_library(Parameter STATIC
         src/Parameters/Calibration.cpp
@@ -153,7 +159,7 @@ target_include_directories(Parameter
 
 target_compile_features(Parameter PRIVATE cxx_std_11)
 
-target_link_libraries(Parser PRIVATE Sort::Parameter PUBLIC spdlog::spdlog)
+target_link_libraries(Parser PRIVATE Sort::Parameter PUBLIC logging)
 
 add_library(Event STATIC
     src/Event/iThembaEvent.cpp src/Event/iThembaEventBuilder.cpp src/Event/iTLEvent.cpp)
@@ -209,7 +215,8 @@ if ( HDF5_FOUND )
             Sort::Utilities
             Sort::Event
             ${HDF5_LIBRARIES}
-            CLI11::CLI11)
+            CLI11::CLI11
+            logging)
 
     #target_link_directories(TDR2hdf5 PRIVATE HDF5_)
 
@@ -236,8 +243,6 @@ if ( ENABLE_POSTGRESQL )
     #target_compile_definitions(TDR2tree PRIVATE POSTGRESQL_ENABLED=1)
 endif()
 
-target_compile_definitions(TDR2tree PRIVATE LOG_ENABLED=1)
-
 target_link_libraries(TDR2tree PUBLIC
         Sort::Buffer
         Sort::Parser
@@ -248,7 +253,7 @@ target_link_libraries(TDR2tree PUBLIC
         ROOT::RIO
         ROOT::Hist
         ROOT::Tree
-        spdlog::spdlog
+        logging
         CLI11::CLI11)
 
 
