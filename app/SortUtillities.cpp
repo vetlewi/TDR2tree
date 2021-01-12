@@ -670,16 +670,216 @@ void ConvertFiles(const Settings_t *settings)
     std::cout << " Done" << std::endl;
 }
 
-void ConvertROOT(const Settings_t *settings)
+void ReadFiles(const Settings_t *settings)
 {
-    // First we will setup all the required file fetchers, etc.
-    Fetcher::FileBufferFetcher *bf = new Fetcher::MTFileBufferFetcher(settings->buffer_type);
+    Fetcher::FileBufferFetcher *bf = new Fetcher::STFileBufferFetcher(settings->buffer_type);
     const Fetcher::Buffer *buf;
     std::vector<Parser::Entry_t> entries;
 
-    // Next we will setup threads
-    std::thread reader_thread;
-    std::thread split_thread;
-    std::thread builder_thread;
+    for ( auto &file : settings->input_files ){
+        if ( !settings->running )
+            break;
+        Fetcher::BufferFetcher::Status status = bf->Open(file.c_str(), 0);
 
+        while ( settings->running ){
+            buf = bf->Next(status);
+            if ( status != Fetcher::BufferFetcher::OKAY ){
+                break;
+            }
+            entries = settings->parser->GetEntry(buf);
+            settings->input_queue->enqueue_bulk(std::begin(entries), entries.size());
+        }
+    }
+}
+
+void SplitTimes(const Settings_t *settings, const bool &running)
+{
+    Parser::Entry_t entry;
+    std::vector<Parser::Entry_t> entries;
+
+    while ( running ){
+        if ( !settings->input_queue->wait_dequeue_timed(entry, std::chrono::seconds(1)) ){
+            continue;
+        }
+
+        if ( entries.empty() ){
+            entries.push_back(entry);
+            continue;
+        }
+
+        if ( fabs(TimeDiff(entry, entries.back())) < settings->split_time ){
+            entries.push_back(entry);
+        } else {
+            settings->split_queue->enqueue(entries);
+            entries.clear();
+            entries.push_back(entry);
+        }
+    }
+
+    // Ensure we flush all remaining events. Note that we should end run after the reader thread.
+    while ( settings->input_queue->try_dequeue(entry) ){
+        if ( entries.empty() ){
+            entries.push_back(entry);
+            continue;
+        }
+
+        if ( fabs(TimeDiff(entry, entries.back())) < settings->split_time ){
+            entries.push_back(entry);
+        } else {
+            settings->split_queue->enqueue(entries);
+            entries.clear();
+            entries.push_back(entry);
+        }
+    }
+    settings->split_queue->enqueue(entries);
+}
+
+inline bool BuildAnEvent(const Settings_t *settings, std::vector<Parser::Entry_t> &entries,
+                         std::vector<Parser::Entry_t> &event)
+{
+    // Clear event
+    event.clear();
+    if ( settings->trigger_type == any ) {
+        event = entries;
+        return true;
+    }
+
+    auto entry = std::begin(entries);
+    while ( entry != std::end(entries) ){
+
+        if ( settings->PR271 ){
+            if (entry->address == 486) {
+                ++entry;
+                continue;
+            }
+        }
+
+        if ( GetDetectorType((*entry).address) == settings->trigger_type ){
+            auto start = entry;
+            while ( start != std::begin(entries) ) {
+                if (fabs(TimeDiff(*start, *entry)) < settings->event_time){
+                    --start;
+                } else {
+                    break;
+                }
+            }
+            auto stop = entry+1;
+            while ( entry != std::end(entries) ) {
+                if (fabs(TimeDiff(*stop, *entry)) < settings->event_time) {
+                    ++stop;
+                } else {
+                    break;
+                }
+            }
+        } else {
+            ++entry;
+        }
+    }
+    return !event.empty();
+}
+
+void BuildEvents(const Settings_t *settings, const bool &running)
+{
+    std::vector<Parser::Entry_t> entries;
+    std::vector<Parser::Entry_t> event;
+
+    while ( running ){
+
+        if ( !settings->split_queue->wait_dequeue_timed(entries, std::chrono::seconds(1)) )
+            continue;
+
+        if ( BuildAnEvent(settings, entries, event) ){
+            settings->built_queue->enqueue(event);
+        }
+    }
+
+    while ( settings->split_queue->try_dequeue(entries) ){
+        if ( BuildAnEvent(settings, entries, event) ){
+            settings->built_queue->enqueue(event);
+        }
+    }
+}
+
+void ROOTfiller(const Settings_t *settings, const bool &running)
+{
+    RootFileManager fileManager(settings->output_file.c_str(), "RECREATE", settings->file_title.c_str());
+    HistManager histManager(&fileManager);
+    TreeManager treeManager(&fileManager,
+                            settings->tree_name.c_str(),
+                            settings->tree_title.c_str(),
+                            settings->event_type->New());
+
+    std::vector<Parser::Entry_t> event;
+
+    while ( running ){
+
+        if ( !settings->built_queue->wait_dequeue_timed(event, std::chrono::seconds(1)) ){
+            continue;
+        }
+
+        Event::iThembaEvent evt(event);
+        histManager.AddEntry(evt);
+        if ( settings->build_tree )
+            treeManager.AddEntry(&evt);
+
+    }
+
+    while ( settings->built_queue->try_dequeue(event) ){
+        Event::iThembaEvent evt(event);
+        histManager.AddEntry(evt);
+        if ( settings->build_tree )
+            treeManager.AddEntry(&evt);
+    }
+}
+
+void ConvertROOT(const Settings_t *settings)
+{
+    // Next we will setup threads
+    bool st = true, bt = true, ft = true;
+
+    std::thread reader_thread( ReadFiles, settings);
+    std::thread split_thread( SplitTimes, settings, std::ref(st) );
+    std::list<std::thread> builder_threads( settings->num_split_threads );
+    for ( auto &thread :  builder_threads ){
+        thread = std::thread(BuildEvents, settings, std::ref(bt));
+    }
+    std::thread filler_thread( ROOTfiller, settings, std::ref(ft) );
+
+    reader_thread.join(); // Blocks until the thread is done running.
+
+    st = false;
+    auto approx_start_size = settings->input_queue->size_approx();
+    progress.StartSplitEntries(approx_start_size);
+    size_t current_size;
+    while ( settings->input_queue->size_approx() > 1000 ){
+        current_size = settings->input_queue->size_approx();
+        progress.UpdateSplitEntriesProgress(approx_start_size - current_size);
+        std::this_thread::sleep_for(std::chrono::microseconds(250));
+    }
+    progress.Finish();
+    split_thread.join(); // Blocks until the split thread is done
+
+
+    approx_start_size = settings->split_queue->size_approx();
+    progress.StartBuildingEvents(approx_start_size);
+    while ( settings->split_queue->size_approx() > 1000 ){
+        current_size = settings->split_queue->size_approx();
+        progress.UpdateEventBuildingProgress(approx_start_size - current_size);
+        std::this_thread::sleep_for(std::chrono::microseconds(250));
+    }
+    progress.Finish();
+    bt = false;
+    for ( auto &thread : builder_threads ){
+        thread.join(); // Blocks until the builder threads are done
+    }
+
+    approx_start_size = settings->built_queue->size_approx();
+    progress.StartFillingTree(approx_start_size);
+    while ( settings->built_queue->size_approx() > 1000 ){
+        current_size = settings->built_queue->size_approx();
+        progress.UpdateTreeFillProgress(approx_start_size - current_size);
+        std::this_thread::sleep_for(std::chrono::microseconds(250));
+    }
+    ft = false;
+    filler_thread.join(); // Blocks until the filler thread is done.
 }

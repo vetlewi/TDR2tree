@@ -34,12 +34,12 @@ namespace Fetcher {
         //! Closes the file, if still open.
         ~MTFileBufferFetcher() override;
 
-        Status Open(const char *filename, size_t bufnum);
+        Status Open(const char *filename, size_t bufnum) override;
 
         /*! Creates a new thread which prefetches some buffers while the
          *  main thread is sorting.
          */
-        const Buffer *Next(Status &state);
+        const Buffer *Next(Status &state) override;
 
         //! Set the buffer template.
         void SetBuffer(Buffer *buf) { template_buffer.reset(buf); }

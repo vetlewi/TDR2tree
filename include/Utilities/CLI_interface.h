@@ -13,6 +13,7 @@
 #include <Parser/Entry.h>
 #include <Parameters/experimentsetup.h>
 #include <Event/Event.h>
+#include <Event/iThembaEvent.h>
 
 namespace Parser {
     class Base;
@@ -24,6 +25,7 @@ namespace Parser {
 typedef moodycamel::BlockingConcurrentQueue<Parser::Entry_t> Entry_queue_t;
 typedef moodycamel::BlockingConcurrentQueue< std::vector<Parser::Entry_t> > Event_queue_t;
 typedef moodycamel::BlockingConcurrentQueue<std::string> String_queue_t;
+typedef moodycamel::BlockingConcurrentQueue<Event::iThembaEvent> iTEvent_queue_t;
 
 struct Settings_t {
     std::vector<std::string> input_files;   //!< List of all files to read from
@@ -42,10 +44,11 @@ struct Settings_t {
     Entry_queue_t *input_queue;             //!< Queue with sorted entries from the parser
     Event_queue_t *split_queue;             //!< Queue with grouped entries after splitting
     Event_queue_t *built_queue;             //!< Queue with finished built entries
+    iTEvent_queue_t *iTbuilt_queue;         //!< Queue with finished iThemba Events entries
     String_queue_t *str_queue;              //!< Queue for storing strings to a CSV writer
     size_t num_split_threads;               //!< Number of splitter threads
     size_t num_filler_threads;              //!< Number of filler threads
-
+    bool running;                           //!< Abort flag
     bool PR271;                             //!< Exp. PR271, remove pulser
 
     ~Settings_t(); // Clean-up

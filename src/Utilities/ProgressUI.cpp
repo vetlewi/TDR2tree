@@ -45,6 +45,38 @@ void ProgressUI::UpdateReadProgress(const size_t &curr_pos)
     auto res = std::async(std::launch::async, &ProgressUI::UpdateCout, this, curr_pos);
 }
 
+void ProgressUI::StartSplitEntries(const size_t &size)
+{
+    length = size;
+    shown = 0;
+    std::cout << "                                                                                            " << "\r";
+    std::cout.flush();
+    std::cout << "[";
+    for (int p = 0 ; p < BARWIDTH ; ++p){
+        std::cout << " ";
+    }
+    std::cout << "] " << 0 << "% Splitting entries, file '" << curr_fname << "'" << "\r";
+    std::cout.flush();
+}
+
+void ProgressUI::UpdateSplitEntriesProgress(const size_t &curr_pos)
+{
+    if ( curr_pos/double(length) - shown*0.02 > 0 ){
+        ++shown;
+        std::cout << "                                                                                            " << "\r";
+        std::cout.flush();
+        std::cout << "[";
+        int pos = int( BARWIDTH * curr_pos / double(length) );
+        for (int p = 0 ; p < BARWIDTH ; ++p){
+            if ( p < pos ) std::cout << "=";
+            else if ( p== pos ) std::cout << ">";
+            else std::cout << " ";
+        }
+        std::cout << "] " << int(100 * (curr_pos / double(length))) << "% Splitting entries, file '" << curr_fname << "'\r";
+        std::cout.flush();
+    }
+}
+
 void ProgressUI::StartBuildingEvents(const size_t &size)
 {
     length = size;

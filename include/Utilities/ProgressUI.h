@@ -29,6 +29,12 @@ public:
     //! Update read progress of the file.
     void UpdateReadProgress(const size_t &curr_pos);
 
+    //! Give the user feedback that we split events.
+    void StartSplitEntries(const size_t &size);
+
+    //! Update entry splitting progress.
+    void UpdateSplitEntriesProgress(const size_t &curr_pos);
+
     //! Give the user feedback that we will start building events.
     void StartBuildingEvents(const size_t &length);
 

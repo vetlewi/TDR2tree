@@ -62,4 +62,6 @@ void ConvertPostgre(const Settings_t *settings);
 
 void ConvertFilesCSV(const Settings_t *settings);
 
+void ConvertROOT(const Settings_t *settings);
+
 #endif // SORTUTILLITIES_H

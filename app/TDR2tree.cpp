@@ -47,6 +47,15 @@ enum Format {
     XIA
 };
 
+Settings_t *settings;
+
+void keyb_int(int sig_num)
+{
+    if (sig_num == SIGINT) {
+        settings->running = false;
+    }
+}
+
 void SetupTDR(Settings_t &settings, const int &queue_size)
 {
     settings.buffer_type = new Fetcher::TDRBuffer;
@@ -55,6 +64,7 @@ void SetupTDR(Settings_t &settings, const int &queue_size)
     settings.input_queue = new Entry_queue_t(queue_size);
     settings.split_queue = new Event_queue_t(queue_size);
     settings.built_queue = new Event_queue_t(queue_size);
+    settings.iTbuilt_queue = new iTEvent_queue_t(queue_size);
     settings.str_queue = new String_queue_t(queue_size);
 
     if ( settings.build_tree && settings.output_csv ){
@@ -90,8 +100,10 @@ int main(int argc, char* argv[])
             nullptr,
             nullptr,
             nullptr,
+            nullptr,
             2,
             1,
+            true,
             false
     };
 
@@ -220,7 +232,7 @@ int main(int argc, char* argv[])
     if ( settings.output_csv )
         ConvertFilesCSV(&settings);
     else
-        ConvertFiles(&settings);
+        ConvertROOT(&settings);
 
 #endif // POSTGRESQL_ENABLED
     return 0;
