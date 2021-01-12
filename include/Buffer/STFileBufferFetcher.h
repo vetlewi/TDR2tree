@@ -25,11 +25,7 @@ namespace Fetcher {
     public:
 
         //! Initialize with correct buffer type
-        explicit STFileBufferFetcher(Buffer *template_buffer) : buffer( template_buffer )
-        {
-            if ( !buffer )
-                throw std::runtime_error("No template buffer was provided.");
-        }
+        explicit STFileBufferFetcher(Buffer *template_buffer);
 
         /*! Calls the reader to open a file. */
         Status Open(const char *filename, size_t bufnum) override;
@@ -40,10 +36,10 @@ namespace Fetcher {
 
     private:
         //! The class implementing the actual reading.
-        FileReader reader;
+        aptr<FileReader> reader;
 
         //! The buffer used to store the file data in.
-        Buffer *buffer;
+        aptr<Buffer> template_buffer;
     };
 
 }

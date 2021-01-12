@@ -32,7 +32,7 @@ namespace Fetcher {
         explicit MTFileBufferFetcher(Buffer *buffer_template);
 
         //! Closes the file, if still open.
-        ~MTFileBufferFetcher();
+        ~MTFileBufferFetcher() override;
 
         Status Open(const char *filename, size_t bufnum);
 

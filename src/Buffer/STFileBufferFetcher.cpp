@@ -7,14 +7,20 @@
 
 using namespace Fetcher;
 
+STFileBufferFetcher::STFileBufferFetcher(Buffer *buffer_template)
+    : reader( new FileReader() )
+    , template_buffer( buffer_template )
+{}
+
 BufferFetcher::Status STFileBufferFetcher::Open(const char *filename, size_t bufnum)
 {
-    return reader.Open(filename, bufnum * buffer->GetSizeChar()) ? OKAY : ERROR;
+    int i = reader->Open( filename, bufnum*template_buffer->GetSizeChar() );
+    if( i>0 ) return OKAY; else if( i==0 ) return END; else return ERROR;
 }
 
 const Buffer* STFileBufferFetcher::Next(Status& state)
 {
-    int i = reader.Read(reinterpret_cast<char *>(buffer->GetBuffer()), buffer->GetSizeChar() );
+    int i = reader->Read(reinterpret_cast<char *>(template_buffer->GetBuffer()), template_buffer->GetSizeChar() );
 
     if( i>0 )
         state = OKAY;
@@ -23,5 +29,5 @@ const Buffer* STFileBufferFetcher::Next(Status& state)
     else
         state = ERROR;
 
-    return buffer;
+    return template_buffer.get();
 }
