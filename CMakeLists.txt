@@ -61,8 +61,8 @@ endif()
 
 add_library(logging INTERFACE)
 if ( ENABLE_LOGGING )
-    target_compile_definitions(logging PUBLIC LOG_ENABLED=1)
-    target_link_libraries(logging PUBLIC spdlog::spdlog)
+    target_compile_definitions(logging INTERFACE LOG_ENABLED=1)
+    target_link_libraries(logging INTERFACE spdlog::spdlog)
 else()
 endif()
 
