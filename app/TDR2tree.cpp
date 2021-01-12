@@ -8,6 +8,9 @@
 // C libs
 #include <cstdio>
 
+// ROOT stuff first?!
+#include <TROOT.h>
+
 // External dependencies
 #if LOG_ENABLED
 #include <spdlog/spdlog.h>
@@ -28,8 +31,6 @@
 
 // Utillities library
 #include <Utilities/ProgressUI.h>
-
-#include <TROOT.h>
 
 ProgressUI progress; // NOLINT(cert-err58-cpp)
 
