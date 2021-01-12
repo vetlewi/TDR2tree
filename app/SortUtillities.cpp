@@ -856,7 +856,7 @@ void ConvertROOT(const Settings_t *settings)
         progress.UpdateSplitEntriesProgress(approx_start_size - current_size);
         std::this_thread::sleep_for(std::chrono::microseconds(250));
     }
-    progress.Finish();
+    //progress.Finish();
     split_thread.join(); // Blocks until the split thread is done
 
 
@@ -867,12 +867,13 @@ void ConvertROOT(const Settings_t *settings)
         progress.UpdateEventBuildingProgress(approx_start_size - current_size);
         std::this_thread::sleep_for(std::chrono::microseconds(250));
     }
-    progress.Finish();
+    //progress.Finish();
     bt = false;
     for ( auto &thread : builder_threads ){
         thread.join(); // Blocks until the builder threads are done
     }
 
+    ft = false;
     approx_start_size = settings->built_queue->size_approx();
     progress.StartFillingTree(approx_start_size);
     while ( settings->built_queue->size_approx() > 1000 ){
@@ -880,6 +881,6 @@ void ConvertROOT(const Settings_t *settings)
         progress.UpdateTreeFillProgress(approx_start_size - current_size);
         std::this_thread::sleep_for(std::chrono::microseconds(250));
     }
-    ft = false;
+    progress.Finish();
     filler_thread.join(); // Blocks until the filler thread is done.
 }
