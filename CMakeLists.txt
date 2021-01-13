@@ -224,7 +224,9 @@ if ( HDF5_FOUND )
 
 endif()
 
-add_executable(TDR2tree ${CMAKE_SOURCE_DIR}/app/TDR2tree.cpp app/SortUtillities.cpp app/SortUtillities.h)
+add_executable(TDR2tree
+        ${CMAKE_SOURCE_DIR}/app/TDR2tree.cpp app/SortUtillities.cpp app/SortUtillities.h
+        app/RootSortSingleThread.cpp)
 
 target_include_directories(TDR2tree
     PRIVATE

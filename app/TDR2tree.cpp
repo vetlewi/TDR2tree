@@ -41,6 +41,7 @@ ProgressUI progress; // NOLINT(cert-err58-cpp)
 #include <CLI/CLI.hpp>
 
 #include "SortUtillities.h"
+#include "RootSortSingleThread.h"
 
 enum Format {
     Sirius,
@@ -237,7 +238,8 @@ int main(int argc, char* argv[])
     if ( settings.output_csv )
         ConvertFilesCSV(&settings);
     else
-        ConvertROOT(&settings);
+        ConvertROOTST(&settings);
+        //ConvertROOT(&settings);
 
 #endif // POSTGRESQL_ENABLED
     return 0;
