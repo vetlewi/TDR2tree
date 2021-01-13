@@ -114,7 +114,7 @@ void ConvertROOTST(const Settings_t *settings)
                     settings->tree_title.c_str(),
                     settings->event_type->New());
 
-    auto *bf = new Fetcher::MTFileBufferFetcher(settings->buffer_type);
+    auto *bf = new Fetcher::STFileBufferFetcher(settings->buffer_type);
     const Fetcher::Buffer *buf;
     std::vector<Parser::Entry_t> tmp;
     std::deque<Parser::Entry_t> entries;
