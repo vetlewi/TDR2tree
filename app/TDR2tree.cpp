@@ -7,6 +7,7 @@
 
 // C libs
 #include <cstdio>
+#include <csignal>
 
 // ROOT stuff first?!
 #if ROOT_MT_FLAG
@@ -162,6 +163,10 @@ int main(int argc, char* argv[])
     } catch ( const CLI::ParseError &e ){
         return app.exit(e);
     }
+
+    signal(SIGINT, keyb_int); // set up interrupt handler (Ctrl-C)
+    signal(SIGPIPE, SIG_IGN);
+
     auto input_files = settings.input_files;
     settings.input_files.clear();
     for ( auto &input : input_files ){
