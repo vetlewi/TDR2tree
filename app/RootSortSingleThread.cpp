@@ -114,19 +114,19 @@ void ConvertROOTST(const Settings_t *settings)
                     settings->tree_title.c_str(),
                     settings->event_type->New());
 
-    auto bf = Fetcher::MTFileBufferFetcher(settings->buffer_type);
+    auto *bf = new Fetcher::MTFileBufferFetcher(settings->buffer_type);
     const Fetcher::Buffer *buf;
     std::vector<Parser::Entry_t> tmp;
     std::deque<Parser::Entry_t> entries;
 
 
     for ( auto &file : settings->input_files ){
-        auto status = bf.Open(file.c_str(), 0);
+        auto status = bf->Open(file.c_str(), 0);
         if ( !settings->running )
             break;
 
         while ( settings->running ){
-            buf = bf.Next(status);
+            buf = bf->Next(status);
             if ( status != Fetcher::BufferFetcher::OKAY ){
                 break;
             }
@@ -142,5 +142,5 @@ void ConvertROOTST(const Settings_t *settings)
 
 
     }
-
+    delete bf;
 }
