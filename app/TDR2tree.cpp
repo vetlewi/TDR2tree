@@ -130,7 +130,7 @@ int main(int argc, char* argv[])
         {"unused", DetectorType::unused}
     };
 
-    size_t Queue_size = 0x2000;
+    size_t Queue_size = 0x200000;
 
     app.add_option("-i,--input", settings.input_files, "Input file(s)")->required();
     app.add_option("-o,--output", settings.output_file, "Output file")->required();

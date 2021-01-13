@@ -38,6 +38,7 @@
 // Utillities
 #include <Utilities/ProgressUI.h>
 #include <Utilities/CLI_interface.h>
+#include <Utilities/BlockingQueue.h>
 
 // ROOT headers
 #include <ROOT/TBufferMerger.hxx>
@@ -538,7 +539,8 @@ void ConvertFilesCSV(const Settings_t *settings)
                 break;
             }
             entries = settings->parser->GetEntry(buf);
-            settings->input_queue->enqueue_bulk(std::begin(entries), entries.size());
+            for ( auto &entry : entries )
+                settings->input_queue->enqueue(entry);
         }
     }
 
@@ -619,7 +621,10 @@ void ConvertFiles(const Settings_t *settings)
                 break;
             }
             entries = settings->parser->GetEntry(buf);
-            settings->input_queue->enqueue_bulk(std::begin(entries), entries.size());
+            for ( auto &entry : entries ){
+                settings->input_queue->enqueue(entry);
+            }
+            //settings->input_queue->enqueue_bulk(std::begin(entries), entries.size());
         }
     }
 
@@ -687,7 +692,13 @@ void ReadFiles(const Settings_t *settings)
                 break;
             }
             entries = settings->parser->GetEntry(buf);
-            settings->input_queue->enqueue_bulk(std::begin(entries), entries.size());
+            for ( auto &entry : entries ){
+                settings->input_queue->push(entry);
+                /*while ( !settings->input_queue->wait_push(entry, std::chrono::milliseconds(1)) ){
+                    if ( !settings->running )
+                        return;
+                }*/
+            }
         }
     }
 }
@@ -710,7 +721,7 @@ void SplitTimes(const Settings_t *settings, const bool &running)
         if ( fabs(TimeDiff(entry, entries.back())) < settings->split_time ){
             entries.push_back(entry);
         } else {
-            settings->split_queue->enqueue(entries);
+            settings->split_queue->push(entries);
             entries.clear();
             entries.push_back(entry);
         }
@@ -726,12 +737,12 @@ void SplitTimes(const Settings_t *settings, const bool &running)
         if ( fabs(TimeDiff(entry, entries.back())) < settings->split_time ){
             entries.push_back(entry);
         } else {
-            settings->split_queue->enqueue(entries);
+            settings->split_queue->push(entries);
             entries.clear();
             entries.push_back(entry);
         }
     }
-    settings->split_queue->enqueue(entries);
+    settings->split_queue->push(entries);
 }
 
 inline bool BuildAnEvent(const Settings_t *settings, std::vector<Parser::Entry_t> &entries,
@@ -789,13 +800,13 @@ void BuildEvents(const Settings_t *settings, const bool &running)
             continue;
 
         if ( BuildAnEvent(settings, entries, event) ){
-            settings->built_queue->enqueue(event);
+            settings->built_queue->push(event);
         }
     }
 
     while ( settings->split_queue->try_dequeue(entries) ){
         if ( BuildAnEvent(settings, entries, event) ){
-            settings->built_queue->enqueue(event);
+            settings->built_queue->push(entries);
         }
     }
 }

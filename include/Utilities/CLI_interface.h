@@ -15,6 +15,8 @@
 #include <Event/Event.h>
 #include <Event/iThembaEvent.h>
 
+#include <Utilities/BlockingQueue.h>
+
 namespace Parser {
     class Base;
 }
@@ -22,10 +24,17 @@ namespace Parser {
 // External dependencies
 #include <blockingconcurrentqueue.h>
 // Typedefs
+/*
 typedef moodycamel::BlockingConcurrentQueue<Parser::Entry_t> Entry_queue_t;
 typedef moodycamel::BlockingConcurrentQueue< std::vector<Parser::Entry_t> > Event_queue_t;
 typedef moodycamel::BlockingConcurrentQueue<std::string> String_queue_t;
 typedef moodycamel::BlockingConcurrentQueue<Event::iThembaEvent> iTEvent_queue_t;
+*/
+
+typedef BlockingQueue<Parser::Entry_t> Entry_queue_t;
+typedef BlockingQueue< std::vector<Parser::Entry_t> > Event_queue_t;
+typedef BlockingQueue<std::string> String_queue_t;
+typedef BlockingQueue<Event::iThembaEvent> iTEvent_queue_t;
 
 struct Settings_t {
     std::vector<std::string> input_files;   //!< List of all files to read from
