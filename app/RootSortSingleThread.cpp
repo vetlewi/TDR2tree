@@ -23,6 +23,9 @@
 #include <Parameters/experimentsetup.h>
 
 #include <Utilities/CLI_interface.h>
+#include <Utilities/ProgressUI.h>
+
+extern ProgressUI progress;
 
 inline double TimeDiff(const Parser::Entry_t &lhs, const Parser::Entry_t &rhs)
 {
@@ -143,4 +146,87 @@ void ConvertROOTST(const Settings_t *settings)
 
     }
     delete bf;
+}
+
+std::vector<Event::iThembaEvent> EventBuilder(const Settings_t *settings, const std::vector<Parser::Entry_t> &entries)
+{
+    std::vector<Event::iThembaEvent> events;
+
+    auto entry = std::begin(entries);
+    while ( entry != std::end(entries) ) {
+        progress.UpdateEventBuildingProgress(entry-std::begin(entries));
+        if ((*entry).address == 486) { // Skip this particular...
+            ++entry;
+            continue;
+        }
+
+        if (GetDetectorType((*entry).address) == settings->trigger_type) {
+            auto start = entry;
+            while (start != std::begin(entries)) {
+                if (fabs(TimeDiff(*start, *entry)) < settings->event_time) {
+                    --start;
+                } else {
+                    break;
+                }
+            }
+
+            auto stop = entry;
+            while (entry != std::end(entries)) {
+                if (fabs(TimeDiff(*stop, *entry)) < settings->event_time) {
+                    ++stop;
+                } else {
+                    break;
+                }
+            }
+            events.emplace_back(std::vector<Parser::Entry_t>(start, stop));
+        }
+    }
+    return events;
+}
+
+void FillRoot(const Settings_t *settings, std::vector<Event::iThembaEvent> &events, HistManager &hm, TreeManager &tm)
+{
+    int count = 0;
+    for ( auto event : events){
+        progress.UpdateTreeFillProgress(++count);
+        hm.AddEntry(event);
+        if ( settings->build_tree )
+            tm.AddEntry(&event);
+    }
+}
+
+void ConvertROOT_ReadAll(const Settings_t *settings)
+{
+    auto bf = Fetcher::MTFileBufferFetcher(settings->buffer_type);
+    Fetcher::BufferFetcher::Status status;
+    const Fetcher::Buffer *buf;
+    std::vector<Parser::Entry_t> entries, all_entries;
+
+    RootFileManager fm( settings->output_file.c_str(), "RECREATE", settings->file_title.c_str());
+    HistManager hm( &fm );
+    TreeManager tm( &fm,
+                    settings->tree_name.c_str(),
+                    settings->tree_title.c_str(),
+                    settings->event_type->New());
+
+    for ( auto &file : settings->input_files ){
+        if ( bf.Open(file.c_str(), 0) != Fetcher::BufferFetcher::OKAY ){
+            break;
+        }
+
+        while ( settings->running ){
+
+            buf = bf.Next(status);
+            if ( status != Fetcher::BufferFetcher::OKAY )
+                break;
+
+            entries = settings->parser->GetEntry(buf);
+            all_entries.insert(std::end(all_entries), std::begin(entries), std::end(entries));
+        }
+        progress.StartBuildingEvents(all_entries.size());
+        auto events = EventBuilder(settings, all_entries);
+        progress.StartFillingTree(events.size());
+        FillRoot(settings, events, hm, tm);
+        progress.Finish();
+    }
 }

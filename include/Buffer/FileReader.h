@@ -57,7 +57,7 @@ namespace Fetcher {
         //! Retrieve error flag.
         /*! \return The error flag.
          */
-        bool IsError() const { return errorflag; }
+        [[nodiscard]] bool IsError() const { return errorflag; }
 
     private:
 

@@ -238,7 +238,8 @@ int main(int argc, char* argv[])
     if ( settings.output_csv )
         ConvertFilesCSV(&settings);
     else
-        ConvertROOTST(&settings);
+        ConvertROOT_ReadAll(&settings);
+        //ConvertROOTST(&settings);
         //ConvertROOT(&settings);
 
 #endif // POSTGRESQL_ENABLED

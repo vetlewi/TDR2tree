@@ -7,6 +7,7 @@
 
 struct Settings_t;
 
+void ConvertROOT_ReadAll(const Settings_t *settings);
 void ConvertROOTST(const Settings_t *settings);
 
 
