@@ -135,6 +135,11 @@ bool Make_events(const Settings_t *settings)
 
     while ( entry != std::end(entries) ){
 
+        if ( (*entry).address == 486 ) {
+            ++entry;
+            continue;
+        }
+
         if ( GetDetectorType((*entry).address) == settings->trigger_type ){
             auto start = entry;
             while ( start != std::begin(entries) ){

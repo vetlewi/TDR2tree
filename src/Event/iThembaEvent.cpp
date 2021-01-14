@@ -187,6 +187,9 @@ iThembaEvent::iThembaEvent(const std::vector<Parser::Entry_t> &data)
 {
     for ( auto &entry : data ){
 
+        if ( entry.address == 486 ) // Skip sect 6 in E detector
+            continue;
+
         switch ( GetDetectorType(entry.address) ){
 
             case de_ring : {
