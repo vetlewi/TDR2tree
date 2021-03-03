@@ -105,6 +105,13 @@ Makefile*
 # QtCtreator CMake
 CMakeLists.txt.user*
 
+.idea
+_deps
+build/
+__pycache__
+.python-version
+.ipynb_checkpoints
+
 
 ### QtCreator ###
 # gitignore for Qt Creator like IDE for pure C/C++ project without Qt

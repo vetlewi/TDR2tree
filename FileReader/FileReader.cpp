@@ -95,26 +95,20 @@ int DecodeWords(word_t *data, uint64_t *buf, size_t length)
     for (int i = 0 ; i < n_decoded ; ++i){
         switch ( GetSamplingFrequency(data[i].address) ) {
         case f100MHz :
-            data[i].cfdcorr = XIA_CFD_Fraction_100MHz(data[i].cfddata, &data[i].cfdfail);
+            data[i].cfdcorr = XIA::XIA_CFD_Fraction_100MHz(data[i].cfddata, data[i].cfdfail);
             data[i].timestamp *= 10;
-            if ( data[i].cfddata == 0 )
-                data[i].cfdfail = 1;
             break;
         case f250MHz :
-            data[i].cfdcorr = XIA_CFD_Fraction_250MHz(data[i].cfddata, &data[i].cfdfail);
+            data[i].cfdcorr = XIA::XIA_CFD_Fraction_250MHz(data[i].cfddata, data[i].cfdfail);
             data[i].timestamp *= 8;
-            if ( data[i].cfddata == 0 )
-                data[i].cfdfail = 1;
             break;
         case f500MHz :
-            data[i].cfdcorr = XIA_CFD_Fraction_500MHz(data[i].cfddata, &data[i].cfdfail);
+            data[i].cfdcorr = XIA::XIA_CFD_Fraction_500MHz(data[i].cfddata, data[i].cfdfail);
             data[i].timestamp *= 10;
-            if ( data[i].cfddata == 0 )
-                data[i].cfdfail = 1;
             break;
         default :
             data[i].cfdcorr = 0;
-            data[i].cfdfail = 1;
+            data[i].cfdfail = true;
             data[i].timestamp *= 10;
             break;
         }

@@ -120,7 +120,7 @@ public:
     static std::vector<Event> BuildPGEvents(const std::vector<word_t> &raw_data, TH2 *ab_hist = nullptr, double coins_time = 3000.);
 
     //! Build and fill events.
-    static void BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, TH2 *ab_hist = nullptr, double coins_time = 3000.);
+    static void BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, TH2 *ab_hist = nullptr, double coins_time = 3000., ProgressUI *prog = nullptr);
     static void BuildAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, TH2 *ab_hist = nullptr, double coins_time = 3000.);
 
     //! Set all events.

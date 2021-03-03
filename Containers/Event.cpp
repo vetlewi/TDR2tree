@@ -401,11 +401,13 @@ std::vector<Event> Event::BuildEvent(const std::vector<word_t> &raw_data, TH2 *a
     return events;
 }
 
-void Event::BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, TH2 *ab_hist, double coins_time)
+void Event::BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, TH2 *ab_hist, double coins_time, ProgressUI *prog)
 {
     DetectorInfo_t trigger;
     double timediff;
     size_t i, j, start=0, stop=0;
+    if ( prog )
+        prog->StartFillingTree(raw_data.size());
     for (i = 0 ; i < raw_data.size() ; ++i) {
         trigger = GetDetector(raw_data[i].address);
         if (trigger.type != eDet) // Skip to next word.
@@ -438,6 +440,10 @@ void Event::BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm,
             evt.RunAddback(ab_hist);
         if ( hm ) hm->AddEntry(evt);
         if ( tm ) tm->AddEntry(evt);
+
+        if ( prog )
+            prog->UpdateTreeFillProgress(i);
+
     }
 }
 
