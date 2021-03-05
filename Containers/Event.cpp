@@ -405,45 +405,46 @@ void Event::BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm,
 {
     DetectorInfo_t trigger;
     double timediff;
-    size_t i, j, start=0, stop=0;
+
+    auto begin = raw_data.begin();
+    auto end = raw_data.end();
+    auto it = raw_data.begin();
+
+    size_t count = 0;
     if ( prog )
-        prog->StartFillingTree(raw_data.size());
-    for (i = 0 ; i < raw_data.size() ; ++i) {
-        trigger = GetDetector(raw_data[i].address);
-        if (trigger.type != eDet) // Skip to next word.
+        progress.StartFillingTree(raw_data.size());
+
+    while ( it < end ){
+
+        if ( GetDetector(it->address).type != DetectorType::eDet ) {
+            ++it;
             continue;
-
-        for (size_t j = i; j > 0; --j) {
-            timediff = abs(raw_data[i].timestamp - raw_data[j - 1].timestamp);
-            if (timediff > coins_time) {
-                start = j;
-                break;
-            }
         }
 
-        for (j = i; j < raw_data.size() - 1; ++j) {
-            timediff = abs(raw_data[i].timestamp - raw_data[j + 1].timestamp);
-            if (timediff > coins_time) {
-                stop = j + 1;
+        auto start = it;
+        while ( start >= begin ){
+            if ( abs(double(it->timestamp - start->timestamp) + (it->cfdcorr - start->cfdcorr)) > coins_time )
                 break;
-            }
+            --start;
         }
-        std::vector<word_t> event;
-        event.push_back(raw_data[i]);
-        for (j = start ; j < stop ; ++j){
-            if ( j == i )
-                continue;
-            event.push_back(raw_data[j]);
+
+        auto stop = it + 1;
+        while ( stop < end ){
+            if ( abs(double(it->timestamp - stop->timestamp) + (it->cfdcorr - stop->cfdcorr)) > coins_time )
+                break;
+            ++stop;
         }
-        Event evt(event);
+
+        Event evt(std::vector<word_t>(start, stop));
         if ( ab_hist != nullptr )
             evt.RunAddback(ab_hist);
         if ( hm ) hm->AddEntry(evt);
         if ( tm ) tm->AddEntry(evt);
 
-        if ( prog )
-            prog->UpdateTreeFillProgress(i);
+        it = stop;
 
+        if ( prog )
+            prog->UpdateTreeFillProgress(count++);
     }
 }
 
