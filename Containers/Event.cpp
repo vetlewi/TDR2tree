@@ -46,6 +46,7 @@ EventEntry::EventEntry(const word_t &word)
     , energy( CalibrateEnergy(word) )
     , tfine( word.cfdcorr )
     , tcoarse( word.timestamp )
+    , cfd_fail( word.cfdfail )
 {
 }
 
@@ -56,7 +57,8 @@ bool EventData::Add(const EventEntry &e)
         e_raw[mult] = e.e_raw;
         energy[mult] = e.energy;
         tfine[mult] = e.tfine;
-        tcoarse[mult++] = e.tcoarse;
+        tcoarse[mult] = e.tcoarse;
+        cfd_fail[mult++] = e.cfd_fail;
         return true;
     }
     return false;
@@ -69,21 +71,23 @@ bool EventData::Add(const word_t &w)
         e_raw[mult] = w.adcdata;
         energy[mult] = CalibrateEnergy(w);
         tfine[mult] = w.cfdcorr;
-        tcoarse[mult++] = w.timestamp;
+        tcoarse[mult] = w.timestamp;
+        cfd_fail[mult++] = w.cfdfail;
         return true;
     }
     return false;
 }
 
 
-bool EventData::Add(const uint16_t &id, const uint16_t &raw, const double &e, const double &fine, const int64_t &coarse)
+bool EventData::Add(const uint16_t &id, const uint16_t &raw, const double &e, const double &fine, const int64_t &coarse, const bool &fail)
 {
     if ( mult < MAX_NUM ){
         ID[mult] = id;
         e_raw[mult] = raw;
         energy[mult] = e;
         tfine[mult] = fine;
-        tcoarse[mult++] = coarse;
+        tcoarse[mult] = coarse;
+        cfd_fail[mult++] = fail;
         return true;
     }
     return false;
@@ -110,10 +114,16 @@ void EventData::SetupBranch(TTree *tree, const char *baseName, bool validated)
         sprintf(branch_name, "%sTcoarse", baseName);
         sprintf(data_name, "%s[%s]/L", branch_name, mult_name);
         tree->Branch(branch_name, &tcoarse, data_name);
+        sprintf(branch_name, "%sCFDfail", baseName);
+        sprintf(data_name, "%s[%s]/O", branch_name, mult_name);
+        tree->Branch(branch_name, &cfd_fail, data_name);
     } else {
         sprintf(branch_name, "%sTime", baseName);
         sprintf(data_name, "%s[%s]/D", branch_name, mult_name);
         tree->Branch(branch_name, &tfine, data_name);
+        sprintf(branch_name, "%sCFDfail", baseName);
+        sprintf(data_name, "%s[%s]/O", branch_name, mult_name);
+        tree->Branch(branch_name, &cfd_fail, data_name);
     }
 }
 
@@ -124,8 +134,9 @@ Event::Event(TTree *tree, bool val)
         sectData.SetupBranch(tree, "sect");
         backData.SetupBranch(tree, "back");
         tree->Branch("rfMult", &rfData.mult, "rfMult/I");
-        tree->Branch("rfTcoarse", &rfData.tcoarse, "rfTcoarse[rfMult]/D");
+        tree->Branch("rfTcoarse", &rfData.tcoarse, "rfTcoarse[rfMult]/L");
         tree->Branch("rfTfine", &rfData.tfine, "rfTfine[rfMult]/D");
+        tree->Branch("rfCFDfail", &rfData.cfd_fail, "rfCFDfail[rfMult]/O");
     } else {
         tree->Branch("ringID", &ringData.ID[0], "ringID/s");
         tree->Branch("ringEnergy", &ringData.energy[0], "ringEnergy/D");
@@ -135,6 +146,7 @@ Event::Event(TTree *tree, bool val)
         tree->Branch("backEnergy", &backData.energy[0], "backEnergy/D");
         tree->Branch("rfMult", &rfData.mult, "rfMult/I");
         tree->Branch("rfTime", &rfData.tfine, "rfTime[rfMult]/D");
+        tree->Branch("rfCFDfail", &rfData.cfd_fail, "rfCFDfail[rfMult]/O");
     }
     labrLData.SetupBranch(tree, "labrL", val);
     labrSData.SetupBranch(tree, "labrS", val);
@@ -341,7 +353,7 @@ void Event::RunAddback(TH2 *ab_t_clover)
                 }
             }
             v = v_new;
-            cloverData.Add(v[0].ID, 0, e, v[0].tfine, v[0].tcoarse);
+            cloverData.Add(v[0].ID, 0, e, v[0].tfine, v[0].tcoarse, v[0].cfd_fail);
         }
     }
 }
@@ -464,23 +476,18 @@ void Event::BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm,
 
 void Event::BuildAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, TH2 *ab_hist, double coins_time)
 {
-    double timediff;
-    size_t i, j;
-    for (i = 0 ; i < raw_data.size() ; ++i){
-        std::vector<word_t> event;
-        for (j = i ; j < raw_data.size() - 1 ; ++j){
-            timediff = abs(raw_data[j + 1].timestamp - raw_data[j].timestamp);
-            event.push_back(raw_data[j]);
-            if (timediff > coins_time) {
-                i = j + 1;
-                break;
-            }
+    auto begin = raw_data.begin();
+    auto it = raw_data.begin();
+    auto end = raw_data.end();
+    while ( it < end - 1 ){
+        if ( abs( double((it+1)->timestamp - it->timestamp) + ((it+1)->cfdcorr - it->cfdcorr) ) > coins_time ){
+            Event evt(std::vector<word_t>(begin, it+1));
+            if ( ab_hist ) evt.RunAddback(ab_hist);
+            if ( hm ) hm->AddEntry(evt);
+            if ( tm ) tm->AddEntry(evt);
+            begin = it+1;
         }
-        Event evt(event);
-        if ( ab_hist != nullptr )
-            evt.RunAddback(ab_hist);
-        if ( hm ) hm->AddEntry(evt);
-        if ( tm ) tm->AddEntry(evt);
+        ++it;
     }
 }
 
