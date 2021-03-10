@@ -23,8 +23,10 @@
 
 #include <cstdint>
 #include <vector>
+#include <map>
 
 #include "BasicStruct.h"
+#include "experimentsetup.h"
 
 class TTree;
 class TH2;
@@ -87,6 +89,15 @@ private:
     EventData cloverData;
     EventData rfData;
 
+    std::map<DetectorType, EventData *> map{
+            {DetectorType::de_ring, &ringData},
+            {DetectorType::de_sect, &sectData},
+            {DetectorType::labr_3x8, &labrLData},
+            {DetectorType::labr_2x2_ss, &labrSData},
+            {DetectorType::labr_2x2_fs, &labrFData},
+            {DetectorType::clover, &cloverData},
+            {DetectorType::rfchan, &rfData}};
+
 public:
 
     //! Zero constructor.
@@ -101,6 +112,8 @@ public:
 
     //! Constructor.
     explicit Event(const std::vector<word_t> &event);
+
+    Event(std::vector<word_t>::const_iterator &begin, std::vector<word_t>::const_iterator &end);
 
     //! Assignment operator.
     Event &operator=(const Event &event);
