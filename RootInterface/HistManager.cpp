@@ -73,18 +73,17 @@ void HistManager::AddEntry(const Event &buffer)
 {
    // We will split each event such that only the entries that are closest to the RF event are counted
    // No we will use labrF 0 as reference
-   /*int n_labrF0 = 0;
+   int n_labrF0 = 0;
    EventEntry rfEvent;
    for ( int n = 0 ; n < buffer.GetLabrFEvent() ; ++n ){
        if ( buffer.GetLabrFEvent().ID[n] == 0 ) {
            ++n_labrF0;
            rfEvent = buffer.GetLabrFEvent()[n];
        }
-   }*/
+   }
 
 
-   if ( buffer.GetRFEvent().mult == 1 ){
-       auto rfEvent = buffer.GetRFEvent()[0];
+   if ( n_labrF0 == 1 ){
 
        ring.Fill(buffer.GetRingEvent(), rfEvent);
        sect.Fill(buffer.GetSectEvent(), rfEvent);
