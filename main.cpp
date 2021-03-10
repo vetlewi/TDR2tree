@@ -302,8 +302,8 @@ int main(int argc, char *argv[])
     std::cout << opt << std::endl;
 
     //Convert_to_root_MT(input_file, output_file, opt);
-    //Convert_to_root_MM(input_file, output_file, opt);
-    Convert_to_root_MM_all(input_file, output_file, opt);
+    Convert_to_root_MM(input_file, output_file, opt);
+    //Convert_to_root_MM_all(input_file, output_file, opt);
     exit(EXIT_SUCCESS);
 }
 
