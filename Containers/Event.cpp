@@ -214,6 +214,18 @@ Event::Event(const std::vector<word_t> &event)
     }
 }
 
+Event::Event(std::vector<word_t>::const_iterator &begin, std::vector<word_t>::const_iterator &end)
+{
+    DetectorInfo_t dinfo;
+    for ( auto it = begin ; it < end ; ++it ){
+        dinfo = GetDetector(it->address);
+        if ( map.find(dinfo.type) == map.end() ){
+            continue; // For now we will skip
+        }
+        map[dinfo.type]->Add(*it);
+    }
+}
+
 
 Event &Event::operator=(const Event &event)
 {
@@ -427,6 +439,7 @@ void Event::BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm,
                 break;
             --start;
         }
+        start = ( start < begin ) ? begin : start;
 
         auto stop = it + 1;
         while ( stop < end ){
@@ -435,6 +448,7 @@ void Event::BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm,
             ++stop;
         }
 
+        //Event evt(start, stop);
         Event evt(std::vector<word_t>(start, stop));
         if ( ab_hist != nullptr )
             evt.RunAddback(ab_hist);
