@@ -15,7 +15,7 @@ include(${ROOT_USE_FILE})
 #find_package(CGAL)
 #set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native")
+#set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native")
 
 include_directories(. Containers FileReader PhysicalParam RootInterface Tools)
 
