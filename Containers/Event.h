@@ -23,8 +23,10 @@
 
 #include <cstdint>
 #include <vector>
+#include <map>
 
 #include "BasicStruct.h"
+#include "experimentsetup.h"
 
 class TTree;
 class TH2;
@@ -39,6 +41,7 @@ struct EventEntry
     double energy;      //!< Energy of the event [keV].
     double tfine;       //!< Correction to the timestamp [ns].
     int64_t tcoarse;    //!< Timestamp [ns].
+    bool cfd_fail;
     explicit EventEntry() : ID( 0 ), e_raw( 0 ), energy( 0 ), tfine( 0 ), tcoarse( 0 ){}
     EventEntry(const uint16_t &id, const uint16_t &raw, const double &e, const double &tf, const int64_t &tc) : ID( id ), e_raw( raw ), energy( e ), tfine( tf ), tcoarse( tc ){}
     explicit EventEntry(const word_t &word);
@@ -54,10 +57,11 @@ struct EventData
     double energy[MAX_NUM];
     double tfine[MAX_NUM];
     int64_t tcoarse[MAX_NUM];
+    bool cfd_fail[MAX_NUM];
 
     bool Add(const EventEntry &e);
     bool Add(const word_t &w);
-    bool Add(const uint16_t &id, const uint16_t &raw, const double &e, const double &fine, const int64_t &coarse);
+    bool Add(const uint16_t &id, const uint16_t &raw, const double &e, const double &fine, const int64_t &coarse, const bool &cfd_fail);
     void Reset(){ mult = 0; }
 
     void SetupBranch(TTree *tree, const char *baseName, bool validated=false);
@@ -87,6 +91,15 @@ private:
     EventData cloverData;
     EventData rfData;
 
+    std::map<DetectorType, EventData *> map{
+            {DetectorType::de_ring, &ringData},
+            {DetectorType::de_sect, &sectData},
+            {DetectorType::labr_3x8, &labrLData},
+            {DetectorType::labr_2x2_ss, &labrSData},
+            {DetectorType::labr_2x2_fs, &labrFData},
+            {DetectorType::clover, &cloverData},
+            {DetectorType::rfchan, &rfData}};
+
 public:
 
     //! Zero constructor.
@@ -101,6 +114,8 @@ public:
 
     //! Constructor.
     explicit Event(const std::vector<word_t> &event);
+
+    Event(std::vector<word_t>::const_iterator &begin, std::vector<word_t>::const_iterator &end);
 
     //! Assignment operator.
     Event &operator=(const Event &event);

@@ -34,11 +34,11 @@ struct XIA_CFD_250MHz_t {
 
 struct XIA_CFD_500MHz_t {
     unsigned short timecfd : 13;
-    unsigned short trigsource : 2;
+    unsigned short trigsource : 3;
 
     inline explicit operator bool() const { return (trigsource >= 7); }
     inline explicit operator double() const {
-        return (trigsource >= 7) ? 0 : 2 * (double(timecfd) / 8192.0 + trigsource - 1.);
+        return (trigsource >= 7) ? 0 : 2 * ( timecfd/8192.0 + trigsource - 1.);
     }
 
     inline double get_time() const noexcept { return (trigsource >= 7) ? 0 : 2 * (double(timecfd) / 8192.0 + trigsource - 1.); }
@@ -68,8 +68,6 @@ double XIA::XIA_CFD_Fraction_500MHz(const uint16_t &CFDvalue, bool &fail) {
 
 XIA::XIA_CFD_t XIA::XIA_CFD_Decode(const ADCSamplingFreq &frequency, const uint16_t &CFDvalue)
 {
-    //bool cfd;
-    //double cfd_time;
     switch ( frequency ) {
 
         default :

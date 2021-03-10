@@ -25,11 +25,19 @@ struct addr_t {
     unsigned crateID : 4;
 
     explicit operator uint16_t() const { return *reinterpret_cast<const uint16_t *>(this); }
+
+    addr_t(const unsigned &chID, const bool &t, const unsigned &sID, const unsigned &cID){
+        memset(this, 0, sizeof(addr_t));
+        chanID = chID;
+        tdc = t;
+        slotID = sID;
+        crateID = cID;
+    }
 };
 
 uint16_t Entry_t::GetAddress() const
 {
-    return uint16_t(addr_t{adc->chanID, adc->tdc, adc->slotID, adc->crateID});
+    return uint16_t(addr_t(adc->chanID, adc->tdc, adc->slotID, adc->crateID));
 }
 
 std::ostream &operator<<(std::ostream &os, const Entry_t &lhs)
