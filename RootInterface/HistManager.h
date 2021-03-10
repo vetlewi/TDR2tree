@@ -24,40 +24,39 @@
 #include "RootFileManager.h"
 
 class Event;
+struct EventData;
+struct EventEntry;
 
 class HistManager {
 
 private:
 
-    //! Time spectra for each detector
-    TH2 *time_ring;     //!< Alignment spectra of dE rings.
-    TH2 *time_sect;     //!< Alignment spectra of dE sectors.
-    TH2 *time_back;     //!< Alignment spectra of dE back detectors.
-    TH2 *time_labrL;    //!< Alignment spectra of large LaBr detectors.
-    TH2 *time_labrS;    //!< Alignment spectra of small LaBr detectors (slow signal).
-    TH2 *time_labrF;    //!< Alignment spectra of small LaBr detectors (fast signal).
-    TH2 *time_clover;   //!< Alignment spectra of clover crystals.
+    struct Detector_Histograms_t {
+        TH2 *time;          //! Time alignment spectra
+        TH2 *energy;
+        TH2 *energy_cal;
+
+        Detector_Histograms_t(RootFileManager *fileManager, const std::string &name, const size_t &num);
+
+        void Fill(const EventData &events);
+        void Fill(const EventData &events, const EventEntry &start);
+    };
+
+    Detector_Histograms_t ring;
+    Detector_Histograms_t sect;
+    Detector_Histograms_t back;
+
+    Detector_Histograms_t labrL;
+    Detector_Histograms_t labrS;
+    Detector_Histograms_t labrF;
+    Detector_Histograms_t clover;
 
     //! Time energy spectra for particles.
     TH2 *time_energy_sect_back;
     TH2 *time_energy_ring_sect;
 
-    //! Energy spectra for each detector.
-    TH2 *energy_ring;
-    TH2 *energy_sect;
-    TH2 *energy_back;
-    TH2 *energy_labrL;
-    TH2 *energy_labrS;
-    TH2 *energy_labrF;
-    TH2 *energy_clover;
-
-    TH2 *energy_cal_ring;
-    TH2 *energy_cal_sect;
-    TH2 *energy_cal_back;
-    TH2 *energy_cal_labrL;
-    TH2 *energy_cal_labrS;
-    TH2 *energy_cal_labrF;
-    TH2 *energy_cal_clover;
+    void FillEnergy(const Event &buffer);
+    void FillTime(const Event &buffer);
 
 
 public:

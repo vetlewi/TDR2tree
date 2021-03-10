@@ -31,148 +31,97 @@
 
 extern ProgressUI progress;
 
+HistManager::Detector_Histograms_t::Detector_Histograms_t(RootFileManager *fm, const std::string &name, const size_t &num)
+    : time( fm->CreateTH2(std::string("time_"+name).c_str(), std::string("Time spectra "+name).c_str(), 3000, -1500, 1500, "Time [ns]", num, 0, num, std::string(name+" ID").c_str()) )
+    , energy( fm->CreateTH2(std::string("energy_"+name).c_str(), std::string("Energy spectra "+name).c_str(), 16384, 0, 16374, "Energy [ch]", num, 0, num, std::string(name+" ID").c_str()) )
+    , energy_cal( fm->CreateTH2(std::string("energy_cal_"+name).c_str(), std::string("energy spectra "+name+" (cal)").c_str(), 16384, 0, 16374, "Energy [keV]", num, 0, num, std::string(name+" ID").c_str()) )
+{}
+
+void HistManager::Detector_Histograms_t::Fill(const EventData &events, const EventEntry &start)
+{
+    for ( size_t n = 0 ; n < events.mult ; ++n ){
+        if ( !events.cfd_fail[n] )
+            time->Fill(double(events.tcoarse[n] - start.tcoarse) + (events.tfine[n] - start.tfine),
+                        events.ID[n]);
+        energy->Fill(events.e_raw[n], events.ID[n]);
+        energy_cal->Fill(events.energy[n], events.ID[n]);
+    }
+}
+
+void HistManager::Detector_Histograms_t::Fill(const EventData &events)
+{
+    for ( size_t n = 0 ; n < events.mult ; ++n ){
+        energy->Fill(events.e_raw[n], events.ID[n]);
+        energy_cal->Fill(events.energy[n], events.ID[n]);
+    }
+}
+
 HistManager::HistManager(RootFileManager *fm)
-    : time_ring( fm->CreateTH2("time_ring", "Time spectra rings", 3000, -1500, 1500, "Time [ns]", NUM_SI_RING, 0, NUM_SI_RING, "Ring ID") )
-    , time_sect( fm->CreateTH2("time_sect", "Time spectra sectors", 3000, -1500, 1500, "Time [ns]", NUM_SI_SECT, 0, NUM_SI_SECT, "Sector ID") )
-    , time_back( fm->CreateTH2("time_back", "Time spectra back detector", 3000, -1500, 1500, "Time [ns]", NUM_SI_BACK, 0, NUM_SI_BACK, "Back ID") )
-    , time_labrL( fm->CreateTH2("time_labrL", "Time spectra LaBr L", 30000, -1500, 1500, "Time [ns]", NUM_LABR_3X8_DETECTORS, 0, NUM_LABR_3X8_DETECTORS, "LaBr L ID") )
-    , time_labrS( fm->CreateTH2("time_labrS", "Time spectra LaBr S", 3000, -1500, 1500, "Time [ns]", NUM_LABR_2X2_DETECTORS, 0, NUM_LABR_2X2_DETECTORS, "LaBr S ID") )
-    , time_labrF( fm->CreateTH2("time_labrF", "Time spectra LaBr F", 30000, -1500, 1500, "Time [ns]", NUM_LABR_2X2_DETECTORS, 0, NUM_LABR_2X2_DETECTORS, "LaBr F ID") )
-    , time_clover( fm->CreateTH2("time_clover", "Time spectra CLOVER", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, 0, NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, "CLOVER ID") )
+    : ring( fm, "ring", NUM_SI_RING )
+    , sect( fm, "sect", NUM_SI_SECT )
+    , back( fm, "back", NUM_SI_BACK )
+    , labrL( fm, "labrL", NUM_LABR_3X8_DETECTORS )
+    , labrS( fm, "labrS", NUM_LABR_2X2_DETECTORS )
+    , labrF( fm, "labrF", NUM_LABR_2X2_DETECTORS )
+    , clover( fm, "clover", NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS )
     , time_energy_sect_back( fm->CreateTH2("time_energy_sect_back", "Energy vs. sector/back time", 1000, 0, 30000, "E energy [keV]", 3000, -1500, 1500, "t_{back} - t_{sector} [ns]") )
     , time_energy_ring_sect( fm->CreateTH2("time_energy_ring_sect", "Energy vs. sector/back time", 1000, 0, 30000, "Sector energy [keV]", 3000, -1500, 1500, "t_{ring} - t_{sector} [ns]") )
-    , energy_ring( fm->CreateTH2("energy_ring", "Energy spectra rings", 65536, 0, 65536, "Energy [ch]", NUM_SI_RING, 0, NUM_SI_RING, "Ring ID") )
-    , energy_sect( fm->CreateTH2("energy_sect", "Energy spectra sectors", 65536, 0, 65536, "Energy [ch]", NUM_SI_SECT, 0, NUM_SI_SECT, "Sector ID") )
-    , energy_back( fm->CreateTH2("energy_back", "Energy spectra back detectors", 65536, 0, 65536, "Energy [ch]", NUM_SI_BACK, 0, NUM_SI_BACK, "Back ID") )
-    , energy_labrL( fm->CreateTH2("energy_labrL", "Energy spectra LaBr L", 65536, 0, 65536, "Energy [ch]", NUM_LABR_3X8_DETECTORS, 0, NUM_LABR_3X8_DETECTORS, "LaBr L ID") )
-    , energy_labrS( fm->CreateTH2("energy_labrS", "Energy spectra LaBr S", 65536, 0, 65536, "Energy [ch]", NUM_LABR_2X2_DETECTORS, 0, NUM_LABR_2X2_DETECTORS, "LaBr S ID") )
-    , energy_labrF( fm->CreateTH2("energy_labrF", "Energy spectra LaBr F", 65536, 0, 65536, "Energy [ch]", NUM_LABR_2X2_DETECTORS, 0, NUM_LABR_2X2_DETECTORS, "LaBr F ID") )
-    , energy_clover( fm->CreateTH2("energy_clover", "Energy spectra CLOVER", 65536, 0, 65536, "Energy [ch]", NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, 0, NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, "CLOVER ID") )
-    , energy_cal_ring( fm->CreateTH2("energy_cal_ring", "Energy spectra rings", 65536, 0, 65536, "Energy [keV]", NUM_SI_RING, 0, NUM_SI_RING, "Ring ID") )
-    , energy_cal_sect( fm->CreateTH2("energy_cal_sect", "Energy spectra sectors", 65536, 0, 65536, "Energy [keV]", NUM_SI_SECT, 0, NUM_SI_SECT, "Sector ID") )
-    , energy_cal_back( fm->CreateTH2("energy_cal_back", "Energy spectra back detectors", 65536, 0, 65536, "Energy [keV]", NUM_SI_BACK, 0, NUM_SI_BACK, "Back ID") )
-    , energy_cal_labrL( fm->CreateTH2("energy_cal_labrL", "Energy spectra LaBr L", 65536, 0, 65536, "Energy [keV]", NUM_LABR_3X8_DETECTORS, 0, NUM_LABR_3X8_DETECTORS, "LaBr L ID") )
-    , energy_cal_labrS( fm->CreateTH2("energy_cal_labrS", "Energy spectra LaBr S", 65536, 0, 65536, "Energy [keV]", NUM_LABR_2X2_DETECTORS, 0, NUM_LABR_2X2_DETECTORS, "LaBr S ID") )
-    , energy_cal_labrF( fm->CreateTH2("energy_cal_labrF", "Energy spectra LaBr F", 65536, 0, 65536, "Energy [keV]", NUM_LABR_2X2_DETECTORS, 0, NUM_LABR_2X2_DETECTORS, "LaBr F ID") )
-    , energy_cal_clover( fm->CreateTH2("energy_cal_clover", "Energy spectra CLOVER", 65536, 0, 65536, "Energy [keV]", NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, 0, NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, "CLOVER ID") )
 {
-
 }
 
 void HistManager::AddEntry(const Event &buffer)
 {
-    // First time spectra. We use the RF as reference.
-    double timediff;
-    int i, j;
-    EventEntry rfEvt, evt;
-    for (i = 0 ; i < buffer.GetRFEvent() ; ++i){
-        rfEvt = buffer.GetRFEvent()[i];
+   // We will split each event such that only the entries that are closest to the RF event are counted
+   // No we will use labrF 0 as reference
+   /*int n_labrF0 = 0;
+   EventEntry rfEvent;
+   for ( int n = 0 ; n < buffer.GetLabrFEvent() ; ++n ){
+       if ( buffer.GetLabrFEvent().ID[n] == 0 ) {
+           ++n_labrF0;
+           rfEvent = buffer.GetLabrFEvent()[n];
+       }
+   }*/
 
-        for (j = 0 ; j < buffer.GetRingEvent() ; ++j){
-            evt = buffer.GetRingEvent()[j];
-            timediff = (evt.tcoarse - rfEvt.tcoarse);
-            timediff += (evt.tfine - rfEvt.tfine);
-            time_ring->Fill(timediff, evt.ID);
-        }
 
-        for (j = 0 ; j < buffer.GetSectEvent() ; ++j){
-            evt = buffer.GetSectEvent()[j];
-            timediff = (evt.tcoarse - rfEvt.tcoarse);
-            timediff += (evt.tfine - rfEvt.tfine);
-            time_sect->Fill(timediff, evt.ID);
-        }
+   if ( buffer.GetRFEvent().mult == 1 ){
+       auto rfEvent = buffer.GetRFEvent()[0];
 
-        for (j = 0 ; j < buffer.GetBackEvent() ; ++j){
-            evt = buffer.GetSectEvent()[j];
-            timediff = (evt.tcoarse - rfEvt.tcoarse);
-            timediff += (evt.tfine - rfEvt.tfine);
-            time_back->Fill(timediff, evt.ID);
-        }
+       ring.Fill(buffer.GetRingEvent(), rfEvent);
+       sect.Fill(buffer.GetSectEvent(), rfEvent);
+       back.Fill(buffer.GetBackEvent(), rfEvent);
 
-        for (j = 0 ; j < buffer.GetLabrLEvent() ; ++j){
-            evt = buffer.GetLabrLEvent()[j];
-            timediff = (evt.tcoarse - rfEvt.tcoarse);
-            timediff += (evt.tfine - rfEvt.tfine);
-            time_labrL->Fill(timediff, evt.ID);
-        }
+       labrL.Fill(buffer.GetLabrLEvent(), rfEvent);
+       labrS.Fill(buffer.GetLabrSEvent(), rfEvent);
+       labrF.Fill(buffer.GetLabrFEvent(), rfEvent);
+       clover.Fill(buffer.GetCloverEvent(), rfEvent);
 
-        for (j = 0 ; j < buffer.GetLabrSEvent() ; ++j){
-            evt = buffer.GetLabrSEvent()[j];
-            timediff = (evt.tcoarse - rfEvt.tcoarse);
-            timediff += (evt.tfine - rfEvt.tfine);
-            time_labrS->Fill(timediff, evt.ID);
-        }
+   } else {
+       ring.Fill(buffer.GetRingEvent());
+       sect.Fill(buffer.GetSectEvent());
+       back.Fill(buffer.GetBackEvent());
 
-        for (j = 0 ; j < buffer.GetLabrFEvent() ; ++j){
-            evt = buffer.GetLabrFEvent()[j];
-            timediff = (evt.tcoarse - rfEvt.tcoarse);
-            timediff += (evt.tfine - rfEvt.tfine);
-            time_labrF->Fill(timediff, evt.ID);
-        }
+       labrL.Fill(buffer.GetLabrLEvent());
+       labrS.Fill(buffer.GetLabrSEvent());
+       labrF.Fill(buffer.GetLabrFEvent());
+       clover.Fill(buffer.GetCloverEvent());
+   }
 
-        for (j = 0 ; j < buffer.GetCloverEvent() ; ++j){
-            evt = buffer.GetCloverEvent()[j];
-            timediff = (evt.tcoarse - rfEvt.tcoarse);
-            timediff += (evt.tfine - rfEvt.tfine);
-            time_clover->Fill(timediff, evt.ID);
-        }
-    }
 
-    for (j = 0 ; j < buffer.GetRingEvent() ; ++j){
-        evt = buffer.GetRingEvent()[j];
-        energy_ring->Fill(evt.e_raw, evt.ID);
-        energy_cal_ring->Fill(evt.energy, evt.ID);
-    }
-
-    for (j = 0 ; j < buffer.GetSectEvent() ; ++j){
-        evt = buffer.GetSectEvent()[j];
-        energy_sect->Fill(evt.e_raw, evt.ID);
-        energy_cal_sect->Fill(evt.energy, evt.ID);
-    }
-
-    for (j = 0 ; j < buffer.GetBackEvent() ; ++j){
-        evt = buffer.GetBackEvent()[j];
-        energy_back->Fill(evt.e_raw, evt.ID);
-        energy_cal_back->Fill(evt.energy, evt.ID);
-    }
-
-    for (j = 0 ; j < buffer.GetLabrLEvent() ; ++j){
-        evt = buffer.GetLabrLEvent()[j];
-        energy_labrL->Fill(evt.e_raw, evt.ID);
-        energy_cal_labrL->Fill(evt.energy, evt.ID);
-    }
-
-    for (j = 0 ; j < buffer.GetLabrSEvent() ; ++j){
-        evt = buffer.GetLabrSEvent()[j];
-        energy_labrS->Fill(evt.e_raw, evt.ID);
-        energy_cal_labrS->Fill(evt.energy, evt.ID);
-    }
-
-    for (j = 0 ; j < buffer.GetLabrFEvent() ; ++j){
-        evt = buffer.GetLabrFEvent()[j];
-        energy_labrF->Fill(evt.e_raw, evt.ID);
-        energy_cal_labrF->Fill(evt.energy, evt.ID);
-    }
-
-    for (j = 0 ; j < buffer.GetCloverEvent() ; ++j){
-        evt = buffer.GetCloverEvent()[j];
-        energy_clover->Fill(evt.e_raw, evt.ID);
-        energy_cal_clover->Fill(evt.energy, evt.ID);
-    }
-
-    for (i = 0 ; i < buffer.GetSectEvent() ; ++i){
+   double timediff;
+   EventEntry evt, rfEvt;
+    for (int i = 0 ; i < buffer.GetSectEvent() ; ++i){
         rfEvt = buffer.GetSectEvent()[i];
-        for (j = 0 ; j < buffer.GetBackEvent() ; ++j){
+        for (int j = 0 ; j < buffer.GetBackEvent() ; ++j){
             evt = buffer.GetBackEvent()[j];
-            timediff = (evt.tcoarse - rfEvt.tcoarse);
+            timediff = double(evt.tcoarse - rfEvt.tcoarse);
             timediff += (evt.tfine - rfEvt.tfine);
             time_energy_sect_back->Fill(evt.energy, timediff);
         }
-        for (j = 0 ; j < buffer.GetRingEvent() ; ++j) {
+        for (int j = 0 ; j < buffer.GetRingEvent() ; ++j) {
             evt = buffer.GetRingEvent()[j];
             if ( abs(rfEvt.energy - evt.energy) > 500 )
                 continue;
-            timediff = (evt.tcoarse - rfEvt.tcoarse);
+            timediff = double(evt.tcoarse - rfEvt.tcoarse);
             timediff += (evt.tfine - rfEvt.tfine);
             time_energy_ring_sect->Fill(evt.energy, timediff);
         }
