@@ -59,7 +59,7 @@ std::vector<word_t> TDRtoWord(const std::vector<TDR::Entry_t> &entries, const bo
     XIA::XIA_CFD_t cfd_res;
     for ( auto &entry : entries ){
         // This is also the place where we will remove any events with adc larger than 16384.
-        if ( entry.adc->ADC_data >= 16384 && remove_of && entry.GetAddress() == 486 )
+        if ( (entry.adc->ADC_data >= 16384 && remove_of) || (entry.GetAddress() == 486) )
             continue;
         word = {entry.GetAddress(),
                 uint16_t(entry.adc->ADC_data),
@@ -93,7 +93,7 @@ std::vector<word_t> TDRtoWord_prog(const std::string &fname, const std::vector<T
     progress.StartNewFile(fname, entries.size());
     size_t pos = 0;
     for ( auto &entry : entries ){
-        if ( entry.adc->ADC_data >= 16384 && remove_of && entry.GetAddress() == 486 ) {
+        if ( (entry.adc->ADC_data >= 16384 && remove_of) || (entry.GetAddress() == 486) ) {
             ++pos;
             continue;
         }
