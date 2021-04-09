@@ -169,8 +169,8 @@ T* RingBuffer<T,N,created>::dummy = 0;
 class PrefetchThread {
 public:
 	//! Initilize, but do not yet start running.
-	PrefetchThread(FileReader* reader,		/*!< Helper to perform the actual file reading.	*/
-                   TDRBuffer* template_buffer	/*!< Buffer object to be "multiplied". 			*/);
+	PrefetchThread(ReaderType* reader,		/*!< Helper to perform the actual file reading.	*/
+                   BufferType* template_buffer	/*!< Buffer object to be "multiplied". 			*/);
 
 	//! Cleanup after the thread stopped running.
 	~PrefetchThread();
@@ -179,7 +179,7 @@ public:
 	void Start();
 
 	//! Called to get a new buffer for sorting.
-	TDRBuffer* ReadingBegins();
+    BufferType* ReadingBegins();
 
 	//! Called after sorting a buffer has finished.
 	void ReadingEnds();
@@ -208,15 +208,15 @@ private:
 	pthread_t thread;
 
 	//! The file reading implementation.
-	FileReader* reader;
+    ReaderType* reader;
 
     enum { NBUFFERS = 128 /*!< By default, read up to 128 buffers in advance. */};
 	
 	//! The ring for fetching buffers.
-	RingBuffer<TDRBuffer,NBUFFERS,true> writeRing;
+	RingBuffer<BufferType,NBUFFERS,true> writeRing;
 
 	//! The ring for reading buffers.
-	RingBuffer<TDRBuffer,NBUFFERS,false> readRing;
+	RingBuffer<BufferType,NBUFFERS,false> readRing;
 
 	//! Flag set to stop the thread. Only written by main thread.
 	bool cancel;
@@ -225,7 +225,7 @@ private:
 	bool finished;	
 };
 
-PrefetchThread::PrefetchThread(FileReader* rdr, TDRBuffer* template_buffer)
+PrefetchThread::PrefetchThread(ReaderType* rdr, BufferType* template_buffer)
 	: reader( rdr )
 	, cancel( false )
 	, finished( false )
@@ -252,7 +252,7 @@ void PrefetchThread::ReadingEnds()
 	pthread_cond_signal( &cond_full );
 }
 
-TDRBuffer* PrefetchThread::ReadingBegins()
+BufferType* PrefetchThread::ReadingBegins()
 {
 	PThreadMutexLock lock( mutex );
     while ( true ) {
@@ -269,7 +269,7 @@ TDRBuffer* PrefetchThread::ReadingBegins()
 void PrefetchThread::StartReading()
 {
 	while ( !cancel && !finished ){
-		TDRBuffer* buffer = 0;
+        BufferType* buffer = 0;
         { // Critical section
 			PThreadMutexLock lock( mutex );
 			while ( !cancel && !finished && writeRing.Full() )
@@ -324,8 +324,8 @@ PrefetchThread::~PrefetchThread()
 // ##############################################################
 
 MTFileBufferFetcher::MTFileBufferFetcher()
-	: reader( new FileReader() )
-	, template_buffer( new TDRBuffer() )
+	: reader( new ReaderType() )
+	, template_buffer( new BufferType() )
     , prefetch( 0 ) { }
 
 MTFileBufferFetcher::~MTFileBufferFetcher()
@@ -333,7 +333,7 @@ MTFileBufferFetcher::~MTFileBufferFetcher()
 	StopPrefetching();
 }
 
-const TDRBuffer* MTFileBufferFetcher::Next(Status& state)
+const BufferType* MTFileBufferFetcher::Next(Status& state)
 {
 	if ( reader->IsError() ){
 		state = ERROR;
@@ -347,7 +347,7 @@ const TDRBuffer* MTFileBufferFetcher::Next(Status& state)
 		prefetch->ReadingEnds();
 	}
 
-    const TDRBuffer* b = prefetch->ReadingBegins();
+    const BufferType* b = prefetch->ReadingBegins();
     state = b ? OKAY : END;
 	return b;
 }

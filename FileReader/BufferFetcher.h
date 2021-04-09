@@ -22,6 +22,14 @@
 #define BUFFERFETCHER_H
 
 class TDRBuffer;
+class TDRByteBuffer;
+
+#if TDR_FILE_READER
+    using BufferType = TDRBuffer;
+#else
+using BufferType = TDRByteBuffer;
+#endif // TDR_FILE_READER
+
 
 //! Class to fetch a new buffer.
 /*!
@@ -46,7 +54,7 @@ public:
 	 *  are no more buffers, ERROR in case of error, WAIT if
 	 *  if fetching a buffer might be possible later.
 	 */
-    virtual const TDRBuffer* Next(Status& state /*!< Will contain the status after reading. */) = 0;
+    virtual const BufferType* Next(Status& state /*!< Will contain the status after reading. */) = 0;
 
     //! Destructor.
     virtual ~BufferFetcher() { }

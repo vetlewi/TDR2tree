@@ -34,6 +34,7 @@
 #include <TTree.h>
 #include <TH2.h>
 #include <iostream>
+#include <Histogram2D.h>
 
 extern ProgressUI progress;
 //extern PolygonGate sectBackGate;
@@ -325,7 +326,7 @@ Event &Event::operator=(const std::vector<word_t> &event)
 }
 
 
-void Event::RunAddback(TH2 *ab_t_clover)
+void Event::RunAddback(Histogram2Dp ab_t_clover)
 {
     // We set up a vector for each clover.
     std::vector<EventEntry> cevent[NUM_CLOVER_DETECTORS];
@@ -359,7 +360,7 @@ void Event::RunAddback(TH2 *ab_t_clover)
 }
 
 
-std::vector<Event> Event::BuildPGEvents(const std::vector<word_t> &raw_data, TH2 *ab_hist, double coins_time)
+std::vector<Event> Event::BuildPGEvents(const std::vector<word_t> &raw_data, Histogram2Dp ab_hist, double coins_time)
 {
     std::vector<Event> events;
     DetectorInfo_t trigger;
@@ -401,7 +402,7 @@ std::vector<Event> Event::BuildPGEvents(const std::vector<word_t> &raw_data, TH2
     return events;
 }
 
-std::vector<Event> Event::BuildEvent(const std::vector<word_t> &raw_data, TH2 *ab_hist, double gap_time)
+std::vector<Event> Event::BuildEvent(const std::vector<word_t> &raw_data, Histogram2Dp ab_hist, double gap_time)
 {
     std::vector<Event> events;
     double timediff;
@@ -425,7 +426,7 @@ std::vector<Event> Event::BuildEvent(const std::vector<word_t> &raw_data, TH2 *a
     return events;
 }
 
-void Event::BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, TH2 *ab_hist, double coins_time, ProgressUI *prog)
+void Event::BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, Histogram2Dp ab_hist, double coins_time, ProgressUI *prog)
 {
     DetectorInfo_t trigger;
     double timediff;
@@ -474,7 +475,7 @@ void Event::BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm,
     }
 }
 
-void Event::BuildAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, TH2 *ab_hist, double coins_time)
+void Event::BuildAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, Histogram2Dp ab_hist, double coins_time)
 {
     auto begin = raw_data.begin();
     auto it = raw_data.begin();

@@ -21,6 +21,7 @@
 #ifndef ROOTFILEMANAGER_H
 #define ROOTFILEMANAGER_H
 
+
 #include <TFile.h>
 
 class TH1;
@@ -30,6 +31,8 @@ class TObject;
 
 #include <vector>
 
+#include "Histograms.h"
+
 class RootFileManager
 {
 
@@ -38,6 +41,9 @@ private:
     TFile file;                         //!< File where everything will be put in.
     std::vector<TObject *> list;        //!< List to store ROOT objects.
 
+    Histograms histograms;
+
+    void Write();
 
 public:
 
@@ -70,6 +76,16 @@ public:
      */
     TH1 *CreateTH1(const char *name, const char *title, int xbin, double xmin, double xmax, const char *xtitle, const char *dir="");
 
+    //! Create a ROOT 1D histogram from a Histogram1Dp
+    TH1 *CreateTH1(Histogram1Dp h);
+
+    //! Create a histogram
+    Histogram1Dp Spec(const std::string &name, const std::string &title, const Axis::index_t &bins,
+                      const Axis::bin_t &xmin, const Axis::bin_t &xmax, const std::string &xtitle)
+    {
+        return histograms.Create1D(name, title, bins, xmin, xmax, xtitle);
+    }
+
     //! Creat a ROOT 2D histogram.
     /*!
      *
@@ -88,6 +104,18 @@ public:
      */
     TH2 *CreateTH2(const char *name, const char *title, int xbin, double xmin, double xmax, const char *xtitle,
                    int ybin, double ymin, double ymax, const char *ytitle, const char *dir="");
+
+    //! Create a ROOT 2D histogram from a Histogram2Dp
+    TH2* CreateTH2(Histogram2Dp h);
+
+    //! Create a matrix
+    Histogram2Dp Mat(const std::string &name, const std::string &title, const Axis::index_t &xbins,
+                     const Axis::bin_t &xmin, const Axis::bin_t &xmax, const std::string &xtitle,
+                     const Axis::index_t &ybins, const Axis::bin_t &ymin, const Axis::bin_t &ymax,
+                     const std::string &ytitle)
+    {
+        return histograms.Create2D(name, title, xbins, xmin, xmax, xtitle, ybins, ymin, ymax, ytitle);
+    }
 
 };
 

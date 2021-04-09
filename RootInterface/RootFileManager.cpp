@@ -24,6 +24,9 @@
 #include <TH1.h>
 #include <TH2.h>
 
+#include "Histogram1D.h"
+#include "Histogram2D.h"
+
 
 RootFileManager::RootFileManager(const char *fname, const char *mode, const char *ftitle)
     : file( fname, mode, ftitle )
@@ -33,8 +36,20 @@ RootFileManager::RootFileManager(const char *fname, const char *mode, const char
 
 RootFileManager::~RootFileManager()
 {
+    Write();
     file.Write();
     file.Close();
+}
+
+void RootFileManager::Write()
+{
+    for ( auto &hist : histograms.GetAll1D() ){
+        CreateTH1(hist);
+    }
+
+    for ( auto &mat : histograms.GetAll2D() ){
+        CreateTH2(mat);
+    }
 }
 
 TTree *RootFileManager::CreateTree(const char *name, const char *title)
@@ -57,6 +72,29 @@ TH1 *RootFileManager::CreateTH1(const char *name, const char *title, int xbin, d
     file.cd();
     list.push_back(h);
     return h;
+}
+
+TH1 *RootFileManager::CreateTH1(Histogram1Dp h)
+{
+    const Axis& xax = h->GetAxisX();
+    const int channels = xax.GetBinCount();
+    file.cd("");
+    TH1* r = new TH1I( h->GetName().c_str(), h->GetTitle().c_str(),
+                       channels, xax.GetLeft(), xax.GetRight() );
+    TAxis* rxax = r->GetXaxis();
+    rxax->SetTitle(xax.GetTitle().c_str());
+    rxax->SetTitleSize(0.03);
+    rxax->SetLabelSize(0.03);
+
+    TAxis* ryax = r->GetYaxis();
+    ryax->SetLabelSize(0.03);
+
+    for(int i=0; i<channels+2; ++i)
+        r->SetBinContent(i, h->GetBinContent(i));
+    r->SetEntries( h->GetEntries() );
+    file.cd();
+    list.push_back(r);
+    return r;
 }
 
 TH2 *
@@ -82,6 +120,41 @@ RootFileManager::CreateTH2(const char *name, const char *title, int xbin, double
     return m;
 }
 
+TH2 *RootFileManager::CreateTH2(Histogram2Dp h)
+{
+    const Axis& xax = h->GetAxisX();
+    const Axis& yax = h->GetAxisY();
+    const int xchannels = xax.GetBinCount();
+    const int ychannels = yax.GetBinCount();
+    file.cd("");
+    TH2* mat = new TH2F( h->GetName().c_str(), h->GetTitle().c_str(),
+                         xchannels, xax.GetLeft(), xax.GetRight(),
+                         ychannels, yax.GetLeft(), yax.GetRight() );
+    mat->SetOption( "colz" );
+    mat->SetContour( 64 );
+
+    TAxis* rxax = mat->GetXaxis();
+    rxax->SetTitle(xax.GetTitle().c_str());
+    rxax->SetTitleSize(0.03);
+    rxax->SetLabelSize(0.03);
+
+    TAxis* ryax = mat->GetYaxis();
+    ryax->SetTitle(yax.GetTitle().c_str());
+    ryax->SetTitleSize(0.03);
+    ryax->SetLabelSize(0.03);
+    ryax->SetTitleOffset(1.3);
+
+    TAxis* zax = mat->GetZaxis();
+    zax->SetLabelSize(0.025);
+
+    for(int iy=0; iy<ychannels+2; ++iy)
+        for(int ix=0; ix<xchannels+2; ++ix)
+            mat->SetBinContent(ix, iy, h->GetBinContent(ix, iy));
+    mat->SetEntries( h->GetEntries() );
+    file.cd();
+    list.push_back(mat);
+    return mat;
+}
 
 
 

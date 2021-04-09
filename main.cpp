@@ -17,6 +17,7 @@
 #include "ProgressUI.h"
 #include "MTFileBufferFetcher.h"
 #include "BufferType.h"
+#include "Histograms.h"
 
 #include <TROOT.h>
 
@@ -27,8 +28,41 @@
 #include <MemoryMap.h>
 
 ProgressUI progress;
-//PolygonGate sectBackGate;
-//PolygonGate ringSectGate;
+
+size_t extract_file_no(const std::string &str)
+{
+    auto fno_start = str.find_last_of('_');
+    if ( fno_start == std::string::npos ){
+        throw std::runtime_error("Could not find file number");
+    } else {
+        fno_start += 1;
+    }
+    return std::stoi(std::string(str.begin()+fno_start, str.end()));
+}
+
+size_t get_file_no(const std::string &str)
+{
+    auto fname_start = str.find_last_of('/');
+    if ( fname_start == std::string::npos ){
+        fname_start = 0;
+    } else {
+        fname_start += 1;
+    }
+    try {
+        return extract_file_no(std::string(str.begin() + fname_start, str.end()));
+    } catch ( std::exception &ex ){
+        throw std::runtime_error("Error parsing file path '" + str + "', got error: " + ex.what());
+    }
+}
+
+bool compare_run_files(const std::string &lhs, const std::string &rhs)
+{
+    return get_file_no(lhs) < get_file_no(rhs);
+}
+
+void sort_file_names(std::vector<std::string> &files){
+    std::sort(files.begin(), files.end(), compare_run_files);
+}
 
 struct Options
 {
@@ -143,7 +177,7 @@ void Convert_to_root(const std::vector<std::string> &in_files, const std::string
     RootFileManager fm(out_file.c_str());
     HistManager hm(&fm);
     TreeManager<Event> tm(&fm, "events", "Event tree", opt.validate);
-    TH2 *ab_hist = ( opt.addback ) ? fm.CreateTH2("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr;
+    Histogram2Dp ab_hist = ( opt.addback ) ? fm.Mat("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr;
     for ( const auto& file : in_files ) {
         //event_data = ( pg_event ) ? Event::BuildPGEvents(FileReader::GetFile(file.c_str()), ab_hist) : Event::BuildEvent(FileReader::GetFile(file.c_str()), ab_hist);
         //hm.AddEntries(event_data);
@@ -156,13 +190,13 @@ void Convert_to_root(const std::vector<std::string> &in_files, const std::string
     }
 }
 
-void Convert_to_root_MT(const std::vector<std::string> &in_files, const std::string &out_file, const Options &opt)
+/*void Convert_to_root_MT(const std::vector<std::string> &in_files, const std::string &out_file, const Options &opt)
 {
     std::vector<Event> event_data;
     RootFileManager fm(out_file.c_str());
     HistManager hm(&fm);
     TreeManager<Event> tm(&fm, "events", "Event tree", opt.validate);
-    TH2 *ab_hist = ( opt.addback ) ? fm.CreateTH2("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr;
+    Histogram2Dp ab_hist = ( opt.addback ) ? fm.Mat("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr;
     for ( const auto& file : in_files ) {
         MTFileBufferFetcher bufFetch;
         bufFetch.Open(file);
@@ -197,6 +231,65 @@ void Convert_to_root_MT(const std::vector<std::string> &in_files, const std::str
             }
         }
     }
+}*/
+
+template<class Fetcher>
+void ReadFile(const std::string &in,
+              RootFileManager &fm, HistManager &hm, TreeManager<Event> &tm,
+              Histogram2Dp ab_hist, const Options &opt)
+{
+    Fetcher bufferFetcher;
+
+
+}
+
+template<class Fetcher>
+void Convert_to_root(const std::vector<std::string> &in_files, const std::string &out_file, const Options &opt)
+{
+    RootFileManager fm(out_file.c_str());
+    HistManager hm(&fm);
+    TreeManager<Event> tm(&fm, "events", "Event tree", opt.validate);
+    Histogram2Dp ab_hist = ( opt.addback ) ? fm.Mat("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr;
+
+    Fetcher bufferFetcher;
+    BufferFetcher::Status status;
+    const TDRByteBuffer *buffer;
+    TDR::Parser parser;
+
+    std::vector<word_t> word_buffer;
+    std::vector<word_t> data;
+
+    for (auto &file : in_files){
+        bufferFetcher.Open(file);
+        while ( true ){
+            buffer = bufferFetcher.Next(status);
+            if ( status == BufferFetcher::OKAY ){
+                word_buffer = TDRtoWord(parser.ParseBuffer(buffer->CGetBuffer(), false), opt.remove_overflow);
+                data.insert(data.end(), word_buffer.begin(), word_buffer.end());
+                std::sort(data.begin(), data.end(), [](const word_t &lhs, const word_t &rhs) { return (double(rhs.timestamp - lhs.timestamp) + (rhs.cfdcorr - lhs.cfdcorr)) > 0; });
+                if ( data.size() > 196608 ){
+                    if ( opt.particle_gamma ){
+                        Event::BuildPGAndFill(std::vector<word_t>(data.begin(), data.begin()+65536), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
+                    } else {
+                        Event::BuildAndFill(std::vector<word_t>(data.begin(), data.begin()+65536), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
+                    }
+                    data.erase(data.begin(), data.begin()+65536);
+                }
+            } else if ( status == BufferFetcher::END ) {
+                word_buffer = TDRtoWord(parser.ParseBuffer(buffer->CGetBuffer(), false), opt.remove_overflow);
+                data.insert(data.end(), word_buffer.begin(), word_buffer.end());
+                std::sort(data.begin(), data.end(), [](const word_t &lhs, const word_t &rhs) { return (double(rhs.timestamp - lhs.timestamp) + (rhs.cfdcorr - lhs.cfdcorr)) > 0; });
+                if ( opt.particle_gamma ){
+                    Event::BuildPGAndFill(std::vector<word_t>(data.begin(), data.end()), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
+                } else {
+                    Event::BuildAndFill(std::vector<word_t>(data.begin(), data.end()), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
+                }
+            } else {
+                break;
+            }
+        }
+        progress.Finish();
+    }
 }
 
 void Convert_to_root_MM_all(const std::vector<std::string> &in_files, const std::string &out_file, const Options &opt)
@@ -204,7 +297,7 @@ void Convert_to_root_MM_all(const std::vector<std::string> &in_files, const std:
     RootFileManager fm(out_file.c_str());
     HistManager hm(&fm);
     TreeManager<Event> tm(&fm, "events", "Event tree", opt.validate);
-    TH2 *ab_hist = ( opt.addback ) ? fm.CreateTH2("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr;
+    Histogram2Dp ab_hist = ( opt.addback ) ? fm.Mat("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr;
 
     for ( auto &file : in_files ) {
         IO::MemoryMap mmap(file.c_str());
@@ -226,15 +319,28 @@ void Convert_to_root_MM(const std::vector<std::string> &in_files, const std::str
     RootFileManager fm(out_file.c_str());
     HistManager hm(&fm);
     TreeManager<Event> tm(&fm, "events", "Event tree", opt.validate);
-    TH2 *ab_hist = ( opt.addback ) ? fm.CreateTH2("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr;
+    Histogram2Dp ab_hist = ( opt.addback ) ? fm.Mat("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr;
 
-    for ( auto &file : in_files ){
+    TDR::Parser parser;
+    std::deque<word_t> data;
+    std::vector<word_t> buffer;
+
+    /*!
+     * Issue with this function:
+     * If not all entries are flushed from the
+     * parser after a file is done then the entries
+     * still in the parser will reference the previous file.
+     * This means that it could crash if data is spread across
+     * two files.
+     */
+
+    for ( size_t n = 0 ; n < in_files.size() ; ++n ){
+        auto file = in_files[n];
         IO::MemoryMap mmap(file.c_str());
-        TDR::Parser parser;
-        std::deque<word_t> data;
-        std::vector<word_t> buffer;
+
         std::vector<const char *> headers = TDR::FindHeaders(mmap.GetPtr(), mmap.GetPtr() + mmap.GetSize());
         progress.StartNewFile(file, headers.size());
+
         for ( size_t hi = 0 ; hi < headers.size() ; ++hi ){
             buffer = TDRtoWord(parser.ParseBuffer(headers[hi], (hi == headers.size() - 1) ), opt.remove_overflow);
             data.insert(data.end(), buffer.begin(), buffer.end());
@@ -281,10 +387,14 @@ int main(int argc, char *argv[])
 
     opt.particle_gamma = !opt.particle_gamma;
     opt.remove_overflow = !opt.remove_overflow;
-    /*if ( sectBack_file != "")
-        sectBackGate.Set(sectBack_file.c_str());
-    if ( ringSect_file != "")
-        ringSectGate.Set(ringSect_file.c_str());*/
+
+    try {
+        sort_file_names(input_file);
+    } catch ( const std::exception &e ){
+        std::cerr << e.what() << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
 
     if (input_file.empty() || output_file.empty() ){
         std::cerr << "Input or output file missing." << std::endl;
@@ -301,9 +411,11 @@ int main(int argc, char *argv[])
     std::cout << "Running with options:" << std::endl;
     std::cout << opt << std::endl;
 
+    //Convert_to_root<MTFileBufferFetcher>(input_file, output_file, opt);
     //Convert_to_root_MT(input_file, output_file, opt);
-    Convert_to_root_MM(input_file, output_file, opt);
-    //Convert_to_root_MM_all(input_file, output_file, opt);
+    //Convert_to_root_MM(input_file, output_file, opt);
+    //Convert_to_root_MM_v2(input_file, output_file, opt);
+    Convert_to_root_MM_all(input_file, output_file, opt);
     exit(EXIT_SUCCESS);
 }
 

@@ -29,16 +29,21 @@
 #include <TH1.h>
 #include <TH2.h>
 
+#include "Histogram1D.h"
+#include "Histogram2D.h"
+
 extern ProgressUI progress;
 
 HistManager::Detector_Histograms_t::Detector_Histograms_t(RootFileManager *fm, const std::string &name, const size_t &num)
-    : time( fm->CreateTH2(std::string("time_"+name).c_str(), std::string("Time spectra "+name).c_str(), 3000, -1500, 1500, "Time [ns]", num, 0, num, std::string(name+" ID").c_str()) )
-    , energy( fm->CreateTH2(std::string("energy_"+name).c_str(), std::string("Energy spectra "+name).c_str(), 16384, 0, 16374, "Energy [ch]", num, 0, num, std::string(name+" ID").c_str()) )
-    , energy_cal( fm->CreateTH2(std::string("energy_cal_"+name).c_str(), std::string("energy spectra "+name+" (cal)").c_str(), 16384, 0, 16374, "Energy [keV]", num, 0, num, std::string(name+" ID").c_str()) )
+    : time( fm->Mat(std::string("time_"+name).c_str(), std::string("Time spectra "+name).c_str(), 3000, -1500, 1500, "Time [ns]", num, 0, num, std::string(name+" ID").c_str()) )
+    , energy( fm->Mat(std::string("energy_"+name).c_str(), std::string("Energy spectra "+name).c_str(), 16384, 0, 16384, "Energy [ch]", num, 0, num, std::string(name+" ID").c_str()) )
+    , energy_cal( fm->Mat(std::string("energy_cal_"+name).c_str(), std::string("energy spectra "+name+" (cal)").c_str(), 16384, 0, 16384, "Energy [keV]", num, 0, num, std::string(name+" ID").c_str()) )
+    , mult( fm->Spec(std::string("mult_"+name).c_str(), std::string("Multiplicity " + name).c_str(), 128, 0, 128, "Multiplicity") )
 {}
 
 void HistManager::Detector_Histograms_t::Fill(const EventData &events, const EventEntry &start)
 {
+    mult->Fill(events.mult);
     for ( size_t n = 0 ; n < events.mult ; ++n ){
         if ( !events.cfd_fail[n] )
             time->Fill(double(events.tcoarse[n] - start.tcoarse) + (events.tfine[n] - start.tfine),
@@ -50,6 +55,7 @@ void HistManager::Detector_Histograms_t::Fill(const EventData &events, const Eve
 
 void HistManager::Detector_Histograms_t::Fill(const EventData &events)
 {
+    mult->Fill(events.mult);
     for ( size_t n = 0 ; n < events.mult ; ++n ){
         energy->Fill(events.e_raw[n], events.ID[n]);
         energy_cal->Fill(events.energy[n], events.ID[n]);
@@ -64,8 +70,8 @@ HistManager::HistManager(RootFileManager *fm)
     , labrS( fm, "labrS", NUM_LABR_2X2_DETECTORS )
     , labrF( fm, "labrF", NUM_LABR_2X2_DETECTORS )
     , clover( fm, "clover", NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS )
-    , time_energy_sect_back( fm->CreateTH2("time_energy_sect_back", "Energy vs. sector/back time", 1000, 0, 30000, "E energy [keV]", 3000, -1500, 1500, "t_{back} - t_{sector} [ns]") )
-    , time_energy_ring_sect( fm->CreateTH2("time_energy_ring_sect", "Energy vs. sector/back time", 1000, 0, 30000, "Sector energy [keV]", 3000, -1500, 1500, "t_{ring} - t_{sector} [ns]") )
+    , time_energy_sect_back( fm->Mat("time_energy_sect_back", "Energy vs. sector/back time", 1000, 0, 30000, "E energy [keV]", 3000, -1500, 1500, "t_{back} - t_{sector} [ns]") )
+    , time_energy_ring_sect( fm->Mat("time_energy_ring_sect", "Energy vs. sector/back time", 1000, 0, 30000, "Sector energy [keV]", 3000, -1500, 1500, "t_{ring} - t_{sector} [ns]") )
 {
 }
 

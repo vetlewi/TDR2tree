@@ -3,6 +3,7 @@
 target_sources(TDR2tree
         PRIVATE
             aptr.ipp
+            BasicFileReader.cpp
             FileReader.cpp
             MTFileBufferFetcher.cpp
             STFileBufferFetcher.cpp
@@ -13,6 +14,7 @@ target_sources(TDR2tree
             TDREntry.cpp
             MemoryMap.cpp
         PUBLIC
+            BasicFileReader.h
             BufferType.h
             TDRChannel.h
             TDRParser.h

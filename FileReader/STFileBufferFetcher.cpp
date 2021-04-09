@@ -28,22 +28,13 @@
 
 #include "STFileBufferFetcher.h"
 
-const TDRBuffer* STFileBufferFetcher::Next(Status& state)
+const BufferType* STFileBufferFetcher::Next(Status& state)
 {
     int i = reader.Read( &buffer );
-    if ( i == buffer.GetSize() ){
+    if ( i  > 0 ){
         state = OKAY;
-    } else if ( i > 0 ){
+    } else if ( i == 0 ){
         state = END;
-        word_t *tmp = new word_t[i];
-        for (int num = 0 ; num < i ; ++num){
-            tmp[num] = buffer[i];
-        }
-        buffer.Resize(i);
-        for (int num = 0 ; num < i ; ++num){
-            buffer[i] = tmp[i];
-        }
-        delete[] tmp;
     } else {
         state = ERROR;
     }

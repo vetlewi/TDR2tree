@@ -23,6 +23,7 @@
 
 #include "FileBufferFetcher.h"
 #include "FileReader.h"
+#include "BasicFileReader.h"
 
 #include "BufferType.h"
 
@@ -51,14 +52,14 @@ public:
 	//! Calls the reader to fetch a buffer.
     /*! \return Pointer to the buffer that have been read.
      */
-    const TDRBuffer* Next(Status& state    /*!< Result of the reading process. */);
+    const BufferType* Next(Status& state    /*!< Result of the reading process. */);
 
 private:
 	//! Implementation of the actual reading.
-	FileReader reader;
+    ReaderType reader;
 
 	//! The buffer used to store the file data in.
-    TDRBuffer buffer;
+    BufferType buffer;
 };
 
 #endif // STFILEBUFFERFETCHER_H

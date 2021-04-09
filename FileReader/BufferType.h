@@ -71,6 +71,15 @@ private:
 	bool is_set;
 };
 
+class TDRByteBuffer : public Buffer<char> {
+    enum { BUFSIZE = 65536 /*! The size of the buffer in number of bytes */};
+public:
+    TDRByteBuffer(int sz, char *buf ) : Buffer<char>(sz, buf) { }
+    TDRByteBuffer() : Buffer<char>(BUFSIZE, new char[BUFSIZE]) { }
+    ~TDRByteBuffer() { delete GetBuffer(); }
+    TDRByteBuffer* New() { return new TDRByteBuffer(); }
+};
+
 class TDRBuffer : public Buffer<word_t> {
 	enum { BUFSIZE = 65536 /*!< The size of the buffer in number of words. */};
 public:

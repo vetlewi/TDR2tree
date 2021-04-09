@@ -32,9 +32,10 @@ class HistManager {
 private:
 
     struct Detector_Histograms_t {
-        TH2 *time;          //! Time alignment spectra
-        TH2 *energy;
-        TH2 *energy_cal;
+        Histogram2Dp time;          //! Time alignment spectra
+        Histogram2Dp energy;
+        Histogram2Dp energy_cal;
+        Histogram1Dp mult;
 
         Detector_Histograms_t(RootFileManager *fileManager, const std::string &name, const size_t &num);
 
@@ -52,11 +53,8 @@ private:
     Detector_Histograms_t clover;
 
     //! Time energy spectra for particles.
-    TH2 *time_energy_sect_back;
-    TH2 *time_energy_ring_sect;
-
-    void FillEnergy(const Event &buffer);
-    void FillTime(const Event &buffer);
+    Histogram2Dp time_energy_sect_back;
+    Histogram2Dp time_energy_ring_sect;
 
 
 public:

@@ -33,6 +33,7 @@ class TH2;
 
 #include "HistManager.h"
 #include "TreeManager.h"
+#include "Histograms.h"
 
 struct EventEntry
 {
@@ -126,20 +127,20 @@ public:
     //! Reset event.
     inline void Reset(){ ringData.Reset(); sectData.Reset(); backData.Reset(); labrLData.Reset(); labrSData.Reset(); labrFData.Reset(); cloverData.Reset(); rfData.Reset(); }
 
-    void RunAddback(TH2 *ab_t_clover /*!< Matrix to fill in order to set propper time gates for clover addback */);
+    void RunAddback(Histogram2Dp ab_t_clover /*!< Matrix to fill in order to set propper time gates for clover addback */);
 
     //! Function to check if event is good. Also, only keep the sect/ring data that are acceptable.
     bool IsGood();
 
     //! Set all events.
-    static std::vector<Event> BuildPGEvents(const std::vector<word_t> &raw_data, TH2 *ab_hist = nullptr, double coins_time = 3000.);
+    static std::vector<Event> BuildPGEvents(const std::vector<word_t> &raw_data, Histogram2Dp ab_hist = nullptr, double coins_time = 3000.);
 
     //! Build and fill events.
-    static void BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, TH2 *ab_hist = nullptr, double coins_time = 3000., ProgressUI *prog = nullptr);
-    static void BuildAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, TH2 *ab_hist = nullptr, double coins_time = 3000.);
+    static void BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, Histogram2Dp ab_hist = nullptr, double coins_time = 3000., ProgressUI *prog = nullptr);
+    static void BuildAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, Histogram2Dp ab_hist = nullptr, double coins_time = 3000.);
 
     //! Set all events.
-    static std::vector<Event> BuildEvent(const std::vector<word_t> &raw_data, TH2 *ab_hist = nullptr, double gap_time=1500.);
+    static std::vector<Event> BuildEvent(const std::vector<word_t> &raw_data, Histogram2Dp ab_hist = nullptr, double gap_time=1500.);
 
     inline const EventData &GetRingEvent() const { return ringData; }
 
@@ -156,20 +157,6 @@ public:
     inline const EventData &GetCloverEvent() const { return cloverData; }
 
     inline const EventData &GetRFEvent() const { return rfData; }
-};
-
-class EventBuilder {
-
-private:
-    std::vector<word_t> raw_data;
-    size_t current_pos;
-    TH2 *ab_hist;
-
-public:
-    explicit EventBuilder(std::vector<word_t> data, TH2 *ab = nullptr);// : raw_data( data ), current_pos( 0 ), ab_hist( ab ){}
-
-    bool GetEvent(Event &evt);
-
 };
 
 

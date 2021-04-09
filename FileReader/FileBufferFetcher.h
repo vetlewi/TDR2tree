@@ -23,10 +23,17 @@
 
 #include "BufferFetcher.h"
 
+#include "FileReader.h"
+#include "BasicFileReader.h"
+
 #include <string>
 #include <memory>
 
-class FileReader;
+#if TDR_FILE_READER
+using ReaderType = FileReader;
+#else
+using ReaderType = BasicFileReader;
+#endif // TDR_FILE_READER
 
 //! Class to read a new buffer from file.
 /*!

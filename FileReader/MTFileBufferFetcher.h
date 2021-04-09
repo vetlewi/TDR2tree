@@ -60,10 +60,10 @@ public:
 	/*! Creates a new thread which prefetches some buffers while
 	 * the main thread is sorting.
 	 */
-	const TDRBuffer* Next(Status& state);
+	const BufferType* Next(Status& state);
 
 	//! Set the buffer template.
-    void SetBuffer(TDRBuffer *buf)
+    void SetBuffer(BufferType *buf)
 		{ template_buffer.reset( buf ); }
 
 private:
@@ -71,10 +71,10 @@ private:
 	void StopPrefetching();
 
     //! Class performing the reading.
-	aptr<FileReader> reader;
+	aptr<ReaderType> reader;
 
     //! Template for the buffer.
-	aptr<TDRBuffer> template_buffer;
+	aptr<BufferType> template_buffer;
 
     //! Class to prefetch a buffer.
 	class PrefetchThread* prefetch;
