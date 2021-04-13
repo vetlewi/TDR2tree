@@ -475,11 +475,16 @@ void Event::BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm,
     }
 }
 
-void Event::BuildAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, Histogram2Dp ab_hist, double coins_time)
+void Event::BuildAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, Histogram2Dp ab_hist, double coins_time, ProgressUI *prog)
 {
+    auto rbegin = raw_data.begin();
     auto begin = raw_data.begin();
     auto it = raw_data.begin();
     auto end = raw_data.end();
+
+    if ( prog )
+        progress.StartFillingTree(raw_data.size());
+
     while ( it < end - 1 ){
         if ( abs( double((it+1)->timestamp - it->timestamp) + ((it+1)->cfdcorr - it->cfdcorr) ) > coins_time ){
             Event evt(std::vector<word_t>(begin, it+1));
@@ -489,6 +494,9 @@ void Event::BuildAndFill(const std::vector<word_t> &raw_data, HistManager *hm, T
             begin = it+1;
         }
         ++it;
+
+        if ( prog )
+            prog->UpdateTreeFillProgress(it - rbegin);
     }
 }
 
@@ -600,12 +608,6 @@ bool Event::IsGood()
         tdiff += labrSData[i].tfine - sectData[0].tfine;
         labrSData.tfine[i] = tdiff;
     }
-
-    /*for (int i = 0 ; i < labrFData ; ++i){
-        tdiff = labrFData[i].tcoarse - sectData[0].tcoarse;
-        tdiff += labrFData[i].tfine - sectData[0].tfine;
-        labrFData.tfine[i] = tdiff;
-    }*/
 
     for (int i = 0 ; i < cloverData ; ++i){
         tdiff = cloverData[i].tcoarse - sectData[0].tcoarse;

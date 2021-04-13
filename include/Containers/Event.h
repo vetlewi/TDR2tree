@@ -136,8 +136,13 @@ public:
     static std::vector<Event> BuildPGEvents(const std::vector<word_t> &raw_data, Histogram2Dp ab_hist = nullptr, double coins_time = 3000.);
 
     //! Build and fill events.
+    template<class It>
+    static void BuildPGAndFill(It start, It stop, HistManager *hm, TreeManager<Event> *tm, Histogram2Dp ab_hist = nullptr, double coins_time = 3000., ProgressUI *prog = nullptr);
     static void BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, Histogram2Dp ab_hist = nullptr, double coins_time = 3000., ProgressUI *prog = nullptr);
-    static void BuildAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, Histogram2Dp ab_hist = nullptr, double coins_time = 3000.);
+
+    template<class It>
+    static void BuildAndFill(It start, It stop, HistManager *hm, TreeManager<Event> *tm, Histogram2Dp ab_hist = nullptr, double coins_time = 3000., ProgressUI *prog = nullptr);
+    static void BuildAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, Histogram2Dp ab_hist = nullptr, double coins_time = 3000., ProgressUI *prog = nullptr);
 
     //! Set all events.
     static std::vector<Event> BuildEvent(const std::vector<word_t> &raw_data, Histogram2Dp ab_hist = nullptr, double gap_time=1500.);
@@ -159,5 +164,80 @@ public:
     inline const EventData &GetRFEvent() const { return rfData; }
 };
 
+template<class It>
+void Event::BuildPGAndFill(It _start, It _stop, HistManager *hm, TreeManager<Event> *tm, Histogram2Dp ab_hist, double coins_time, ProgressUI *prog)
+{
+    DetectorInfo_t trigger;
+    double timediff;
+
+    auto begin = _start;
+    auto end = _stop;
+    auto it = _start;
+
+    size_t count = 0;
+    if ( prog )
+        progress.StartFillingTree(_stop-_start);
+
+    while ( it < end ){
+
+        if ( GetDetector(it->address).type != DetectorType::eDet ) {
+            ++it;
+            continue;
+        }
+
+        auto start = it;
+        while ( start >= begin ){
+            if ( abs(double(it->timestamp - start->timestamp) + (it->cfdcorr - start->cfdcorr)) > coins_time )
+                break;
+            --start;
+        }
+        start = ( start < begin ) ? begin : start;
+
+        auto stop = it + 1;
+        while ( stop < end ){
+            if ( abs(double(it->timestamp - stop->timestamp) + (it->cfdcorr - stop->cfdcorr)) > coins_time )
+                break;
+            ++stop;
+        }
+
+        //Event evt(start, stop);
+        Event evt(std::vector<word_t>(start, stop));
+        if ( ab_hist != nullptr )
+            evt.RunAddback(ab_hist);
+        if ( hm ) hm->AddEntry(evt);
+        if ( tm ) tm->AddEntry(evt);
+
+        it = stop;
+
+        if ( prog )
+            prog->UpdateTreeFillProgress(count++);
+    }
+
+}
+
+template<class It>
+void Event::BuildAndFill(It _start, It _stop, HistManager *hm, TreeManager<Event> *tm, Histogram2Dp ab_hist, double coins_time, ProgressUI *prog)
+{
+    auto begin = _start;
+    auto it = _start;
+    auto end = _stop;
+
+    if ( prog )
+        progress.StartFillingTree(_stop-_start);
+
+    while ( it < end - 1 ){
+        if ( abs( double((it+1)->timestamp - it->timestamp) + ((it+1)->cfdcorr - it->cfdcorr) ) > coins_time ){
+            Event evt(std::vector<word_t>(begin, it+1));
+            if ( ab_hist ) evt.RunAddback(ab_hist);
+            if ( hm ) hm->AddEntry(evt);
+            if ( tm ) tm->AddEntry(evt);
+            begin = it+1;
+        }
+        ++it;
+
+        if ( prog )
+            prog->UpdateTreeFillProgress(it - _start);
+    }
+}
 
 #endif // EVENT_H

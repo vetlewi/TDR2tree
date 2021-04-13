@@ -625,6 +625,8 @@ DetectorInfo_t pDetector[] =
 
 DetectorInfo_t GetDetector(uint16_t address)
 {
+    // This involves having a branch every time we try to look up a detector. Maybe we should
+    // just die if out of bounds?
     return (address < TOTAL_NUMBER_OF_ADDRESSES) ? pDetector[address] : pDetector[0];
 }
 

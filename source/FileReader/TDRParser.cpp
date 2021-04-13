@@ -86,6 +86,11 @@ std::vector<Entry_t> TDR::ParseFile(const char *begin, const char *end, const si
 }
 
 const char magic[] = {'E', 'B', 'Y', 'E', 'D', 'A', 'T', 'A'};
+const char *TDR::FindNextHeader(const char *begin, const char *end)
+{
+    return std::search(begin, end, magic, magic+sizeof(magic));
+}
+
 std::vector<const char *> TDR::FindHeaders(const char *begin, const char *end)
 {
   std::vector<const char *> hdrs;

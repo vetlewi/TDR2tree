@@ -45,6 +45,40 @@ MemoryMap::MemoryMap(const char *fname) : memory_buffer(nullptr), file(0), size(
   }
 }
 
+/*MemoryMap::MemoryMap(MemoryMap &&lhs) : memory_buffer( lhs.memory_buffer ), file( lhs.file ), size( lhs.size )
+{
+    // Need to set all of these fields to zero for the other object since we now own the resources.
+    lhs.memory_buffer = nullptr;
+    lhs.file = 0;
+    lhs.size = 0;
+}
+
+MemoryMap &MemoryMap::operator=(MemoryMap &&lhs)
+{
+    // First we need to ensure that any resources held by this object are destroyed
+    if (memory_buffer) {
+        if (munmap(reinterpret_cast<void *>(memory_buffer), size) == -1) {
+            std::string errmsg = "Unable to de-allocate mapped memory, got error '";
+            errmsg += strerror(errno);
+            errmsg += "'.";
+            std::cerr << errmsg << std::endl;
+        }
+    }
+    close(file);
+
+    // Next we will take control over the other objects resources
+    memory_buffer = lhs.memory_buffer;
+    file = lhs.file;
+    size = lhs.size;
+
+    // Remove other objects references to avoid them being cleaned up by the destructor
+    lhs.memory_buffer = nullptr;
+    lhs.file = 0;
+    lhs.size = 0;
+
+    return *this;
+}*/
+
 MemoryMap::~MemoryMap() {
   // First we need de-map the memory.
   if (memory_buffer) {

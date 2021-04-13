@@ -25,6 +25,10 @@
 namespace TDR
 {
 
+    /*!
+     * Find the next header in a segment of memory
+     */
+    const char *FindNextHeader(const char *begin, const char *end);
 
   /*!
    * Find the beginning of each TDR buffer in a file.

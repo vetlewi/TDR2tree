@@ -24,10 +24,13 @@
 #include "Event.h"
 #include "ProgressUI.h"
 
+#include "BasicStruct.h"
+
 #include <cstdio>
 
 #include <TH1.h>
 #include <TH2.h>
+#include <iostream>
 
 #include "Histogram1D.h"
 #include "Histogram2D.h"
@@ -35,11 +38,19 @@
 extern ProgressUI progress;
 
 HistManager::Detector_Histograms_t::Detector_Histograms_t(RootFileManager *fm, const std::string &name, const size_t &num)
-    : time( fm->Mat(std::string("time_"+name).c_str(), std::string("Time spectra "+name).c_str(), 3000, -1500, 1500, "Time [ns]", num, 0, num, std::string(name+" ID").c_str()) )
-    , energy( fm->Mat(std::string("energy_"+name).c_str(), std::string("Energy spectra "+name).c_str(), 16384, 0, 16384, "Energy [ch]", num, 0, num, std::string(name+" ID").c_str()) )
-    , energy_cal( fm->Mat(std::string("energy_cal_"+name).c_str(), std::string("energy spectra "+name+" (cal)").c_str(), 16384, 0, 16384, "Energy [keV]", num, 0, num, std::string(name+" ID").c_str()) )
-    , mult( fm->Spec(std::string("mult_"+name).c_str(), std::string("Multiplicity " + name).c_str(), 128, 0, 128, "Multiplicity") )
+    : time( fm->Mat(std::string("time_"+name), std::string("Time spectra "+name), 3000, -1500, 1500, "Time [ns]", num, 0, num, std::string(name+" ID").c_str()) )
+    , energy( fm->Mat(std::string("energy_"+name), std::string("Energy spectra "+name), 65536, 0, 65536, "Energy [ch]", num, 0, num, std::string(name+" ID").c_str()) )
+    , energy_cal( fm->Mat(std::string("energy_cal_"+name), std::string("energy spectra "+name+" (cal)"), 16384, 0, 16384, "Energy [keV]", num, 0, num, std::string(name+" ID").c_str()) )
+    , mult( fm->Spec(std::string("mult_"+name), std::string("Multiplicity " + name), 128, 0, 128, "Multiplicity") )
 {}
+
+void HistManager::Detector_Histograms_t::Fill(const word_t &word)
+{
+    auto dinfo = GetDetector(word.address);
+    auto dno = ( dinfo.type == DetectorType::clover ) ? dinfo.detectorNum * NUM_CLOVER_CRYSTALS +  dinfo.telNum : dinfo.detectorNum;
+    energy->Fill(word.adcdata, dno);
+    energy_cal->Fill(CalibrateEnergy(word), dno);
+}
 
 void HistManager::Detector_Histograms_t::Fill(const EventData &events, const EventEntry &start)
 {
@@ -134,11 +145,50 @@ void HistManager::AddEntry(const Event &buffer)
     }
 }
 
+void HistManager::AddEntry(const word_t &word)
+{
+    auto *spec = GetSpec(GetDetector(word.address).type);
+    if ( spec )
+        spec->Fill(word);
+}
+
+
 void HistManager::AddEntries(const std::vector<Event> &evts)
 {
     progress.StartFillingHistograms(evts.size());
     for (size_t i = 0 ; i < evts.size() ; ++i){
         AddEntry(evts[i]);
         progress.UpdateHistFillProgress(i);
+    }
+}
+
+HistManager::Detector_Histograms_t *HistManager::GetSpec(const DetectorType &type)
+{
+    switch (type) {
+        case DetectorType::labr_3x8 : return &labrL;
+        case DetectorType::labr_2x2_ss : return &labrS;
+        case DetectorType::labr_2x2_fs : return &labrF;
+        case DetectorType::clover : return &clover;
+        case DetectorType::de_ring : return &ring;
+        case DetectorType::de_sect : return &sect;
+        case DetectorType::eDet : return &back;
+        default: return nullptr;
+    }
+}
+
+void HistManager::AddEntries(std::vector<word_t> &evts)
+{
+    for ( int type = DetectorType::invalid ;
+          type < DetectorType::unused ; ++type ){
+
+        auto *hist = GetSpec(DetectorType(type));
+        if ( !hist )
+            continue;
+
+        auto end = std::partition(evts.begin(), evts.end(), [&type](const word_t &word){
+            return GetDetector(word.address).type == type;
+        });
+
+        std::for_each(evts.begin(), end, [&hist](const word_t &word){  hist->Fill(word); });
     }
 }

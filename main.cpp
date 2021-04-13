@@ -4,7 +4,6 @@
 #include <deque>
 #include <vector>
 #include <algorithm>
-#include <queue>
 
 #include "CommandLineInterface.h"
 #include "Calibration.h"
@@ -18,14 +17,16 @@
 #include "MTFileBufferFetcher.h"
 #include "BufferType.h"
 #include "Histograms.h"
+#include "TDREntry.h"
+#include "TDRParser.h"
+#include "TDRTypes.h"
+#include "XIA_CFD.h"
+#include "MemoryMap.h"
 
-#include <TROOT.h>
+#include <structopt/app.hpp>
+#include <structopt/third_party/magic_enum/magic_enum.hpp>
 
-#include <TDREntry.h>
-#include <TDRParser.h>
-#include <TDRTypes.h>
-#include <XIA_CFD.h>
-#include <MemoryMap.h>
+
 
 ProgressUI progress;
 
@@ -64,39 +65,85 @@ void sort_file_names(std::vector<std::string> &files){
     std::sort(files.begin(), files.end(), compare_run_files);
 }
 
+enum veto_action {
+    nothing,
+    remove,
+    keep
+};
+
+enum sort_type {
+    coincidence,
+    gap,
+    singles
+};
+
 struct Options
 {
-    int coincidence_time;
-    bool build_tree;
-    bool particle_gamma;
-    bool addback;
-    bool validate;
-    bool remove_overflow;
+    // Required arguments
+    std::optional<std::vector<std::string>> input;
+    std::optional<std::string> output;
+
+    // Optional arguments
+    std::optional<std::string> CalibrationFile;
+    std::optional<int> coincidenceTime = 1500;
+    std::optional<bool> tree = false;
+    std::optional<sort_type> sortType = sort_type::singles;
+    std::optional<DetectorType> Trigger = DetectorType::eDet;
+    std::optional<bool> addback = false;
+    std::optional<veto_action> VetoAction = veto_action::nothing;
+    std::optional<bool> batch_read = false;
 };
+
+std::ostream &operator<<(std::ostream &os, const Options &opt)
+{
+    os << "Sorting with following options:\n";
+    os << "\tInput file(s):\n";
+    for ( auto &file : opt.input.value() ){
+        os << "\t\t" << file << "\n";
+    }
+    os << "\tOutput file: " << opt.output.value() << "\n";
+    os << "\tCalibration file: " << opt.CalibrationFile.value_or("") << "\n";
+    os << "\tCoincidence time: " << opt.coincidenceTime.value() << " ns\n";
+
+    os << "\tBuild tree: " << std::boolalpha << opt.tree.value() << "\n";
+    os << "\tSort type: " << magic_enum::enum_name(opt.sortType.value()) << "\n";
+    os << "\tAddback: " << std::boolalpha << opt.addback.value() << "\n";
+    os << "\tBGO veto action: " << magic_enum::enum_name(opt.VetoAction.value()) << "\n";
+    os << "\tBatch read: " << std::boolalpha << opt.batch_read.value();
+    return os;
+}
+
+STRUCTOPT(Options, input, output, CalibrationFile, coincidenceTime, tree, sortType, Trigger, addback, VetoAction, batch_read);
 
 inline int64_t TSFactor(const ADCSamplingFreq &freq)
 {
-    if ( freq == f100MHz || freq == f500MHz )
-        return 10;
-    else if ( freq == f250MHz )
+    if ( freq == f250MHz )
         return 8;
     else
         return 10;
 }
 
-std::vector<word_t> TDRtoWord(const std::vector<TDR::Entry_t> &entries, const bool &remove_of = true)
+std::vector<word_t> TDRtoWord(const std::vector<TDR::Entry_t> &entries, const enum veto_action &action = veto_action::remove)
 {
     DetectorInfo_t dinfo;
     std::vector<word_t> words;
     words.reserve(entries.size());
-    word_t word;
+    word_t word{};
+    unsigned short adc_data;
     XIA::XIA_CFD_t cfd_res;
+
     for ( auto &entry : entries ){
         // This is also the place where we will remove any events with adc larger than 16384.
-        if ( entry.adc->ADC_data >= 16384 && remove_of )
-            continue;
+        adc_data = entry.adc->ADC_data;
+        if ( action != veto_action::nothing && ( adc_data & 0x8000 ) == 0x8000 ) {
+            if ( action == veto_action::remove ){
+                continue;
+            } else if ( action == veto_action::keep ){
+                adc_data &= 0x7FFF;
+            }
+        }
         word = {entry.GetAddress(),
-                uint16_t(entry.adc->ADC_data),
+                adc_data,
                 uint16_t(entry.tdc->ADC_data),
                 entry.adc->fail,
                 entry.adc->veto,
@@ -160,157 +207,48 @@ std::vector<word_t> TDRtoWord_prog(const std::string &fname, const std::vector<T
     return words;
 }
 
-std::ostream &operator<<(std::ostream &os, const Options &opt)
-{
-    os << "\tCoincidence time: " << opt.coincidence_time << " ns\n";
-    os << "\tAddback: " << ( opt.addback ? "true" : "false") << "\n";
-    os << "\tParticle gamma: " << ( opt.particle_gamma ? "true" : "false") << "\n";
-    os << "\tBuild tree: " << ( opt.build_tree ? "true" : "false") << "\n";
-    os << "\tValidate: " << ( opt.validate ? "true " : "false") << "\n";
-    os << "\tRemove overflow: " << std::boolalpha << opt.remove_overflow;
-    return os;
-}
-
-void Convert_to_root(const std::vector<std::string> &in_files, const std::string &out_file, const Options &opt)
-{
-    std::vector<Event> event_data;
-    RootFileManager fm(out_file.c_str());
-    HistManager hm(&fm);
-    TreeManager<Event> tm(&fm, "events", "Event tree", opt.validate);
-    Histogram2Dp ab_hist = ( opt.addback ) ? fm.Mat("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr;
-    for ( const auto& file : in_files ) {
-        //event_data = ( pg_event ) ? Event::BuildPGEvents(FileReader::GetFile(file.c_str()), ab_hist) : Event::BuildEvent(FileReader::GetFile(file.c_str()), ab_hist);
-        //hm.AddEntries(event_data);
-        //tm.AddEntries(event_data);
-        if ( opt.particle_gamma )
-            Event::BuildPGAndFill(FileReader::GetFile(file.c_str()), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
-        else
-            Event::BuildAndFill(FileReader::GetFile(file.c_str()), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
-        progress.Finish();
-    }
-}
-
-/*void Convert_to_root_MT(const std::vector<std::string> &in_files, const std::string &out_file, const Options &opt)
-{
-    std::vector<Event> event_data;
-    RootFileManager fm(out_file.c_str());
-    HistManager hm(&fm);
-    TreeManager<Event> tm(&fm, "events", "Event tree", opt.validate);
-    Histogram2Dp ab_hist = ( opt.addback ) ? fm.Mat("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr;
-    for ( const auto& file : in_files ) {
-        MTFileBufferFetcher bufFetch;
-        bufFetch.Open(file);
-        BufferFetcher::Status status;
-        std::vector<word_t> data;
-        const TDRBuffer *buffer;
-        while ( true ){
-            buffer = bufFetch.Next(status);
-            if ( status == BufferFetcher::OKAY ){
-                data.insert(data.end(), buffer->CGetBuffer(), buffer->CGetBuffer()+buffer->GetSize());
-                if ( data.size() > 196608 ){
-                    std::sort(data.begin(), data.end(), [](const word_t &lhs, const word_t &rhs) { return ((rhs.timestamp - lhs.timestamp) + (rhs.cfdcorr - lhs.cfdcorr)) > 0; });
-                    if ( opt.particle_gamma )
-                        Event::BuildPGAndFill(std::vector<word_t>(data.begin(), data.begin()+65536), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
-                    else
-                        Event::BuildAndFill(std::vector<word_t>(data.begin(), data.begin()+65536), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
-                    std::vector<word_t> new_data(data.begin()+65536, data.end());
-                    data = new_data;
-                }
-            } else if ( status == BufferFetcher::END ) {
-                if ( buffer )
-                    data.insert(data.end(), buffer->CGetBuffer(), buffer->CGetBuffer()+buffer->GetSize());
-                std::sort(data.begin(), data.end(), [](const word_t &lhs, const word_t &rhs) { return ((rhs.timestamp - lhs.timestamp) + (rhs.cfdcorr - lhs.cfdcorr)) > 0; });
-                if ( opt.particle_gamma )
-                    Event::BuildPGAndFill(std::vector<word_t>(data.begin(), data.end()), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
-                else
-                    Event::BuildAndFill(std::vector<word_t>(data.begin(), data.end()), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
-                progress.Finish();
-                break;
-            } else {
-                break;
-            }
-        }
-    }
-}*/
-
-template<class Fetcher>
-void ReadFile(const std::string &in,
-              RootFileManager &fm, HistManager &hm, TreeManager<Event> &tm,
-              Histogram2Dp ab_hist, const Options &opt)
-{
-    Fetcher bufferFetcher;
-
-
-}
-
-template<class Fetcher>
-void Convert_to_root(const std::vector<std::string> &in_files, const std::string &out_file, const Options &opt)
-{
-    RootFileManager fm(out_file.c_str());
-    HistManager hm(&fm);
-    TreeManager<Event> tm(&fm, "events", "Event tree", opt.validate);
-    Histogram2Dp ab_hist = ( opt.addback ) ? fm.Mat("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr;
-
-    Fetcher bufferFetcher;
-    BufferFetcher::Status status;
-    const TDRByteBuffer *buffer;
-    TDR::Parser parser;
-
-    std::vector<word_t> word_buffer;
-    std::vector<word_t> data;
-
-    for (auto &file : in_files){
-        bufferFetcher.Open(file);
-        while ( true ){
-            buffer = bufferFetcher.Next(status);
-            if ( status == BufferFetcher::OKAY ){
-                word_buffer = TDRtoWord(parser.ParseBuffer(buffer->CGetBuffer(), false), opt.remove_overflow);
-                data.insert(data.end(), word_buffer.begin(), word_buffer.end());
-                std::sort(data.begin(), data.end(), [](const word_t &lhs, const word_t &rhs) { return (double(rhs.timestamp - lhs.timestamp) + (rhs.cfdcorr - lhs.cfdcorr)) > 0; });
-                if ( data.size() > 196608 ){
-                    if ( opt.particle_gamma ){
-                        Event::BuildPGAndFill(std::vector<word_t>(data.begin(), data.begin()+65536), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
-                    } else {
-                        Event::BuildAndFill(std::vector<word_t>(data.begin(), data.begin()+65536), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
-                    }
-                    data.erase(data.begin(), data.begin()+65536);
-                }
-            } else if ( status == BufferFetcher::END ) {
-                word_buffer = TDRtoWord(parser.ParseBuffer(buffer->CGetBuffer(), false), opt.remove_overflow);
-                data.insert(data.end(), word_buffer.begin(), word_buffer.end());
-                std::sort(data.begin(), data.end(), [](const word_t &lhs, const word_t &rhs) { return (double(rhs.timestamp - lhs.timestamp) + (rhs.cfdcorr - lhs.cfdcorr)) > 0; });
-                if ( opt.particle_gamma ){
-                    Event::BuildPGAndFill(std::vector<word_t>(data.begin(), data.end()), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
-                } else {
-                    Event::BuildAndFill(std::vector<word_t>(data.begin(), data.end()), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
-                }
-            } else {
-                break;
-            }
-        }
-        progress.Finish();
-    }
-}
-
 void Convert_to_root_MM_all(const std::vector<std::string> &in_files, const std::string &out_file, const Options &opt)
 {
     RootFileManager fm(out_file.c_str());
     HistManager hm(&fm);
-    TreeManager<Event> tm(&fm, "events", "Event tree", opt.validate);
-    Histogram2Dp ab_hist = ( opt.addback ) ? fm.Mat("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr;
+    TreeManager<Event> tm(&fm, "events", "Event tree");
+    TreeManager<Event> *tm_ptr = ( opt.tree.value() ) ? &tm : nullptr;
+    Histogram2Dp ab_hist = ( opt.addback.value() ) ? fm.Mat("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr;
+
+    std::function<void(std::vector<word_t>::iterator, std::vector<word_t>::iterator)> sort_func;
+    switch ( opt.sortType.value() ) {
+        case sort_type::coincidence : {
+            sort_func = [&hm, &tm_ptr, &ab_hist, &opt](std::vector<word_t>::iterator start,
+                                                       std::vector<word_t>::iterator stop){
+                Event::BuildPGAndFill(start, stop, &hm, tm_ptr, ab_hist, opt.coincidenceTime.value(), &progress);
+            };
+            break;
+        }
+
+        case sort_type::gap : {
+            sort_func = [&hm, &tm_ptr, &ab_hist, &opt](std::vector<word_t>::iterator start,
+                                                       std::vector<word_t>::iterator stop){
+                Event::BuildAndFill(start, stop, &hm, tm_ptr, ab_hist, opt.coincidenceTime.value(), &progress);
+            };
+        }
+
+        case sort_type::singles : {
+            sort_func = [&hm, &tm_ptr, &ab_hist, &opt](std::vector<word_t>::iterator start,
+                                                       std::vector<word_t>::iterator stop){
+                hm.AddEntries(start, stop);
+            };
+            break;
+        }
+    }
 
     for ( auto &file : in_files ) {
         IO::MemoryMap mmap(file.c_str());
         progress.StartNewFile(file, mmap.GetSize());
         auto events = TDRtoWord_prog(file, TDR::ParseFile(mmap.GetPtr(), mmap.GetPtr() + mmap.GetSize()),
-                                     opt.remove_overflow);
-        if ( opt.particle_gamma )
-            Event::BuildPGAndFill(events, &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time, &progress);
-        else
-            Event::BuildAndFill(events, &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
+                                     opt.VetoAction.value());
+        sort_func(events.begin(), events.end());
         progress.Finish();
     }
-
 }
 
 void Convert_to_root_MM(const std::vector<std::string> &in_files, const std::string &out_file, const Options &opt)
@@ -318,104 +256,132 @@ void Convert_to_root_MM(const std::vector<std::string> &in_files, const std::str
     std::vector<Event> event_data;
     RootFileManager fm(out_file.c_str());
     HistManager hm(&fm);
-    TreeManager<Event> tm(&fm, "events", "Event tree", opt.validate);
-    Histogram2Dp ab_hist = ( opt.addback ) ? fm.Mat("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr;
+    TreeManager<Event> tm(&fm, "events", "Event tree");
+    TreeManager<Event> *tm_ptr = ( opt.tree.value() ) ? &tm : nullptr;
+    Histogram2Dp ab_hist = ( opt.addback.value() ) ? fm.Mat("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr;
 
     TDR::Parser parser;
-    std::deque<word_t> data;
+    std::vector<word_t> data;
     std::vector<word_t> buffer;
 
-    /*!
+    /*
      * Issue with this function:
      * If not all entries are flushed from the
      * parser after a file is done then the entries
      * still in the parser will reference the previous file.
      * This means that it could crash if data is spread across
      * two files.
+     * For now we will solve this by moving the scope of the parser to each files mapped memory.
+     * Another solution would be to build an array of mapped files... That way we will only
+     * de-reference once the array goes out of scope, effectively avoiding the problem all toghether!
      */
 
-    for ( size_t n = 0 ; n < in_files.size() ; ++n ){
-        auto file = in_files[n];
-        IO::MemoryMap mmap(file.c_str());
 
-        std::vector<const char *> headers = TDR::FindHeaders(mmap.GetPtr(), mmap.GetPtr() + mmap.GetSize());
-        progress.StartNewFile(file, headers.size());
+    std::vector<std::unique_ptr<IO::MemoryMap>> mem_maps;
+    for ( auto &file : in_files ){
+        mem_maps.emplace_back(new IO::MemoryMap(file.c_str()));
+    }
 
-        for ( size_t hi = 0 ; hi < headers.size() ; ++hi ){
-            buffer = TDRtoWord(parser.ParseBuffer(headers[hi], (hi == headers.size() - 1) ), opt.remove_overflow);
+    std::function<void(std::vector<word_t>::iterator, std::vector<word_t>::iterator)> sort_func;
+    switch ( opt.sortType.value() ) {
+        case sort_type::coincidence : {
+            sort_func = [&hm, &tm_ptr, &ab_hist, &opt](std::vector<word_t>::iterator start,
+                                                       std::vector<word_t>::iterator stop){
+                Event::BuildPGAndFill(start, stop, &hm, tm_ptr, ab_hist, opt.coincidenceTime.value());
+            };
+            break;
+        }
+
+        case sort_type::gap : {
+            sort_func = [&hm, &tm_ptr, &ab_hist, &opt](std::vector<word_t>::iterator start,
+                                                       std::vector<word_t>::iterator stop){
+                Event::BuildAndFill(start, stop, &hm, tm_ptr, ab_hist, opt.coincidenceTime.value());
+            };
+        }
+
+        case sort_type::singles : {
+            sort_func = [&hm, &tm_ptr, &ab_hist, &opt](std::vector<word_t>::iterator start,
+                                                       std::vector<word_t>::iterator stop){
+                hm.AddEntries(start, stop);
+            };
+            break;
+        }
+    }
+
+    size_t fno = 0;
+    for ( auto &mmap : mem_maps ){
+        std::vector<const char *> headers = TDR::FindHeaders(mmap->GetPtr(), mmap->GetPtr() + mmap->GetSize());
+        progress.StartNewFile(in_files[fno++], headers.size());
+        bool end = (fno == mem_maps.size());
+        for ( size_t header_no = 0 ; header_no < headers.size() ; ++header_no ){
+            buffer = TDRtoWord(parser.ParseBuffer(headers[header_no],
+                                                  (header_no == headers.size() - 1) && end ), opt.VetoAction.value());
             data.insert(data.end(), buffer.begin(), buffer.end());
-            if ( data.size() > 196608 ) {
-                std::sort(data.begin(), data.end(), [](const word_t &lhs, const word_t &rhs) { return (double(rhs.timestamp - lhs.timestamp) + (rhs.cfdcorr - lhs.cfdcorr)) > 0; });
-                if ( opt.particle_gamma )
-                    Event::BuildPGAndFill(std::vector<word_t>(data.begin(), data.begin()+65536), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
-                else
-                    Event::BuildAndFill(std::vector<word_t>(data.begin(), data.begin()+65536), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
-                std::vector<word_t> new_data(data.begin()+65536, data.end());
+            std::sort(data.begin(), data.end(), [](const word_t &lhs, const word_t &rhs)
+                { return (double(rhs.timestamp - lhs.timestamp) + (rhs.cfdcorr - lhs.cfdcorr)) > 0; });
+
+            if ( data.size() > 196608 ){
+                sort_func(data.begin(), data.begin()+65536);
                 data.erase(data.begin(), data.begin()+65536);
             }
-            if ( hi == headers.size() - 1 ){
-                if ( opt.particle_gamma )
-                    Event::BuildPGAndFill(std::vector<word_t>(data.begin(), data.end()), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
-                else
-                    Event::BuildAndFill(std::vector<word_t>(data.begin(), data.end()), &hm, ( opt.build_tree ) ? &tm : nullptr, ab_hist, opt.coincidence_time);
-            }
-            progress.UpdateReadProgress(hi);
+            progress.UpdateReadProgress(header_no);
         }
         progress.Finish();
     }
+
+    // Once we reach this point we will flush the remaining events.
+    sort_func(data.begin(), data.end());
 }
+
 
 
 int main(int argc, char *argv[])
 {
-    CommandLineInterface interface;
-    std::vector<std::string> input_file;
-    std::string output_file, cal_file;//, sectBack_file, ringSect_file;
-    Options opt = {1500, false, false, false, false, false};
-    interface.Add("-i", "Input file", &input_file);
-    interface.Add("-o", "Output file", &output_file);
-    interface.Add("-c", "Calibration file", &cal_file);
-    interface.Add("-ct", "Coincidence time", &opt.coincidence_time);
-    interface.Add("-ab", "Addback", &opt.addback);
-    interface.Add("-t", "Build tree", &opt.build_tree);
-    interface.Add("-v", "Validate events", &opt.validate);
-    //interface.Add("-sb", "SectBack gate", &sectBack_file);
-    //interface.Add("-rs", "RingSect gate", &ringSect_file);
-    interface.Add("-npg", "Not particle gamma event builder", &opt.particle_gamma);
-    interface.Add("-nr", "Do not remove overflow events", &opt.remove_overflow);
-    interface.CheckFlags(argc, argv);
-
-    opt.particle_gamma = !opt.particle_gamma;
-    opt.remove_overflow = !opt.remove_overflow;
+    Options options;
+    try {
+        structopt::app app("TDR2tree", "0.9.0");
+        structopt::details::visitor vis("TDR2tree", "0.9.0");
+        visit_struct::for_each(options, vis);
+        options = app.parse<Options>(argc, argv);
+        if ( !options.input.has_value() ){
+            throw structopt::exception("Input(s) missing", vis);
+        }
+        if ( !options.output.has_value() ){
+            throw structopt::exception("Output missing", vis);
+        }
+    } catch ( const structopt::exception &e ){
+        std::cerr << e.what() << "\n";
+        std::cout << e.help();
+        exit(EXIT_FAILURE);
+    }
 
     try {
-        sort_file_names(input_file);
+        sort_file_names(options.input.value());
     } catch ( const std::exception &e ){
         std::cerr << e.what() << std::endl;
         exit(EXIT_FAILURE);
     }
 
-
-    if (input_file.empty() || output_file.empty() ){
-        std::cerr << "Input or output file missing." << std::endl;
+    // Check that we don't try to sort singles and build tree at the same time
+    if ( options.sortType.value() == sort_type::singles && options.tree.value() ){
+        std::cerr << "Error: Cannot sort singles into trees." << std::endl;
         exit(EXIT_FAILURE);
     }
 
-    if ( !cal_file.empty() ){
-        if ( !SetCalibration(cal_file.c_str()) ){
+    // Next we will now print all arguments:
+    std::cout << options << std::endl;
+
+    if ( options.CalibrationFile.has_value() ){
+        if ( !SetCalibration(options.CalibrationFile.value().c_str()) ){
             std::cerr << "Error reading calibration file." << std::endl;
             exit(EXIT_FAILURE);
         }
     }
 
-    std::cout << "Running with options:" << std::endl;
-    std::cout << opt << std::endl;
-
-    //Convert_to_root<MTFileBufferFetcher>(input_file, output_file, opt);
-    //Convert_to_root_MT(input_file, output_file, opt);
-    //Convert_to_root_MM(input_file, output_file, opt);
-    //Convert_to_root_MM_v2(input_file, output_file, opt);
-    Convert_to_root_MM_all(input_file, output_file, opt);
+    if ( options.batch_read.value() )
+        Convert_to_root_MM_all(options.input.value(), options.output.value(), options);
+    else
+        Convert_to_root_MM(options.input.value(), options.output.value(), options);
     exit(EXIT_SUCCESS);
 }
 

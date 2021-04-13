@@ -22,7 +22,7 @@
 #ifndef MTFILEBUFFERFETCHER_H
 #define MTFILEBUFFERFETCHER_H
 
-#include "aptr.h"
+#include "aptr.hpp"
 #include "FileBufferFetcher.h"
 
 #include <string>

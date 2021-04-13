@@ -23,6 +23,9 @@
 
 #include "RootFileManager.h"
 
+#include "BasicStruct.h"
+#include "experimentsetup.h"
+
 class Event;
 struct EventData;
 struct EventEntry;
@@ -39,6 +42,7 @@ private:
 
         Detector_Histograms_t(RootFileManager *fileManager, const std::string &name, const size_t &num);
 
+        void Fill(const word_t &word);
         void Fill(const EventData &events);
         void Fill(const EventData &events, const EventEntry &start);
     };
@@ -56,6 +60,7 @@ private:
     Histogram2Dp time_energy_sect_back;
     Histogram2Dp time_energy_ring_sect;
 
+    Detector_Histograms_t *GetSpec(const DetectorType &type);
 
 public:
 
@@ -65,8 +70,21 @@ public:
     //! Fill spectra with an event.
     void AddEntry(const Event &buffer  /*!< Event to read from    */);
 
+    //! Fill a single word
+    void AddEntry(const word_t &word);
+
     //! Fill spectra with a list of events.
     void AddEntries(const std::vector<Event> &evts);
+
+    //! Fill spectra with a list of single events (i.e. every raw entry in file)
+    void AddEntries(std::vector<word_t> &evts);
+
+    //! Fill spectra directly from iterators
+    template<class It>
+    inline void AddEntries(It start, It stop){
+        using std::placeholders::_1;
+        std::for_each(start, stop, [this](const word_t &p){ this->AddEntry(p); });
+    }
 
 };
 

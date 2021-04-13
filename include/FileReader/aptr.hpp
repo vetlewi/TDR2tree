@@ -1,5 +1,5 @@
-#ifndef APTR_H
-#define APTR_H
+#ifndef APTR_HPP
+#define APTR_HPP
 
 //! Smart pointer helper.
 template<typename T>
@@ -44,13 +44,19 @@ public:
 	~aptr() { release(); }
 
 	operator bool() const { return (ptr!=0); }
-	inline T& operator*() const;
+	inline T& operator*() const { return *ptr; }
 	T* operator->() const { return ptr; }
 	T* get() const { return ptr; }
 
 	T* release() { T* p=ptr; ptr=0; return p; }
 
-	void reset(T* p);
+	void reset(T* p)
+	{
+		if (p!=ptr) {
+			delete ptr;
+			ptr=p;
+		}
+	}
 
 	aptr(aptr_ref<T> r) : ptr(r.ptr) { }
 
@@ -65,4 +71,4 @@ public:
 
 };
 
-#endif // APTR_H
+#endif // APTR_HPP
