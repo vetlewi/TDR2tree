@@ -11,8 +11,9 @@ struct word_t {
     bool finishcode;        //!< Pile-up flag.
     bool veto;              //!< Veto flag
     int64_t timestamp;		//!< Timestamp in [ns].
+    double energy;          //!< Calibrated energy [keV]
     bool cfdfail;           //!< Flag to tell if the CFD was forced or not.
-    double cfdcorr;         //!< Correction from the CFD.
+    double cfdcorr;         //!< Correction from the CFD [ns].
 };
 
 #endif // BASICSTRUCT_H

@@ -23,152 +23,64 @@
 
 #include <cstdint>
 #include <vector>
-#include <map>
+#include <utility>
 
 #include "BasicStruct.h"
 #include "experimentsetup.h"
-
-class TTree;
-class TH2;
+#include "Histograms.h"
 
 #include "HistManager.h"
 #include "TreeManager.h"
-#include "Histograms.h"
+#include "ProgressUI.h"
 
-struct EventEntry
-{
-    uint16_t ID;         //!< ID of the detector of this event.
-    uint16_t e_raw;      //!< Raw energy value.
-    double energy;      //!< Energy of the event [keV].
-    double tfine;       //!< Correction to the timestamp [ns].
-    int64_t tcoarse;    //!< Timestamp [ns].
-    bool cfd_fail;
-    explicit EventEntry() : ID( 0 ), e_raw( 0 ), energy( 0 ), tfine( 0 ), tcoarse( 0 ){}
-    EventEntry(const uint16_t &id, const uint16_t &raw, const double &e, const double &tf, const int64_t &tc) : ID( id ), e_raw( raw ), energy( e ), tfine( tf ), tcoarse( tc ){}
-    explicit EventEntry(const word_t &word);
+class TreeEvent;
+
+struct Subevent {
+    word_t *_begin;
+    word_t *_end;
+
+    inline word_t *begin(){ return _begin; }
+    inline word_t *end(){ return _end; }
+
+    inline word_t *begin() const { return _begin; }
+    inline word_t *end() const { return _end; }
+
+    inline size_t size() const { return _end - _begin; }
 };
-
-#define MAX_NUM 128
-
-struct EventData
-{
-    int mult;
-    uint16_t ID[MAX_NUM];
-    uint16_t e_raw[MAX_NUM];
-    double energy[MAX_NUM];
-    double tfine[MAX_NUM];
-    int64_t tcoarse[MAX_NUM];
-    bool cfd_fail[MAX_NUM];
-
-    bool Add(const EventEntry &e);
-    bool Add(const word_t &w);
-    bool Add(const uint16_t &id, const uint16_t &raw, const double &e, const double &fine, const int64_t &coarse, const bool &cfd_fail);
-    void Reset(){ mult = 0; }
-
-    void SetupBranch(TTree *tree, const char *baseName, bool validated=false);
-
-    EventData() : mult( 0 ), ID{ 0 }, e_raw{ 0 }, energy{ 0 }, tfine{ 0 }, tcoarse{ 0 }{}
-
-    inline EventEntry operator[](const int &num) const
-        { return ( num < MAX_NUM ) ? EventEntry(ID[num], e_raw[num], energy[num], tfine[num], tcoarse[num]) : EventEntry(); }
-};
-
-inline bool operator<(const int &lhs, const EventData &rhs){ return lhs < rhs.mult; }
-inline bool operator>(const int &lhs, const EventData &rhs){ return lhs > rhs.mult; }
-inline bool operator<(const EventData &lhs, const int &rhs){ return lhs.mult < rhs; }
-inline bool operator>(const EventData &lhs, const int &rhs){ return lhs.mult > rhs; }
 
 class Event
 {
+public:
+    friend class TreeEvent;
 
 private:
 
-    EventData ringData; //!< Ring event structure.
-    EventData sectData; //!< Sector event structure.
-    EventData backData;
-    EventData labrLData;
-    EventData labrSData;
-    EventData labrFData;
-    EventData cloverData;
-    EventData rfData;
-
-    std::map<DetectorType, EventData *> map{
-            {DetectorType::de_ring, &ringData},
-            {DetectorType::de_sect, &sectData},
-            {DetectorType::labr_3x8, &labrLData},
-            {DetectorType::labr_2x2_ss, &labrSData},
-            {DetectorType::labr_2x2_fs, &labrFData},
-            {DetectorType::clover, &cloverData},
-            {DetectorType::rfchan, &rfData}};
+    std::vector<word_t> event_data;
+    std::map<DetectorType, Subevent> type_bounds;
 
 public:
 
-    //! Zero constructor.
-    Event() = default;
-
     //! Constructor.
-    /*!
-     * This constructor is meant to use for the TreeManager. This will set the branches of the tree.
-     * \param tree ROOT TTree to attach branches to.
-     */
-    explicit Event(TTree *tree, bool validated=false);
-
-    //! Constructor.
-    explicit Event(const std::vector<word_t> &event);
-
-    Event(std::vector<word_t>::const_iterator &begin, std::vector<word_t>::const_iterator &end);
-
-    //! Assignment operator.
-    Event &operator=(const Event &event);
-
-    //! Assignment operator.
-    Event &operator=(const std::vector<word_t> &event);
-
-    //! Reset event.
-    inline void Reset(){ ringData.Reset(); sectData.Reset(); backData.Reset(); labrLData.Reset(); labrSData.Reset(); labrFData.Reset(); cloverData.Reset(); rfData.Reset(); }
+    explicit Event(std::vector<word_t> event);
+    Event(const std::vector<word_t>::iterator begin, const std::vector<word_t>::iterator end);
 
     void RunAddback(Histogram2Dp ab_t_clover /*!< Matrix to fill in order to set propper time gates for clover addback */);
 
-    //! Function to check if event is good. Also, only keep the sect/ring data that are acceptable.
-    bool IsGood();
-
-    //! Set all events.
-    static std::vector<Event> BuildPGEvents(const std::vector<word_t> &raw_data, Histogram2Dp ab_hist = nullptr, double coins_time = 3000.);
-
     //! Build and fill events.
-    template<class It>
-    static void BuildPGAndFill(It start, It stop, HistManager *hm, TreeManager<Event> *tm, Histogram2Dp ab_hist = nullptr, double coins_time = 3000., ProgressUI *prog = nullptr);
-    static void BuildPGAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, Histogram2Dp ab_hist = nullptr, double coins_time = 3000., ProgressUI *prog = nullptr);
+    template<class It, class TE>
+    static void BuildPGAndFill(It start, It stop, HistManager *hm, TreeManager<TE> *tm, Histogram2Dp ab_hist = nullptr, const DetectorType &trigger = eDet, double coins_time = 3000., ProgressUI *prog = nullptr);
 
-    template<class It>
-    static void BuildAndFill(It start, It stop, HistManager *hm, TreeManager<Event> *tm, Histogram2Dp ab_hist = nullptr, double coins_time = 3000., ProgressUI *prog = nullptr);
-    static void BuildAndFill(const std::vector<word_t> &raw_data, HistManager *hm, TreeManager<Event> *tm, Histogram2Dp ab_hist = nullptr, double coins_time = 3000., ProgressUI *prog = nullptr);
+    template<class It, class TE>
+    static void BuildAndFill(It start, It stop, HistManager *hm, TreeManager<TE> *tm, Histogram2Dp ab_hist = nullptr, double coins_time = 3000., ProgressUI *prog = nullptr);
 
-    //! Set all events.
-    static std::vector<Event> BuildEvent(const std::vector<word_t> &raw_data, Histogram2Dp ab_hist = nullptr, double gap_time=1500.);
+    inline Subevent &GetDetector(const DetectorType &type){ return type_bounds.at(type); }
 
-    inline const EventData &GetRingEvent() const { return ringData; }
-
-    inline const EventData &GetSectEvent() const { return sectData; }
-
-    inline const EventData &GetBackEvent() const { return backData; }
-
-    inline const EventData &GetLabrLEvent() const { return labrLData; }
-
-    inline const EventData &GetLabrSEvent() const { return labrSData; }
-
-    inline const EventData &GetLabrFEvent() const { return labrFData; }
-
-    inline const EventData &GetCloverEvent() const { return cloverData; }
-
-    inline const EventData &GetRFEvent() const { return rfData; }
 };
 
-template<class It>
-void Event::BuildPGAndFill(It _start, It _stop, HistManager *hm, TreeManager<Event> *tm, Histogram2Dp ab_hist, double coins_time, ProgressUI *prog)
+template<class It, class TE>
+void Event::BuildPGAndFill(It _start, It _stop, HistManager *hm, TreeManager<TE> *tm, Histogram2Dp ab_hist,
+                           const DetectorType &trigger, double coins_time, ProgressUI *prog)
 {
-    DetectorInfo_t trigger;
-    double timediff;
 
     auto begin = _start;
     auto end = _stop;
@@ -180,7 +92,7 @@ void Event::BuildPGAndFill(It _start, It _stop, HistManager *hm, TreeManager<Eve
 
     while ( it < end ){
 
-        if ( GetDetector(it->address).type != DetectorType::eDet ) {
+        if ( GetDetectorPtr(it->address)->type != trigger ) {
             ++it;
             continue;
         }
@@ -200,10 +112,8 @@ void Event::BuildPGAndFill(It _start, It _stop, HistManager *hm, TreeManager<Eve
             ++stop;
         }
 
-        //Event evt(start, stop);
         Event evt(std::vector<word_t>(start, stop));
-        if ( ab_hist != nullptr )
-            evt.RunAddback(ab_hist);
+        if ( ab_hist ) evt.RunAddback(ab_hist);
         if ( hm ) hm->AddEntry(evt);
         if ( tm ) tm->AddEntry(evt);
 
@@ -215,8 +125,8 @@ void Event::BuildPGAndFill(It _start, It _stop, HistManager *hm, TreeManager<Eve
 
 }
 
-template<class It>
-void Event::BuildAndFill(It _start, It _stop, HistManager *hm, TreeManager<Event> *tm, Histogram2Dp ab_hist, double coins_time, ProgressUI *prog)
+template<class It, class TE>
+void Event::BuildAndFill(It _start, It _stop, HistManager *hm, TreeManager<TE> *tm, Histogram2Dp ab_hist, double coins_time, ProgressUI *prog)
 {
     auto begin = _start;
     auto it = _start;

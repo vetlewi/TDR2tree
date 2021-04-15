@@ -43,34 +43,30 @@ private:
 
     TTree *tree;    //!< The tree object.
     T entry_obj;    //!< Private event object.
-    bool validate;  //!< Flag to tell if the events should be validated before filling or not.
 
 public:
 
     //! Constructor from RootTreeManager.
-    TreeManager(RootFileManager *FileManager, const char *name, const char *title, bool validate_event = false)
+    TreeManager(RootFileManager *FileManager, const char *name, const char *title)
         : tree( FileManager->CreateTree(name, title) )
-        , entry_obj( tree, validate_event )
-        , validate( validate_event ){}
+        , entry_obj( tree ){}
 
     //! Add entry.
-    inline void AddEntry(const T &entry)
+    template<class V>
+    inline void AddEntry(const V &entry)
     {
         entry_obj = entry;
-        if ( validate ){
-            if ( !entry_obj.IsGood() )
-                return;
-        }
+        entry_obj.validate(); // Method that ensures that addresses of the branches are correct.
         tree->Fill();
     }
 
     //! Add entries.
-    void AddEntries(const std::vector<T> &entries)
+    template<class Container>
+    void AddEntries(const Container &entries)
     {
         progress.StartFillingTree(entries.size());
-        for (int i = 0 ; i < entries.size() ; ++i){
-            AddEntry(entries[i]);
-            progress.UpdateTreeFillProgress(i);
+        for ( auto &entry : entries ){
+            AddEntry(entry);
         }
     }
 

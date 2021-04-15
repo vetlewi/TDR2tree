@@ -26,9 +26,8 @@
 #include "BasicStruct.h"
 #include "experimentsetup.h"
 
+class Subevent;
 class Event;
-struct EventData;
-struct EventEntry;
 
 class HistManager {
 
@@ -43,8 +42,8 @@ private:
         Detector_Histograms_t(RootFileManager *fileManager, const std::string &name, const size_t &num);
 
         void Fill(const word_t &word);
-        void Fill(const EventData &events);
-        void Fill(const EventData &events, const EventEntry &start);
+        void Fill(const Subevent &subvec,
+                  const word_t *start = nullptr);
     };
 
     Detector_Histograms_t ring;
@@ -68,16 +67,10 @@ public:
     explicit HistManager(RootFileManager *fileManager    /*!< ROOT file where the histograms will reside.    */);
 
     //! Fill spectra with an event.
-    void AddEntry(const Event &buffer  /*!< Event to read from    */);
+    void AddEntry(Event &buffer  /*!< Event to read from    */);
 
     //! Fill a single word
     void AddEntry(const word_t &word);
-
-    //! Fill spectra with a list of events.
-    void AddEntries(const std::vector<Event> &evts);
-
-    //! Fill spectra with a list of single events (i.e. every raw entry in file)
-    void AddEntries(std::vector<word_t> &evts);
 
     //! Fill spectra directly from iterators
     template<class It>

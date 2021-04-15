@@ -17,11 +17,11 @@ CPMAddPackage(
 
 add_executable(TDR2tree main.cpp
 
-        ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/BasicStruct.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/Event.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/Histogram1D.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/Histogram2D.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/Histograms.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/TreeEvent.cpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/source/FileReader/BasicFileReader.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/FileReader/FileReader.cpp

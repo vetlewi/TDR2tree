@@ -630,6 +630,11 @@ DetectorInfo_t GetDetector(uint16_t address)
     return (address < TOTAL_NUMBER_OF_ADDRESSES) ? pDetector[address] : pDetector[0];
 }
 
+const DetectorInfo_t *GetDetectorPtr(uint16_t address)
+{
+    return &pDetector[address];
+}
+
 enum ADCSamplingFreq GetSamplingFrequency(uint16_t address)
 {
     return (address < TOTAL_NUMBER_OF_ADDRESSES) ? pDetector[address].sfreq : f000MHz;

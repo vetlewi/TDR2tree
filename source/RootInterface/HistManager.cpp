@@ -35,7 +35,6 @@
 #include "Histogram1D.h"
 #include "Histogram2D.h"
 
-extern ProgressUI progress;
 
 HistManager::Detector_Histograms_t::Detector_Histograms_t(RootFileManager *fm, const std::string &name, const size_t &num)
     : time( fm->Mat(std::string("time_"+name), std::string("Time spectra "+name), 3000, -1500, 1500, "Time [ns]", num, 0, num, std::string(name+" ID").c_str()) )
@@ -46,32 +45,24 @@ HistManager::Detector_Histograms_t::Detector_Histograms_t(RootFileManager *fm, c
 
 void HistManager::Detector_Histograms_t::Fill(const word_t &word)
 {
-    auto dinfo = GetDetector(word.address);
-    auto dno = ( dinfo.type == DetectorType::clover ) ? dinfo.detectorNum * NUM_CLOVER_CRYSTALS +  dinfo.telNum : dinfo.detectorNum;
+    auto dno = GetID(word.address);
     energy->Fill(word.adcdata, dno);
     energy_cal->Fill(CalibrateEnergy(word), dno);
 }
 
-void HistManager::Detector_Histograms_t::Fill(const EventData &events, const EventEntry &start)
+void HistManager::Detector_Histograms_t::Fill(const Subevent &subvec, const word_t *start)
 {
-    mult->Fill(events.mult);
-    for ( size_t n = 0 ; n < events.mult ; ++n ){
-        if ( !events.cfd_fail[n] )
-            time->Fill(double(events.tcoarse[n] - start.tcoarse) + (events.tfine[n] - start.tfine),
-                        events.ID[n]);
-        energy->Fill(events.e_raw[n], events.ID[n]);
-        energy_cal->Fill(events.energy[n], events.ID[n]);
+    int dno;
+    mult->Fill(subvec.size());
+    for ( auto &entry : subvec ){
+        dno = GetID(entry.address);
+        energy->Fill(entry.adcdata, dno);
+        energy_cal->Fill(entry.energy, dno);
+        if ( start )
+            time->Fill(double(entry.timestamp - start->timestamp) + (entry.cfdcorr - start->cfdcorr), dno);
     }
 }
 
-void HistManager::Detector_Histograms_t::Fill(const EventData &events)
-{
-    mult->Fill(events.mult);
-    for ( size_t n = 0 ; n < events.mult ; ++n ){
-        energy->Fill(events.e_raw[n], events.ID[n]);
-        energy_cal->Fill(events.energy[n], events.ID[n]);
-    }
-}
 
 HistManager::HistManager(RootFileManager *fm)
     : ring( fm, "ring", NUM_SI_RING )
@@ -86,62 +77,42 @@ HistManager::HistManager(RootFileManager *fm)
 {
 }
 
-void HistManager::AddEntry(const Event &buffer)
+void HistManager::AddEntry(Event &buffer)
 {
-   // We will split each event such that only the entries that are closest to the RF event are counted
-   // No we will use labrF 0 as reference
-   /*int n_labrF0 = 0;
-   EventEntry rfEvent;
-   for ( int n = 0 ; n < buffer.GetLabrFEvent() ; ++n ){
-       if ( buffer.GetLabrFEvent().ID[n] == 0 ) {
-           ++n_labrF0;
-           rfEvent = buffer.GetLabrFEvent()[n];
-       }
-   }*/
 
-
-   if ( buffer.GetRFEvent().mult == 1 ){
-       auto rfEvent = buffer.GetRFEvent()[0];
-
-       ring.Fill(buffer.GetRingEvent(), rfEvent);
-       sect.Fill(buffer.GetSectEvent(), rfEvent);
-       back.Fill(buffer.GetBackEvent(), rfEvent);
-
-       labrL.Fill(buffer.GetLabrLEvent(), rfEvent);
-       labrS.Fill(buffer.GetLabrSEvent(), rfEvent);
-       labrF.Fill(buffer.GetLabrFEvent(), rfEvent);
-       clover.Fill(buffer.GetCloverEvent(), rfEvent);
-
-   } else {
-       ring.Fill(buffer.GetRingEvent());
-       sect.Fill(buffer.GetSectEvent());
-       back.Fill(buffer.GetBackEvent());
-
-       labrL.Fill(buffer.GetLabrLEvent());
-       labrS.Fill(buffer.GetLabrSEvent());
-       labrF.Fill(buffer.GetLabrFEvent());
-       clover.Fill(buffer.GetCloverEvent());
-   }
-
-
-   double timediff;
-   EventEntry evt, rfEvt;
-    for (int i = 0 ; i < buffer.GetSectEvent() ; ++i){
-        rfEvt = buffer.GetSectEvent()[i];
-        for (int j = 0 ; j < buffer.GetBackEvent() ; ++j){
-            evt = buffer.GetBackEvent()[j];
-            timediff = double(evt.tcoarse - rfEvt.tcoarse);
-            timediff += (evt.tfine - rfEvt.tfine);
-            time_energy_sect_back->Fill(evt.energy, timediff);
+    // LaBr 0 is our time reference. We only use it if there is only one of that type.
+    const word_t *start = nullptr;
+    int ref_num = 0;
+    for ( auto &entry : buffer.GetDetector(DetectorType::labr_2x2_fs) ){
+        if ( GetID(entry.address) == 0 ){
+            ++ref_num;
+            start = &entry;
         }
-        for (int j = 0 ; j < buffer.GetRingEvent() ; ++j) {
-            evt = buffer.GetRingEvent()[j];
-            if ( abs(rfEvt.energy - evt.energy) > 500 )
-                continue;
-            timediff = double(evt.tcoarse - rfEvt.tcoarse);
-            timediff += (evt.tfine - rfEvt.tfine);
-            time_energy_ring_sect->Fill(evt.energy, timediff);
+    }
+
+    if (ref_num != 1)
+        start = nullptr;
+
+    for (auto &type : {labr_3x8, labr_2x2_ss, labr_2x2_fs, de_ring, de_sect, eDet, rfchan, DetectorType::clover}){
+        auto *hist = GetSpec(type);
+        if ( hist )
+            hist->Fill(buffer.GetDetector(type), start);
+    }
+
+    for ( auto sect_evt : buffer.GetDetector(DetectorType::de_sect) ){
+
+        for ( auto ring_evt : buffer.GetDetector(DetectorType::de_ring) ){
+            time_energy_ring_sect->Fill(
+                    ring_evt.energy,
+                    double(ring_evt.timestamp - sect_evt.timestamp) + (ring_evt.cfdcorr - sect_evt.cfdcorr));
         }
+
+        for ( auto back_evt : buffer.GetDetector(DetectorType::eDet) ){
+            time_energy_sect_back->Fill(
+                    back_evt.energy,
+                    double(back_evt.timestamp - sect_evt.timestamp) + (back_evt.cfdcorr - sect_evt.cfdcorr));
+        }
+
     }
 }
 
@@ -150,16 +121,6 @@ void HistManager::AddEntry(const word_t &word)
     auto *spec = GetSpec(GetDetector(word.address).type);
     if ( spec )
         spec->Fill(word);
-}
-
-
-void HistManager::AddEntries(const std::vector<Event> &evts)
-{
-    progress.StartFillingHistograms(evts.size());
-    for (size_t i = 0 ; i < evts.size() ; ++i){
-        AddEntry(evts[i]);
-        progress.UpdateHistFillProgress(i);
-    }
 }
 
 HistManager::Detector_Histograms_t *HistManager::GetSpec(const DetectorType &type)
@@ -173,22 +134,5 @@ HistManager::Detector_Histograms_t *HistManager::GetSpec(const DetectorType &typ
         case DetectorType::de_sect : return &sect;
         case DetectorType::eDet : return &back;
         default: return nullptr;
-    }
-}
-
-void HistManager::AddEntries(std::vector<word_t> &evts)
-{
-    for ( int type = DetectorType::invalid ;
-          type < DetectorType::unused ; ++type ){
-
-        auto *hist = GetSpec(DetectorType(type));
-        if ( !hist )
-            continue;
-
-        auto end = std::partition(evts.begin(), evts.end(), [&type](const word_t &word){
-            return GetDetector(word.address).type == type;
-        });
-
-        std::for_each(evts.begin(), end, [&hist](const word_t &word){  hist->Fill(word); });
     }
 }

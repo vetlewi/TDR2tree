@@ -14,7 +14,6 @@
 #include "TreeManager.h"
 #include "Event.h"
 #include "ProgressUI.h"
-#include "MTFileBufferFetcher.h"
 #include "BufferType.h"
 #include "Histograms.h"
 #include "TDREntry.h"
@@ -22,6 +21,7 @@
 #include "TDRTypes.h"
 #include "XIA_CFD.h"
 #include "MemoryMap.h"
+#include "TreeEvent.h"
 
 #include <structopt/app.hpp>
 #include <structopt/third_party/magic_enum/magic_enum.hpp>
@@ -107,6 +107,7 @@ std::ostream &operator<<(std::ostream &os, const Options &opt)
 
     os << "\tBuild tree: " << std::boolalpha << opt.tree.value() << "\n";
     os << "\tSort type: " << magic_enum::enum_name(opt.sortType.value()) << "\n";
+    os << "\tTrigger: " << magic_enum::enum_name(opt.Trigger.value()) << "\n";
     os << "\tAddback: " << std::boolalpha << opt.addback.value() << "\n";
     os << "\tBGO veto action: " << magic_enum::enum_name(opt.VetoAction.value()) << "\n";
     os << "\tBatch read: " << std::boolalpha << opt.batch_read.value();
@@ -125,7 +126,7 @@ inline int64_t TSFactor(const ADCSamplingFreq &freq)
 
 std::vector<word_t> TDRtoWord(const std::vector<TDR::Entry_t> &entries, const enum veto_action &action = veto_action::remove)
 {
-    DetectorInfo_t dinfo;
+    const DetectorInfo_t *dinfo;
     std::vector<word_t> words;
     words.reserve(entries.size());
     word_t word{};
@@ -146,18 +147,20 @@ std::vector<word_t> TDRtoWord(const std::vector<TDR::Entry_t> &entries, const en
                 adc_data,
                 uint16_t(entry.tdc->ADC_data),
                 entry.adc->fail,
-                entry.adc->veto,
+                entry.adc->veto || (( adc_data & 0x8000 ) == 0x8000),
                 entry.timestamp(),
+                0,
                 true,
                 0};
-        dinfo = GetDetector(word.address);
-        cfd_res = XIA::XIA_CFD_Decode(dinfo.sfreq, word.cfddata);
+        dinfo = GetDetectorPtr(word.address);
+        cfd_res = XIA::XIA_CFD_Decode(dinfo->sfreq, word.cfddata);
         word.cfdcorr = cfd_res.first;
         word.cfdfail = cfd_res.second;
 
+        word.energy = CalibrateEnergy(word);
         word.cfdcorr += CalibrateTime(word);
 
-        word.timestamp *= TSFactor(dinfo.sfreq);
+        word.timestamp *= TSFactor(dinfo->sfreq);
         word.timestamp += int64_t(word.cfdcorr);
         word.cfdcorr -= int64_t(word.cfdcorr);
         words.push_back(word);
@@ -165,39 +168,44 @@ std::vector<word_t> TDRtoWord(const std::vector<TDR::Entry_t> &entries, const en
     return words;
 }
 
-std::vector<word_t> TDRtoWord_prog(const std::string &fname, const std::vector<TDR::Entry_t> &entries, const bool &remove_of = true)
+std::vector<word_t> TDRtoWord_prog(const std::string &fname, const std::vector<TDR::Entry_t> &entries, const enum veto_action &action = veto_action::remove)
 {
-    DetectorInfo_t dinfo;
+    const DetectorInfo_t *dinfo;
     std::vector<word_t> words;
-    word_t word;
+    word_t word{};
     XIA::XIA_CFD_t cfd_res;
+    unsigned short adc_data;
     progress.StartNewFile(fname, entries.size());
     size_t pos = 0;
     for ( auto &entry : entries ){
-        if ( entry.adc->ADC_data >= 16384 && remove_of ) {
-            ++pos;
-            continue;
+        // This is also the place where we will remove any events with adc larger than 16384.
+        adc_data = entry.adc->ADC_data;
+        if ( action != veto_action::nothing && ( adc_data & 0x8000 ) == 0x8000 ) {
+            if ( action == veto_action::remove ){
+                ++pos;
+                continue;
+            } else if ( action == veto_action::keep ){
+                adc_data &= 0x7FFF;
+            }
         }
         word = {entry.GetAddress(),
-                uint16_t(entry.adc->ADC_data),
+                adc_data,
                 uint16_t(entry.tdc->ADC_data),
                 entry.adc->fail,
-                entry.adc->veto,
+                entry.adc->veto || (( adc_data & 0x8000 ) == 0x8000),
                 entry.timestamp(),
+                0,
                 true,
                 0};
-        dinfo = GetDetector(word.address);
-        try {
-            cfd_res = XIA::XIA_CFD_Decode(dinfo.sfreq, word.cfddata);
-        } catch (...){
-            continue; // skip if fail
-        }
+        dinfo = GetDetectorPtr(word.address);
+        cfd_res = XIA::XIA_CFD_Decode(dinfo->sfreq, word.cfddata);
         word.cfdcorr = cfd_res.first;
         word.cfdfail = cfd_res.second;
 
+        word.energy = CalibrateEnergy(word);
         word.cfdcorr += CalibrateTime(word);
 
-        word.timestamp *= TSFactor(dinfo.sfreq);
+        word.timestamp *= TSFactor(dinfo->sfreq);
         word.timestamp += int64_t(word.cfdcorr);
         word.cfdcorr -= int64_t(word.cfdcorr);
         words.push_back(word);
@@ -211,8 +219,8 @@ void Convert_to_root_MM_all(const std::vector<std::string> &in_files, const std:
 {
     RootFileManager fm(out_file.c_str());
     HistManager hm(&fm);
-    TreeManager<Event> tm(&fm, "events", "Event tree");
-    TreeManager<Event> *tm_ptr = ( opt.tree.value() ) ? &tm : nullptr;
+    TreeManager<TreeEvent> tm(&fm, "events", "Event tree");
+    TreeManager<TreeEvent> *tm_ptr = ( opt.tree.value() ) ? &tm : nullptr;
     Histogram2Dp ab_hist = ( opt.addback.value() ) ? fm.Mat("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr;
 
     std::function<void(std::vector<word_t>::iterator, std::vector<word_t>::iterator)> sort_func;
@@ -220,7 +228,7 @@ void Convert_to_root_MM_all(const std::vector<std::string> &in_files, const std:
         case sort_type::coincidence : {
             sort_func = [&hm, &tm_ptr, &ab_hist, &opt](std::vector<word_t>::iterator start,
                                                        std::vector<word_t>::iterator stop){
-                Event::BuildPGAndFill(start, stop, &hm, tm_ptr, ab_hist, opt.coincidenceTime.value(), &progress);
+                Event::BuildPGAndFill(start, stop, &hm, tm_ptr, ab_hist, opt.Trigger.value(), opt.coincidenceTime.value(), &progress);
             };
             break;
         }
@@ -256,25 +264,13 @@ void Convert_to_root_MM(const std::vector<std::string> &in_files, const std::str
     std::vector<Event> event_data;
     RootFileManager fm(out_file.c_str());
     HistManager hm(&fm);
-    TreeManager<Event> tm(&fm, "events", "Event tree");
-    TreeManager<Event> *tm_ptr = ( opt.tree.value() ) ? &tm : nullptr;
+    TreeManager<TreeEvent> tm(&fm, "events", "Event tree");
+    TreeManager<TreeEvent> *tm_ptr = ( opt.tree.value() ) ? &tm : nullptr;
     Histogram2Dp ab_hist = ( opt.addback.value() ) ? fm.Mat("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr;
 
     TDR::Parser parser;
     std::vector<word_t> data;
     std::vector<word_t> buffer;
-
-    /*
-     * Issue with this function:
-     * If not all entries are flushed from the
-     * parser after a file is done then the entries
-     * still in the parser will reference the previous file.
-     * This means that it could crash if data is spread across
-     * two files.
-     * For now we will solve this by moving the scope of the parser to each files mapped memory.
-     * Another solution would be to build an array of mapped files... That way we will only
-     * de-reference once the array goes out of scope, effectively avoiding the problem all toghether!
-     */
 
 
     std::vector<std::unique_ptr<IO::MemoryMap>> mem_maps;
@@ -287,18 +283,17 @@ void Convert_to_root_MM(const std::vector<std::string> &in_files, const std::str
         case sort_type::coincidence : {
             sort_func = [&hm, &tm_ptr, &ab_hist, &opt](std::vector<word_t>::iterator start,
                                                        std::vector<word_t>::iterator stop){
-                Event::BuildPGAndFill(start, stop, &hm, tm_ptr, ab_hist, opt.coincidenceTime.value());
+                Event::BuildPGAndFill(start, stop, &hm, tm_ptr, ab_hist, opt.Trigger.value(), opt.coincidenceTime.value());
             };
             break;
         }
-
         case sort_type::gap : {
             sort_func = [&hm, &tm_ptr, &ab_hist, &opt](std::vector<word_t>::iterator start,
                                                        std::vector<word_t>::iterator stop){
                 Event::BuildAndFill(start, stop, &hm, tm_ptr, ab_hist, opt.coincidenceTime.value());
             };
+            break;
         }
-
         case sort_type::singles : {
             sort_func = [&hm, &tm_ptr, &ab_hist, &opt](std::vector<word_t>::iterator start,
                                                        std::vector<word_t>::iterator stop){

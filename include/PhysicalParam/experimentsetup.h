@@ -23,18 +23,18 @@ extern "C" {
 
 #include <stdint.h>
 
-enum DetectorType {
-    invalid,        //!< Invalid address
-    labr_3x8,       //!< Is a 3.5x8 inch labr detector
-    labr_2x2_ss,    //!< Is a 2x2 labr detector, slow signal
-    labr_2x2_fs,    //!< Is a 2x2 labr detector, fast signal
-    clover,         //!< Is a clover crystal
-    de_ring,        //!< Is a Delta-E ring
-    de_sect,        //!< Is a Delta-E sector
-    eDet,           //!< Is a E detector
-    rfchan,         //!< The channel where the RF is connected
-    any,            //!< Used in event builder to indicate the trigger. Should not be applied in the setup list.
-    unused,         //!< Is a unused XIA channel
+enum DetectorType : int {
+    invalid = 0,        //!< Invalid address
+    labr_3x8 = 1,       //!< Is a 3.5x8 inch labr detector
+    labr_2x2_ss = 2,    //!< Is a 2x2 labr detector, slow signal
+    labr_2x2_fs = 3,    //!< Is a 2x2 labr detector, fast signal
+    de_ring = 4,        //!< Is a Delta-E ring
+    de_sect = 5,        //!< Is a Delta-E sector
+    eDet = 6,           //!< Is a E detector
+    rfchan = 7,         //!< The channel where the RF is connected
+    clover = 8,         //!< Is a clover crystal
+    any = 9,            //!< Used in event builder to indicate the trigger. Should not be applied in the setup list.
+    unused = 10,         //!< Is a unused XIA channel
 };
 
 enum ADCSamplingFreq {
@@ -60,10 +60,27 @@ typedef struct DetectorInfo_ DetectorInfo_t;
  */
 DetectorInfo_t GetDetector(uint16_t address   /*!< Address of the detector to get */);
 
+//! Get Detector ptr method
+/*!
+ * \return pointer to the detector entry
+ * Potentially unsafe as it isn't bounds checked.
+ */
+const DetectorInfo_t *GetDetectorPtr(uint16_t address);
+
 //! Get sampling frequency
 /*! \return The XIA module sampling frequency
  */
 enum ADCSamplingFreq GetSamplingFrequency(uint16_t address    /*!< ADC address    */);
+
+//! Get the detector ID.
+inline int GetID(uint16_t address){
+    const DetectorInfo_t *dinfo = GetDetectorPtr(address);
+    if ( dinfo->type == clover ){
+        return dinfo->detectorNum * NUM_CLOVER_CRYSTALS + dinfo->telNum;
+    } else {
+        return dinfo->detectorNum;
+    }
+}
 
 #if __cplusplus
 }
