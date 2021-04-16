@@ -5,7 +5,6 @@
 #include <vector>
 #include <algorithm>
 
-#include "CommandLineInterface.h"
 #include "Calibration.h"
 #include "experimentsetup.h"
 

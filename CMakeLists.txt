@@ -15,8 +15,19 @@ CPMAddPackage(
         GIT_TAG ffe3473c1cf961ead13eda8e2e4f6e7e79fd9c5c
         OPTIONS "STRUCTOPT_TESTS OFF" "STRUCTOPT_SAMPLES OFF")
 
-add_executable(TDR2tree main.cpp
+CPMAddPackage(
+        NAME readerwriterqueue
+        GITHUB_REPOSITORY cameron314/readerwriterqueue
+        GIT_TAG 09732844aff873e8ec489e9005c775b6b1c58fa2
+)
 
+CPMAddPackage(
+        NAME concurrentqueue
+        GITHUB_REPOSITORY cameron314/concurrentqueue
+        VERSION 1.0.3
+)
+
+add_library(TDR2treeLib
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/Event.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/Histogram1D.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/Histogram2D.cpp
@@ -42,19 +53,32 @@ add_executable(TDR2tree main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/RootInterface/RootFileManager.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/RootInterface/TreeManager.cpp
 
-        ${CMAKE_CURRENT_SOURCE_DIR}/source/Tools/CommandLineInterface.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/source/Tools/ProgressUI.cpp
-        )
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/Tasks/Buffer.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/Tasks/Converter.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/Tasks/Reader.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/Tasks/Sort.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/Tasks/Splitter.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/Tasks/Trigger.cpp
 
-target_include_directories(TDR2tree
-    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/Tools/CommandLineInterface.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/Tools/ProgressUI.cpp)
+
+target_include_directories(TDR2treeLib PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include/Containers
         ${CMAKE_CURRENT_SOURCE_DIR}/include/FileReader
         ${CMAKE_CURRENT_SOURCE_DIR}/include/PhysicalParam
         ${CMAKE_CURRENT_SOURCE_DIR}/include/RootInterface
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/Tasks
         ${CMAKE_CURRENT_SOURCE_DIR}/include/Tools
 )
 
-target_compile_features(TDR2tree PRIVATE cxx_std_17)
+target_link_libraries(TDR2treeLib PUBLIC ROOT::RIO ROOT::Hist ROOT::Tree readerwriterqueue concurrentqueue)
+target_compile_features(TDR2treeLib PUBLIC cxx_std_17)
 
-target_link_libraries(TDR2tree ROOT::RIO ROOT::Hist ROOT::Tree structopt::structopt)
+add_executable(TDR2tree app/main.cpp)
+add_executable(TDR2treeMT app/mt_main.cpp)
+add_executable(TDR2treeST app/st_main.cpp)
+
+target_link_libraries(TDR2tree TDR2treeLib structopt::structopt)
+target_link_libraries(TDR2treeMT TDR2treeLib readerwriterqueue concurrentqueue)
+target_link_libraries(TDR2treeST TDR2treeLib readerwriterqueue)
