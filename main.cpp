@@ -305,21 +305,22 @@ void Convert_to_root_MM(const std::vector<std::string> &in_files, const std::str
 
     size_t fno = 0;
     for ( auto &mmap : mem_maps ){
-        std::vector<const char *> headers = TDR::FindHeaders(mmap->GetPtr(), mmap->GetPtr() + mmap->GetSize());
-        progress.StartNewFile(in_files[fno++], headers.size());
+        progress.StartNewFile(in_files[fno++], mmap->GetSize());
         bool end = (fno == mem_maps.size());
-        for ( size_t header_no = 0 ; header_no < headers.size() ; ++header_no ){
-            buffer = TDRtoWord(parser.ParseBuffer(headers[header_no],
-                                                  (header_no == headers.size() - 1) && end ), opt.VetoAction.value());
+        const char *header = TDR::FindHeader(mmap->GetPtr(), mmap->GetPtr() + mmap->GetSize());
+        const char *stop = mmap->GetPtr() + mmap->GetSize();
+        while ( header < stop  ){
+            const char *next_header = TDR::FindHeader(header + reinterpret_cast<const TDR::TDR_header_t *>(header)->header_dataLen + sizeof(TDR::TDR_header_t), stop);
+            buffer = TDRtoWord(parser.ParseBuffer(header, (next_header >= stop) && end ), opt.VetoAction.value());
             data.insert(data.end(), buffer.begin(), buffer.end());
             std::sort(data.begin(), data.end(), [](const word_t &lhs, const word_t &rhs)
-                { return (double(rhs.timestamp - lhs.timestamp) + (rhs.cfdcorr - lhs.cfdcorr)) > 0; });
-
+            { return (double(rhs.timestamp - lhs.timestamp) + (rhs.cfdcorr - lhs.cfdcorr)) > 0; });
             if ( data.size() > 196608 ){
                 sort_func(data.begin(), data.begin()+65536);
                 data.erase(data.begin(), data.begin()+65536);
             }
-            progress.UpdateReadProgress(header_no);
+            progress.UpdateReadProgress(header - mmap->GetPtr());
+            header = next_header;
         }
         progress.Finish();
     }

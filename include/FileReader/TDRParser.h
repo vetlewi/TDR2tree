@@ -26,6 +26,11 @@ namespace TDR
 {
 
     /*!
+     * Find the first header in a segment of memory
+     */
+    const char *FindHeader(const char *begin, const char *end);
+
+    /*!
      * Find the next header in a segment of memory
      */
     const char *FindNextHeader(const char *begin, const char *end);

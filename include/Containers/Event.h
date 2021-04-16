@@ -58,13 +58,17 @@ private:
     std::vector<word_t> event_data;
     std::map<DetectorType, Subevent> type_bounds;
 
+    void index(Histogram2Dp ab_t_clover);
+
 public:
 
     //! Constructor.
-    explicit Event(std::vector<word_t> event);
-    Event(const std::vector<word_t>::iterator begin, const std::vector<word_t>::iterator end);
+    explicit Event(std::vector<word_t> event, Histogram2Dp ab_t_clover = nullptr);
 
-    void RunAddback(Histogram2Dp ab_t_clover /*!< Matrix to fill in order to set propper time gates for clover addback */);
+    template<class It>
+    Event(It begin, It end, Histogram2Dp ab_t_clover = nullptr) : event_data(begin, end){ index(ab_t_clover); }
+
+    //void RunAddback(Histogram2Dp ab_t_clover /*!< Matrix to fill in order to set propper time gates for clover addback */);
 
     //! Build and fill events.
     template<class It, class TE>
@@ -112,8 +116,8 @@ void Event::BuildPGAndFill(It _start, It _stop, HistManager *hm, TreeManager<TE>
             ++stop;
         }
 
-        Event evt(std::vector<word_t>(start, stop));
-        if ( ab_hist ) evt.RunAddback(ab_hist);
+        Event evt(std::vector<word_t>(start, stop), ab_hist);
+        //if ( ab_hist ) evt.RunAddback(ab_hist);
         if ( hm ) hm->AddEntry(evt);
         if ( tm ) tm->AddEntry(evt);
 
@@ -137,8 +141,8 @@ void Event::BuildAndFill(It _start, It _stop, HistManager *hm, TreeManager<TE> *
 
     while ( it < end - 1 ){
         if ( abs( double((it+1)->timestamp - it->timestamp) + ((it+1)->cfdcorr - it->cfdcorr) ) > coins_time ){
-            Event evt(std::vector<word_t>(begin, it+1));
-            if ( ab_hist ) evt.RunAddback(ab_hist);
+            Event evt(std::vector<word_t>(begin, it+1), ab_hist);
+            //if ( ab_hist ) evt.RunAddback(ab_hist);
             if ( hm ) hm->AddEntry(evt);
             if ( tm ) tm->AddEntry(evt);
             begin = it+1;
