@@ -209,17 +209,17 @@ std::vector<word_t> TDRtoWord_prog(const std::string &fname, const std::vector<T
         word.cfdcorr -= int64_t(word.cfdcorr);
         words.push_back(word);
 
-        progress.UpdateReadProgress(++pos);
+        //sprogress.UpdateReadProgress(++pos);
     }
     return words;
 }
 
 void Convert_to_root_MM_all(const std::vector<std::string> &in_files, const std::string &out_file, const Options &opt)
 {
-    RootFileManager fm(out_file.c_str());
-    HistManager hm(&fm);
-    TreeManager<TreeEvent> tm(&fm, "events", "Event tree");
-    TreeManager<TreeEvent> *tm_ptr = ( opt.tree.value() ) ? &tm : nullptr;
+    ROOT::RootFileManager fm(out_file.c_str());
+    ROOT::HistManager hm(&fm);
+    ROOT::TreeManager<TreeEvent> tm(&fm, "events", "Event tree");
+    ROOT::TreeManager<TreeEvent> *tm_ptr = ( opt.tree.value() ) ? &tm : nullptr;
     Histogram2Dp ab_hist = ( opt.addback.value() ) ? fm.Mat("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr;
 
     std::function<void(std::vector<word_t>::iterator, std::vector<word_t>::iterator)> sort_func;
@@ -254,17 +254,17 @@ void Convert_to_root_MM_all(const std::vector<std::string> &in_files, const std:
         auto events = TDRtoWord_prog(file, TDR::ParseFile(mmap.GetPtr(), mmap.GetPtr() + mmap.GetSize()),
                                      opt.VetoAction.value());
         sort_func(events.begin(), events.end());
-        progress.Finish();
+        //progress.Finish();
     }
 }
 
 void Convert_to_root_MM(const std::vector<std::string> &in_files, const std::string &out_file, const Options &opt)
 {
     std::vector<Event> event_data;
-    RootFileManager fm(out_file.c_str());
-    HistManager hm(&fm);
-    TreeManager<TreeEvent> tm(&fm, "events", "Event tree");
-    TreeManager<TreeEvent> *tm_ptr = ( opt.tree.value() ) ? &tm : nullptr;
+    ROOT::RootFileManager fm(out_file.c_str());
+    ROOT::HistManager hm(&fm);
+    ROOT::TreeManager<TreeEvent> tm(&fm, "events", "Event tree");
+    ROOT::TreeManager<TreeEvent> *tm_ptr = ( opt.tree.value() ) ? &tm : nullptr;
     Histogram2Dp ab_hist = ( opt.addback.value() ) ? fm.Mat("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr;
 
     TDR::Parser parser;
@@ -318,10 +318,10 @@ void Convert_to_root_MM(const std::vector<std::string> &in_files, const std::str
                 sort_func(data.begin(), data.begin()+65536);
                 data.erase(data.begin(), data.begin()+65536);
             }
-            progress.UpdateReadProgress(header - mmap->GetPtr());
+            //progress.UpdateReadProgress(header - mmap->GetPtr());
             header = next_header;
         }
-        progress.Finish();
+        //progress.Finish();
     }
 
     // Once we reach this point we will flush the remaining events.

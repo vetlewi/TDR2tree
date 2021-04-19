@@ -9,7 +9,7 @@
 
 #include <Histograms.h>
 
-//#define H1D_USE_BUFFER 1
+#define H1D_USE_BUFFER 1
 #ifdef H1D_USE_BUFFER
 #include <vector>
 #endif

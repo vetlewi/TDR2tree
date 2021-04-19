@@ -38,15 +38,16 @@ void Detector_Histograms_t::Fill(const Subevent &subvec, const word_t *start)
     }
 }
 
+#include <iostream>
 Task::HistManager::HistManager()
         : histograms( )
-        , ring( histograms, "ring", NUM_SI_RING )
-        , sect( histograms, "sect", NUM_SI_SECT )
-        , back( histograms, "back", NUM_SI_BACK )
+        , clover( histograms, "clover", NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS )
         , labrL( histograms, "labrL", NUM_LABR_3X8_DETECTORS )
         , labrS( histograms, "labrS", NUM_LABR_2X2_DETECTORS )
         , labrF( histograms, "labrF", NUM_LABR_2X2_DETECTORS )
-        , clover( histograms, "clover", NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS )
+        , ring( histograms, "ring", NUM_SI_RING )
+        , sect( histograms, "sect", NUM_SI_SECT )
+        , back( histograms, "back", NUM_SI_BACK )
         , time_energy_sect_back( histograms.Create2D("time_energy_sect_back", "Energy vs. sector/back time", 1000, 0, 30000, "E energy [keV]", 3000, -1500, 1500, "t_{back} - t_{sector} [ns]") )
         , time_energy_ring_sect( histograms.Create2D("time_energy_ring_sect", "Energy vs. sector/back time", 1000, 0, 30000, "Sector energy [keV]", 3000, -1500, 1500, "t_{ring} - t_{sector} [ns]") )
 {

@@ -29,57 +29,60 @@
 class Subevent;
 class Event;
 
-class HistManager {
+namespace ROOT {
 
-private:
+    class HistManager {
 
-    struct Detector_Histograms_t {
-        Histogram2Dp time;          //! Time alignment spectra
-        Histogram2Dp energy;
-        Histogram2Dp energy_cal;
-        Histogram1Dp mult;
+    private:
 
-        Detector_Histograms_t(RootFileManager *fileManager, const std::string &name, const size_t &num);
+        struct Detector_Histograms_t {
+            Histogram2Dp time;          //! Time alignment spectra
+            Histogram2Dp energy;
+            Histogram2Dp energy_cal;
+            Histogram1Dp mult;
 
-        void Fill(const word_t &word);
-        void Fill(const Subevent &subvec,
-                  const word_t *start = nullptr);
+            Detector_Histograms_t(RootFileManager *fileManager, const std::string &name, const size_t &num);
+
+            void Fill(const word_t &word);
+            void Fill(const Subevent &subvec,
+                      const word_t *start = nullptr);
+        };
+
+        Detector_Histograms_t ring;
+        Detector_Histograms_t sect;
+        Detector_Histograms_t back;
+
+        Detector_Histograms_t labrL;
+        Detector_Histograms_t labrS;
+        Detector_Histograms_t labrF;
+        Detector_Histograms_t clover;
+
+        //! Time energy spectra for particles.
+        Histogram2Dp time_energy_sect_back;
+        Histogram2Dp time_energy_ring_sect;
+
+        Detector_Histograms_t *GetSpec(const DetectorType &type);
+
+    public:
+
+        //! Constructor.
+        explicit HistManager(RootFileManager *fileManager    /*!< ROOT file where the histograms will reside.    */);
+
+        //! Fill spectra with an event.
+        void AddEntry(Event &buffer  /*!< Event to read from    */);
+
+        //! Fill a single word
+        void AddEntry(const word_t &word);
+
+        //! Fill spectra directly from iterators
+        template<class It>
+        inline void AddEntries(It start, It stop){
+            using std::placeholders::_1;
+            std::for_each(start, stop, [this](const word_t &p){ this->AddEntry(p); });
+        }
+
     };
-
-    Detector_Histograms_t ring;
-    Detector_Histograms_t sect;
-    Detector_Histograms_t back;
-
-    Detector_Histograms_t labrL;
-    Detector_Histograms_t labrS;
-    Detector_Histograms_t labrF;
-    Detector_Histograms_t clover;
-
-    //! Time energy spectra for particles.
-    Histogram2Dp time_energy_sect_back;
-    Histogram2Dp time_energy_ring_sect;
-
-    Detector_Histograms_t *GetSpec(const DetectorType &type);
-
-public:
-
-    //! Constructor.
-    explicit HistManager(RootFileManager *fileManager    /*!< ROOT file where the histograms will reside.    */);
-
-    //! Fill spectra with an event.
-    void AddEntry(Event &buffer  /*!< Event to read from    */);
-
-    //! Fill a single word
-    void AddEntry(const word_t &word);
-
-    //! Fill spectra directly from iterators
-    template<class It>
-    inline void AddEntries(It start, It stop){
-        using std::placeholders::_1;
-        std::for_each(start, stop, [this](const word_t &p){ this->AddEntry(p); });
-    }
-
-};
+}
 
 
 #endif // HISTMANAGER_H

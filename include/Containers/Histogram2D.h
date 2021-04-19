@@ -10,8 +10,8 @@
 
 #include <Histograms.h>
 
-//#define USE_ROWS 1
-//#define H2D_USE_BUFFER 1
+#define USE_ROWS 1
+#define H2D_USE_BUFFER 1
 #ifdef H2D_USE_BUFFER
 #include <vector>
 #endif

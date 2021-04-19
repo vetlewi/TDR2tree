@@ -20,6 +20,7 @@
 
 #include "RootFileManager.h"
 
+#include <TFileMerger.h>
 #include <TTree.h>
 #include <TH1.h>
 #include <TH2.h>
@@ -28,20 +29,29 @@
 #include "Histogram2D.h"
 
 
-RootFileManager::RootFileManager(const char *fname, const char *mode, const char *ftitle)
+void ROOT::MergeFiles(const std::vector<std::string> &infiles, const std::string outname)
+{
+    TFileMerger merger;
+    merger.OutputFile(outname.c_str());
+    for ( auto &file : infiles )
+        merger.AddFile(file.c_str(), false);
+    merger.Merge();
+}
+
+ROOT::RootFileManager::RootFileManager(const char *fname, const char *mode, const char *ftitle)
     : file( fname, mode, ftitle )
 {
     //list.SetOwner(false);
 }
 
-RootFileManager::~RootFileManager()
+ROOT::RootFileManager::~RootFileManager()
 {
     Write();
     file.Write();
     file.Close();
 }
 
-void RootFileManager::Write()
+void ROOT::RootFileManager::Write()
 {
     for ( auto &hist : histograms.GetAll1D() ){
         CreateTH1(hist);
@@ -52,14 +62,14 @@ void RootFileManager::Write()
     }
 }
 
-TTree *RootFileManager::CreateTree(const char *name, const char *title)
+TTree *ROOT::RootFileManager::CreateTree(const char *name, const char *title)
 {
     auto *tree = new TTree(name, title);
     list.push_back(tree);
     return tree;
 }
 
-TH1 *RootFileManager::CreateTH1(const char *name, const char *title, int xbin, double xmin, double xmax, const char *xtitle, const char *dir)
+TH1 *ROOT::RootFileManager::CreateTH1(const char *name, const char *title, int xbin, double xmin, double xmax, const char *xtitle, const char *dir)
 {
     if ( !file.GetDirectory(dir) ){
         file.mkdir(dir, dir);
@@ -74,7 +84,7 @@ TH1 *RootFileManager::CreateTH1(const char *name, const char *title, int xbin, d
     return h;
 }
 
-TH1 *RootFileManager::CreateTH1(Histogram1Dp h)
+TH1 *ROOT::RootFileManager::CreateTH1(Histogram1Dp h)
 {
     const Axis& xax = h->GetAxisX();
     const int channels = xax.GetBinCount();
@@ -98,7 +108,7 @@ TH1 *RootFileManager::CreateTH1(Histogram1Dp h)
 }
 
 TH2 *
-RootFileManager::CreateTH2(const char *name, const char *title, int xbin, double xmin, double xmax, const char *xtitle, int ybin, double ymin, double ymax, const char *ytitle, const char *dir)
+ROOT::RootFileManager::CreateTH2(const char *name, const char *title, int xbin, double xmin, double xmax, const char *xtitle, int ybin, double ymin, double ymax, const char *ytitle, const char *dir)
 {
     if ( !file.GetDirectory(dir) ){
         file.mkdir(dir, dir);
@@ -120,7 +130,7 @@ RootFileManager::CreateTH2(const char *name, const char *title, int xbin, double
     return m;
 }
 
-TH2 *RootFileManager::CreateTH2(Histogram2Dp h)
+TH2 *ROOT::RootFileManager::CreateTH2(Histogram2Dp h)
 {
     const Axis& xax = h->GetAxisX();
     const Axis& yax = h->GetAxisY();

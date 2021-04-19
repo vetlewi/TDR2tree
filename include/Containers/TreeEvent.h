@@ -7,9 +7,12 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 
 #include <TTree.h>
 #include <TBranch.h>
+
+#include "experimentsetup.h"
 
 struct word_t;
 class Event;
@@ -20,29 +23,32 @@ class TBranch;
 
 template<typename T>
 class VecBranch {
-    std::vector<T> container;
+    T container[256];
+    //std::vector<T> container;
     TBranch *branch;
 
 public:
 
     VecBranch(TTree *tree, const char *name, const char *leaflist)
-        : container( 64 ) // Initialize here to ensure that memory is allocated.
-        , branch( tree->Branch(name, container.data(), leaflist) ){ container.clear(); }
+        : container{ 0 } // Initialize here to ensure that memory is allocated.
+        , branch( tree->Branch(name, container/*container.data()*/, leaflist) ){ /*container.clear();*/ }
 
-    inline void push_back(const T &val){
-        container.push_back(val);
+    inline void push_back(const T &val, const size_t &num){
+        container[num] = val;
     }
 
     inline void clear() noexcept {
-        container.clear();
+        //container.clear();
     }
 
     // To be called before 'Fill' method of the tree is called.
     // Essentially we need to ensure that the address of the underlying container (vector) isn't changed,
     // and if so we will need to change it to the correct address.
     inline void check_address() {
-        if ( reinterpret_cast<const char *>(container.data()) != branch->GetAddress() )
-            branch->SetAddress(container.data());
+        size_t addr = size_t(reinterpret_cast<const char *>(container));
+        size_t baddr = size_t(branch->GetAddress());
+        if ( reinterpret_cast<const char *>(container) != branch->GetAddress() )
+            std::cout << "Got addresses: " << size_t(reinterpret_cast<const char *>(container)) << " " << size_t(branch->GetAddress()) << std::endl;
     }
 
 };
@@ -107,7 +113,8 @@ public:
 
     void push_back(const word_t &event);
 
-    TreeEvent &operator=(const Event &event);
+    TreeData &GetData(const DetectorType &type);
+    TreeEvent &operator=(Event &event);
 
     inline void clear() noexcept
     {

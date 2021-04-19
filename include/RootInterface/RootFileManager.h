@@ -21,6 +21,8 @@
 #ifndef ROOTFILEMANAGER_H
 #define ROOTFILEMANAGER_H
 
+#include <vector>
+#include <string>
 
 #include <TFile.h>
 
@@ -33,91 +35,98 @@ class TObject;
 
 #include "Histograms.h"
 
-class RootFileManager
-{
+namespace ROOT {
 
-private:
+    void MergeFiles(const std::vector<std::string> &infiles, const std::string outname);
 
-    TFile file;                         //!< File where everything will be put in.
-    std::vector<TObject *> list;        //!< List to store ROOT objects.
-
-    Histograms histograms;
-
-    void Write();
-
-public:
-
-    //! Construct and open.
-    explicit RootFileManager(const char *fname, const char *mode="RECREATE", const char *ftitle="");
-
-    //! Destructor.
-    ~RootFileManager();
-
-    //! Create a ROOT tree object.
-    /*!
-     *
-     * \param name Name of the TTree object.
-     * \param title Title of the tree.
-     * \return A pointer to the TTree object.
-     */
-    TTree *CreateTree(const char *name, const char *title);
-
-    //! Create a ROOT 1D histogram.
-    /*!
-     *
-     * \param name Name of the TH1 object.
-     * \param title Title of the histogram
-     * \param xbin Number of bins on the x-axis.
-     * \param xmin Lower limit of the first bin on the x-axis.
-     * \param xmax Upper limit of the last bin on the x-axis.
-     * \param xtitle Title of the x-axis.
-     * \param dir Directory in the ROOT file to store the object.
-     * \return A pointer to the TH1 object.
-     */
-    TH1 *CreateTH1(const char *name, const char *title, int xbin, double xmin, double xmax, const char *xtitle, const char *dir="");
-
-    //! Create a ROOT 1D histogram from a Histogram1Dp
-    TH1 *CreateTH1(Histogram1Dp h);
-
-    //! Create a histogram
-    Histogram1Dp Spec(const std::string &name, const std::string &title, const Axis::index_t &bins,
-                      const Axis::bin_t &xmin, const Axis::bin_t &xmax, const std::string &xtitle)
+    class RootFileManager
     {
-        return histograms.Create1D(name, title, bins, xmin, xmax, xtitle);
-    }
 
-    //! Creat a ROOT 2D histogram.
-    /*!
-     *
-     * \param name Name of the TH2 object.
-     * \param title Title of the histogram.
-     * \param xbin Number of bins on the x-axis.
-     * \param xmin Lower limit of the first bin on the x-axis.
-     * \param xmax Upper limit of the last bin on the x-axis.
-     * \param xtitle Title of the x-axis.
-     * \param ybin Number of bins on the y-axis.
-     * \param ymin Lower limit of the first bin on the y-axis.
-     * \param ymax Upper limit of the last bin on the y-axis.
-     * \param ytitle Title of the y-axis.
-     * \param dir Directory in the ROOT file to store the object.
-     * \return A pointer to the TH2 object.
-     */
-    TH2 *CreateTH2(const char *name, const char *title, int xbin, double xmin, double xmax, const char *xtitle,
-                   int ybin, double ymin, double ymax, const char *ytitle, const char *dir="");
+    private:
 
-    //! Create a ROOT 2D histogram from a Histogram2Dp
-    TH2* CreateTH2(Histogram2Dp h);
+        TFile file;                         //!< File where everything will be put in.
+        std::vector<TObject *> list;        //!< List to store ROOT objects.
 
-    //! Create a matrix
-    Histogram2Dp Mat(const std::string &name, const std::string &title, const Axis::index_t &xbins,
-                     const Axis::bin_t &xmin, const Axis::bin_t &xmax, const std::string &xtitle,
-                     const Axis::index_t &ybins, const Axis::bin_t &ymin, const Axis::bin_t &ymax,
-                     const std::string &ytitle)
-    {
-        return histograms.Create2D(name, title, xbins, xmin, xmax, xtitle, ybins, ymin, ymax, ytitle);
-    }
+        Histograms histograms;
 
-};
+        void Write();
+
+    public:
+
+        //! Construct and open.
+        explicit RootFileManager(const char *fname, const char *mode = "RECREATE", const char *ftitle = "");
+
+        //! Destructor.
+        ~RootFileManager();
+
+        //! Create a ROOT tree object.
+        /*!
+         *
+         * \param name Name of the TTree object.
+         * \param title Title of the tree.
+         * \return A pointer to the TTree object.
+         */
+        TTree *CreateTree(const char *name, const char *title);
+
+        //! Create a ROOT 1D histogram.
+        /*!
+         *
+         * \param name Name of the TH1 object.
+         * \param title Title of the histogram
+         * \param xbin Number of bins on the x-axis.
+         * \param xmin Lower limit of the first bin on the x-axis.
+         * \param xmax Upper limit of the last bin on the x-axis.
+         * \param xtitle Title of the x-axis.
+         * \param dir Directory in the ROOT file to store the object.
+         * \return A pointer to the TH1 object.
+         */
+        TH1 *CreateTH1(const char *name, const char *title, int xbin, double xmin, double xmax, const char *xtitle,
+                       const char *dir = "");
+
+        //! Create a ROOT 1D histogram from a Histogram1Dp
+        TH1 *CreateTH1(Histogram1Dp h);
+
+        //! Create a histogram
+        Histogram1Dp Spec(const std::string &name, const std::string &title, const Axis::index_t &bins,
+                          const Axis::bin_t &xmin, const Axis::bin_t &xmax, const std::string &xtitle)
+        {
+            return histograms.Create1D(name, title, bins, xmin, xmax, xtitle);
+        }
+
+        //! Creat a ROOT 2D histogram.
+        /*!
+         *
+         * \param name Name of the TH2 object.
+         * \param title Title of the histogram.
+         * \param xbin Number of bins on the x-axis.
+         * \param xmin Lower limit of the first bin on the x-axis.
+         * \param xmax Upper limit of the last bin on the x-axis.
+         * \param xtitle Title of the x-axis.
+         * \param ybin Number of bins on the y-axis.
+         * \param ymin Lower limit of the first bin on the y-axis.
+         * \param ymax Upper limit of the last bin on the y-axis.
+         * \param ytitle Title of the y-axis.
+         * \param dir Directory in the ROOT file to store the object.
+         * \return A pointer to the TH2 object.
+         */
+        TH2 *CreateTH2(const char *name, const char *title, int xbin, double xmin, double xmax, const char *xtitle,
+                       int ybin, double ymin, double ymax, const char *ytitle, const char *dir = "");
+
+        //! Create a ROOT 2D histogram from a Histogram2Dp
+        TH2 *CreateTH2(Histogram2Dp h);
+
+        //! Create a matrix
+        Histogram2Dp Mat(const std::string &name, const std::string &title, const Axis::index_t &xbins,
+                         const Axis::bin_t &xmin, const Axis::bin_t &xmax, const std::string &xtitle,
+                         const Axis::index_t &ybins, const Axis::bin_t &ymin, const Axis::bin_t &ymax,
+                         const std::string &ytitle)
+        {
+            return histograms.Create2D(name, title, xbins, xmin, xmax, xtitle, ybins, ymin, ymax, ytitle);
+        }
+
+    };
+
+}
 
 
 #endif // ROOTFILEMANAGER_H

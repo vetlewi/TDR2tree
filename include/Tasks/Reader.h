@@ -14,6 +14,7 @@
 
 #include <readerwritercircularbuffer.h>
 
+class ProgressUI;
 
 namespace IO {
     class MemoryMap;
@@ -28,9 +29,13 @@ namespace Task {
         std::vector<std::string> file_names;
         TDR::Parser parser;
         EntryQueue_t output_queue;
+        ProgressUI *ui;
+
+        void RunWithUI();
+        void RunWithoutUI();
 
     public:
-        Reader(const std::vector<std::string> &files, const size_t &capacity = 1024);
+        Reader(const std::vector<std::string> &files, ProgressUI *ui = nullptr, const size_t &capacity = 1024);
 
         EntryQueue_t &GetQueue(){ return output_queue; }
 

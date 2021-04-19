@@ -6,140 +6,89 @@
 
 #include <iostream>
 
-void ProgressUI::StartNewFile(const std::string &fname, const size_t &size)
+#include <indicators/cursor_control.hpp>
+
+std::string StripSlash(const std::string &str)
 {
-    curr_fname = fname;
-    length = size;
-    shown = 0;
-    std::cout << "                                                                                            " << "\r";
-    std::cout.flush();
-    std::cout << "[";
-    for (int p = 0 ; p < BARWIDTH ; ++p){
-        std::cout << " ";
-    }
-    std::cout << "] " << 0 << "% Reading file '" << curr_fname << "'" << "\r";
-    std::cout.flush();
+    if ( str.back() == '/' )
+        return StripSlash(str.substr(0, str.size()-1));
+    auto begin = str.find_last_of('/');
+    if ( begin == std::string::npos )
+        return str;
+    else
+        return str.substr(begin+1);
 }
 
-void ProgressUI::UpdateReadProgress(const size_t &curr_pos)
+ProgressBar::ProgressBar(const std::string &_filename, const size_t &size)
+    : indicators::BlockProgressBar{ indicators::option::BarWidth(80),
+                                    indicators::option::ForegroundColor{indicators::Color::red},
+                                    indicators::option::ShowElapsedTime{true},
+                                    indicators::option::ShowRemainingTime{true},
+                                    indicators::option::Stream{std::cout}}
+    , filename( StripSlash(_filename) )
+    , length( size )
+    , shown( 0 )
 {
-    if ( curr_pos/double(length) - shown*0.02 > 0 ){
+    // We only want the part after the last '/' character
+    auto begin = _filename.find_last_of('/');
+    filename = ( begin == std::string::npos ) ? _filename : _filename.substr(begin+1);
+    set_option(indicators::option::PrefixText(filename + ": Reading  "));
+    //bar.push_back(*this);
+}
+
+void ProgressBar::UpdateProgress(const size_t &pos)
+{
+    if ( pos/double(length) - shown * 0.01 > 0 ){
         ++shown;
-        std::cout << "                                                                                            " << "\r";
-        std::cout.flush();
-        std::cout << "[";
-        int pos = int( BARWIDTH * curr_pos / double(length) );
-        for (int p = 0 ; p < BARWIDTH ; ++p){
-            if ( p < pos ) std::cout << "=";
-            else if ( p== pos ) std::cout << ">";
-            else std::cout << " ";
-        }
-        std::cout << "] " << int(100 * (curr_pos / double(length))) << "% Reading file '" << curr_fname << "'\r";
-        std::cout.flush();
+        set_progress(100*(pos/float(length)));
     }
 }
 
-void ProgressUI::StartBuildingEvents(const size_t &size)
+void ProgressBar::FinishProgress()
 {
-    length = size;
-    shown = 0;
-    std::cout << "                                                                                            " << "\r";
-    std::cout.flush();
-    std::cout << "[";
-    for (int p = 0 ; p < BARWIDTH ; ++p){
-        std::cout << " ";
-    }
-    std::cout << "] " << 0 << "% Building events file '" << curr_fname << "'" << "\r";
-    std::cout.flush();
+    set_option(indicators::option::PrefixText(filename + ": Complete "));
+    set_option(indicators::option::ForegroundColor{indicators::Color::green});
+    set_progress(100);
+    mark_as_completed();
 }
 
-void ProgressUI::UpdateEventBuildingProgress(const size_t &curr_pos)
+SpinnerBar::SpinnerBar(const std::string &fname)
+    : indicators::ProgressSpinner{indicators::option::ForegroundColor{indicators::Color::yellow},
+                                  indicators::option::ShowPercentage{false},
+                                  indicators::option::FontStyles{std::vector<indicators::FontStyle>{indicators::FontStyle::bold}}}
+    , filename( StripSlash(fname) )
 {
-    if ( curr_pos/double(length) - shown*0.02 > 0 ){
-        ++shown;
-        std::cout << "                                                                                            " << "\r";
-        std::cout.flush();
-        std::cout << "[";
-        int pos = int( BARWIDTH * curr_pos / double(length) );
-        for (int p = 0 ; p < BARWIDTH ; ++p){
-            if ( p < pos ) std::cout << "=";
-            else if ( p== pos ) std::cout << ">";
-            else std::cout << " ";
-        }
-        std::cout << "] " << int(100 * (curr_pos / double(length))) << "% Building events, file '" << curr_fname << "'\r";
-        std::cout.flush();
-    }
+    set_option(indicators::option::PostfixText{"Writing to file '" + filename + "'"});
+    runner = std::thread(&SpinnerBar::run, this);
 }
 
-void ProgressUI::StartFillingHistograms(const size_t &size)
+void SpinnerBar::run()
 {
-    length = size;
-    shown = 0;
-    std::cout << "                                                                                            " << "\r";
-    std::cout.flush();
-    std::cout << "[";
-    for (int p = 0 ; p < BARWIDTH ; ++p){
-        std::cout << " ";
+    while ( !done ){
+        tick();
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
-    std::cout << "] " << 0 << "% Filling histograms, file '" << curr_fname << "'" << "\r";
-    std::cout.flush();
+    set_option(indicators::option::ShowSpinner{false});
+    set_option(indicators::option::ForegroundColor{indicators::Color::green});
+    set_option(indicators::option::PrefixText{"✔"});
+    set_option(indicators::option::PostfixText{"Writing to file '" + filename + "'"});
+    mark_as_completed();
 }
 
-void ProgressUI::UpdateHistFillProgress(const size_t &curr_pos)
+void SpinnerBar::Finish()
 {
-    if ( curr_pos/double(length) - shown*0.02 > 0 ){
-        ++shown;
-        std::cout << "                                                                                            " << "\r";
-        std::cout.flush();
-        std::cout << "[";
-        int pos = int( BARWIDTH * curr_pos / double(length) );
-        for (int p = 0 ; p < BARWIDTH ; ++p){
-            if ( p < pos ) std::cout << "=";
-            else if ( p== pos ) std::cout << ">";
-            else std::cout << " ";
-        }
-        std::cout << "] " << int(100 * (curr_pos / double(length))) << "% Filling histograms, file '" << curr_fname << "'\r";
-        std::cout.flush();
+    done = true;
+    if ( runner.joinable() ){
+        runner.join();
     }
 }
 
-void ProgressUI::StartFillingTree(const size_t &size)
+ProgressUI::ProgressUI()
 {
-    length = size;
-    shown = 0;
-    std::cout << "                                                                                            " << "\r";
-    std::cout.flush();
-    std::cout << "[";
-    for (int p = 0 ; p < BARWIDTH ; ++p){
-        std::cout << " ";
-    }
-    std::cout << "] " << 0 << "% Filling trees, file '" << curr_fname << "'" << "\r";
-    std::cout.flush();
+    indicators::show_console_cursor(false);
 }
 
-void ProgressUI::UpdateTreeFillProgress(const size_t &curr_pos)
+ProgressUI::~ProgressUI()
 {
-    if (curr_pos / double(length) - shown * 0.02 > 0) {
-        ++shown;
-        std::cout << "                                                                                            " << "\r";
-        std::cout.flush();
-        std::cout << "[";
-        int pos = int(BARWIDTH * curr_pos / double(length));
-        for (int p = 0; p < BARWIDTH; ++p) {
-            if (p < pos) std::cout << "=";
-            else if (p == pos) std::cout << ">";
-            else std::cout << " ";
-        }
-        std::cout << "] " << int(100 * (curr_pos / double(length))) << "% Filling trees, file '" << curr_fname << "'\r";
-        std::cout.flush();
-    }
-}
-
-void ProgressUI::Finish()
-{
-    std::cout << "[";
-    for (int p = 0 ; p < BARWIDTH ; ++p){
-        std::cout << "=";
-    }
-    std::cout << "] " << "100% Done processing file '" << curr_fname << std::endl;
+    indicators::show_console_cursor(true);
 }

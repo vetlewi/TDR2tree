@@ -7,6 +7,7 @@ project(TDR2tree VERSION 0.9.0 LANGUAGES C CXX)
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 include(cmake/CPM.cmake)
 
+find_package(Threads REQUIRED)
 find_package(ROOT REQUIRED COMPONENTS RIO Tree Hist)
 
 CPMAddPackage(
@@ -27,18 +28,43 @@ CPMAddPackage(
         VERSION 1.0.3
 )
 
+CPMAddPackage(
+        NAME indicators
+        GITHUB_REPOSITORY p-ranav/indicators
+        VERSION 2.0
+        OPTIONS "INDICATORS_BUILD_TESTS OFF" "INDICATORS_SAMPLES OFF" "INDICATORS_DEMO OFF"
+)
+
+CPMAddPackage(
+        NAME fmt
+        GITHUB_REPOSITORY fmtlib/fmt
+        GIT_TAG 7.1.3
+)
+
+CPMAddPackage(
+        NAME sanitizers-cmake
+        GITHUB_REPOSITORY arsenm/sanitizers-cmake
+        GIT_TAG 99e159ec9bc8dd362b08d18436bd40ff0648417b
+        DOWNLOAD_ONLY YES
+)
+
+if ( sanitizers-cmake_ADDED )
+    set(CMAKE_MODULE_PATH "${sanitizers-cmake_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+    find_package(Sanitizers)
+endif()
+
+
+
 add_library(TDR2treeLib
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/Event.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/Histogram1D.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/Histogram2D.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/Histograms.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/MamaWriter.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/RootWriter.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/TreeEvent.cpp
 
-        ${CMAKE_CURRENT_SOURCE_DIR}/source/FileReader/BasicFileReader.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/source/FileReader/FileReader.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/FileReader/MemoryMap.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/source/FileReader/MTFileBufferFetcher.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/source/FileReader/STFileBufferFetcher.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/FileReader/TDRChannel.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/FileReader/TDREntry.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/FileReader/TDRParser.cpp
@@ -56,6 +82,7 @@ add_library(TDR2treeLib
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Tasks/Buffer.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Tasks/Converter.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Tasks/Reader.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/Tasks/RootSort.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Tasks/Sort.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Tasks/Splitter.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Tasks/Trigger.cpp
@@ -72,13 +99,23 @@ target_include_directories(TDR2treeLib PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include/Tools
 )
 
-target_link_libraries(TDR2treeLib PUBLIC ROOT::RIO ROOT::Hist ROOT::Tree readerwriterqueue concurrentqueue)
+target_link_libraries(TDR2treeLib
+    PUBLIC
+        Threads::Threads
+        ROOT::RIO
+        ROOT::Hist
+        ROOT::Tree
+        readerwriterqueue
+        concurrentqueue
+        structopt::structopt
+        indicators::indicators
+        fmt::fmt)
+
 target_compile_features(TDR2treeLib PUBLIC cxx_std_17)
 
 add_executable(TDR2tree app/main.cpp)
 add_executable(TDR2treeMT app/mt_main.cpp)
 add_executable(TDR2treeST app/st_main.cpp)
 
-target_link_libraries(TDR2tree TDR2treeLib structopt::structopt)
+target_link_libraries(TDR2tree TDR2treeLib)
 target_link_libraries(TDR2treeMT TDR2treeLib readerwriterqueue concurrentqueue)
-target_link_libraries(TDR2treeST TDR2treeLib readerwriterqueue)

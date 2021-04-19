@@ -79,8 +79,8 @@ namespace Task {
         HistManager hm;
         Histogram2Dp addback_hist;
     public:
-        Sort(MCWordQueue_t &input, const bool &addback);
-
+        Sort(MCWordQueue_t &input, const bool &addback = true);
+        Histograms &GetHistograms(){ return hm.GetHistograms(); }
         void Run() override;
 
     };

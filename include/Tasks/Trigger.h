@@ -20,7 +20,7 @@ namespace Task {
         const DetectorType trigger;
 
     public:
-        Trigger(MCWordQueue_t &input, const double &time, const DetectorType &trigger = DetectorType::eDet, const size_t &cap = 65536);
+        Trigger(MCWordQueue_t &input, const double &time = 1500., const DetectorType &trigger = DetectorType::eDet, const size_t &cap = 65536);
         MCWordQueue_t &GetQueue(){ return output_queue; }
 
         void Run() override;

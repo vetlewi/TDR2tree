@@ -23,54 +23,58 @@
 
 #include "RootFileManager.h"
 
-#include "ProgressUI.h"
 
-extern ProgressUI progress;
+//extern ProgressUI progress;
 
 #include <vector>
 
 #include <TTree.h>
+
+namespace ROOT {
 
 /*!
  * TreeManager class
  * \brief The tree manager class is the interface between a built event and the ROOT tree.
  * \tparam T is an event type that implements the branches of the tree.
  */
-template<class T>
-class TreeManager {
-
-private:
-
-    TTree *tree;    //!< The tree object.
-    T entry_obj;    //!< Private event object.
-
-public:
-
-    //! Constructor from RootTreeManager.
-    TreeManager(RootFileManager *FileManager, const char *name, const char *title)
-        : tree( FileManager->CreateTree(name, title) )
-        , entry_obj( tree ){}
-
-    //! Add entry.
-    template<class V>
-    inline void AddEntry(const V &entry)
+    template<class T>
+    class TreeManager
     {
-        entry_obj = entry;
-        entry_obj.validate(); // Method that ensures that addresses of the branches are correct.
-        tree->Fill();
-    }
 
-    //! Add entries.
-    template<class Container>
-    void AddEntries(const Container &entries)
-    {
-        progress.StartFillingTree(entries.size());
-        for ( auto &entry : entries ){
-            AddEntry(entry);
+    private:
+
+        TTree *tree;    //!< The tree object.
+        T entry_obj;    //!< Private event object.
+
+    public:
+
+        //! Constructor from RootTreeManager.
+        TreeManager(RootFileManager *FileManager, const char *name, const char *title)
+                : tree(FileManager->CreateTree(name, title))
+                , entry_obj(tree) {}
+
+        //! Add entry.
+        template<class V>
+        inline void AddEntry(V &entry)
+        {
+            entry_obj = entry;
+            entry_obj.validate(); // Method that ensures that addresses of the branches are correct.
+            tree->Fill();
         }
-    }
 
-};
+        //! Add entries.
+        template<class Container>
+        void AddEntries(const Container &entries)
+        {
+            //progress.StartFillingTree(entries.size());
+            for (auto &entry : entries) {
+                AddEntry(entry);
+            }
+        }
+
+    };
+
+}
 
 
 #endif // TREEMANAGER_H

@@ -70,8 +70,8 @@ void Trigger::Run()
                 auto evt_end = std::find_if_not(trigger_point, input.end(), [&triggerT, this](const word_t &word){
                     return std::abs(time_val_t({word.timestamp, word.cfdcorr}) - triggerT) < this->coincidence_time;
                 });
-
-                output_queue.enqueue({evt_begin, evt_end});
+                while ( !output_queue.try_enqueue({evt_begin, evt_end}) ) // Waiting and trying to enqueue...
+                    std::this_thread::yield();
                 trigger_point = std::find_if(trigger_point+1, input.end(), [&triggerT, this](const word_t &word){
                     return (GetDetectorPtr(word.address)->type == this->trigger) &&
                            std::abs(time_val_t({word.timestamp, word.cfdcorr}) - triggerT) > this->coincidence_time;

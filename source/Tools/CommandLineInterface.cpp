@@ -1,482 +1,103 @@
 #include "CommandLineInterface.h"
 
-using namespace std;
+#include "Calibration.h"
 
-CommandLineInterface::CommandLineInterface()
+#include <structopt/app.hpp>
+#include <structopt/third_party/magic_enum/magic_enum.hpp>
+
+using namespace CLI;
+
+STRUCTOPT(Options, input, output, CalibrationFile, coincidenceTime, tree, sortType, Trigger, addback, VetoAction);
+
+size_t extract_file_no(const std::string &str)
 {
-  fMaximumFlagLength = 0;
-  fFlags.clear();
-  fValues.clear();
-  fMaximumTypeLength = 0;
-  fTypes.clear();
-  fMaximumCommentLength = 0;
-  fComments.clear();
+    auto fno_start = str.find_last_of('_');
+    if ( fno_start == std::string::npos ){
+        throw std::runtime_error("Could not find file number");
+    } else {
+        fno_start += 1;
+    }
+    return std::stoi(std::string(str.begin()+fno_start, str.end()));
 }
 
-bool CommandLineInterface::CheckFlags(int argc, char* argv[], const bool& Debug)
+size_t get_file_no(const std::string &str)
 {
-  size_t found=0;
-  if(argc == 1)
-    {
-      for(size_t i = 0; i < fFlags.size(); i++)
-	{
-	  if(fTypes[i].empty())
-	    cout<<fComments[i]<<endl<<endl;
-	}
-      cout<<"use "<<argv[0]<<" with following flags:"<<endl;
-      for(size_t i = 0; i < fFlags.size(); i++)
-	{
-	  if(fTypes[i] == "bool")
-	    cout<<"        ["<<setw(fMaximumFlagLength+fMaximumTypeLength)<<left<<fFlags[i]<<"   : "<<fComments[i]<<"]"<<endl;
-	  else if(!fTypes[i].empty())
-	    cout<<"        ["<<setw(fMaximumFlagLength)<<left<<fFlags[i]<<" <"<<setw(fMaximumTypeLength)<<left<<fTypes[i]<<">: "<<fComments[i]<<"]"<<endl;
-	}
+    auto fname_start = str.find_last_of('/');
+    if ( fname_start == std::string::npos ){
+        fname_start = 0;
+    } else {
+        fname_start += 1;
+    }
+    try {
+        return extract_file_no(std::string(str.begin() + fname_start, str.end()));
+    } catch ( std::exception &ex ){
+        throw std::runtime_error("Error parsing file path '" + str + "', got error: " + ex.what());
+    }
+}
 
-      return true;
+bool compare_run_files(const std::string &lhs, const std::string &rhs)
+{
+    return get_file_no(lhs) < get_file_no(rhs);
+}
+
+void sort_file_names(std::vector<std::string> &files){
+    std::sort(files.begin(), files.end(), compare_run_files);
+}
+
+std::ostream &operator<<(std::ostream &os, const Options &opt)
+{
+    os << "Sorting with following options:\n";
+    os << "\tInput file(s):\n";
+    for ( auto &file : opt.input.value() ){
+        os << "\t\t" << file << "\n";
+    }
+    os << "\tOutput file: " << opt.output.value() << "\n";
+    os << "\tCalibration file: " << opt.CalibrationFile.value_or("") << "\n";
+    os << "\tCoincidence time: " << opt.coincidenceTime.value() << " ns\n";
+
+    os << "\tBuild tree: " << std::boolalpha << opt.tree.value() << "\n";
+    os << "\tSort type: " << magic_enum::enum_name(opt.sortType.value()) << "\n";
+    os << "\tTrigger: " << magic_enum::enum_name(opt.Trigger.value()) << "\n";
+    os << "\tAddback: " << std::boolalpha << opt.addback.value() << "\n";
+    os << "\tBGO veto action: " << magic_enum::enum_name(opt.VetoAction.value()) << "\n";
+    return os;
+}
+
+Options CLI::ParseCLA(const int &argc, char *argv[])
+{
+    Options options;
+    try {
+        structopt::app app("TDR2tree", "0.9.0");
+        structopt::details::visitor vis("TDR2tree", "0.9.0");
+        visit_struct::for_each(options, vis);
+        options = app.parse<Options>(argc, argv);
+        if ( !options.input.has_value() ){
+            throw structopt::exception("Input(s) missing", vis);
+        }
+        if ( !options.output.has_value() ){
+            throw structopt::exception("Output missing", vis);
+        }
+    } catch ( const structopt::exception &e ){
+        std::cerr << e.what() << "\n";
+        std::cout << e.help();
+        throw e;
     }
 
-  for(int i = 1; i < argc; i++)
-    {
-      for(size_t j = 0; j < fFlags.size(); j++)
-	{
-      found = j;
-	  if(argv[i] == fFlags[j])
-	    {
-	      //bool doesn't need any value to be read
-	      if(fTypes[j] == "bool")
-		{
-          *(static_cast<bool*>(fValues[j])) = true;
-		  break;//found the right flag for this argument so the flag loop can be stopped
-		}
-	      //if not bool check whether there are more arguments (with values) coming
-	      else if(i+1 >= argc)
-		{
-		  cerr<<"Error in CheckFlags, flag "<<fFlags[j]<<" needs additional arguments"<<endl;
-		  return false;
-		}
-	      else if(fTypes[j] == "char*")
-		{
-          *(static_cast<char**>(fValues[j])) = argv[i+1];
-		  i++;
-		  break;//found the right flag for this argument so the flag loop can be stopped
-		}
-	      else if(fTypes[j] == "string")
-		{
-          *(static_cast<string*>(fValues[j])) = argv[i+1];
-		  i++;
-		  break;//found the right flag for this argument so the flag loop can be stopped
-		}
-	      else if(fTypes[j] == "int")
-		{
-          *(static_cast<int*>(fValues[j])) = atoi(argv[i+1]);
-		  i++;
-		  break;//found the right flag for this argument so the flag loop can be stopped
-		}
-	      else if(fTypes[j] == "size_t")
-		{
-          *(static_cast<size_t*>(fValues[j])) = size_t(atoll(argv[i+1]));
-		  i++;
-		  break;//found the right flag for this argument so the flag loop can be stopped
-		}
-	      else if(fTypes[j] == "long long")
-		{
-          *(static_cast<long long*>(fValues[j])) = atoll(argv[i+1]);
-		  i++;
-		  break;//found the right flag for this argument so the flag loop can be stopped
-		}
-	      else if(fTypes[j] == "double")
-		{
-          *(static_cast<double*>(fValues[j])) = atof(argv[i+1])*fFactors[j];
-		  i++;
-		  break;//found the right flag for this argument so the flag loop can be stopped
-		}
-	      else if(fTypes[j] == "vector<char*>")
-		{
-		  i++;
-		  //as long as there are arguments left and no new flag is found (flags start with -) => read another value
-		  while(i < argc)
-		    {
-		      if(argv[i][0] != '-')
-			{
-              (*(static_cast<vector<char*>*>(fValues[j]))).push_back(argv[i]);
-			  i++;
-			}
-		      else
-			{
-			  break;
-			}
-		    }
-
-		  i--;
-		  break;//found the right flag for this argument so the flag loop can be stopped
-		}
-	      else if(fTypes[j] == "vector<string>")
-		{
-		  i++;
-		  //as long as there are arguments left and no new flag is found (flags start with -) => read another value
-		  while(i < argc)
-		    {
-		      if(argv[i][0] != '-')
-			{
-              (*(static_cast<vector<string>*>(fValues[j]))).push_back(argv[i]);
-			  i++;
-			}
-		      else
-			{
-			  break;
-			}
-		    }
-
-		  i--;
-		  break;//found the right flag for this argument so the flag loop can be stopped
-		}
-	      else if(fTypes[j] == "vector<int>")
-		{
-		  i++;
-		  //as long as there are arguments left and no new flag is found (flags start with -) => read another value
-		  while(i < argc)
-		    {
-		      if(argv[i][0] != '-')
-			{
-              (*(static_cast<vector<int>*>(fValues[j]))).push_back(atoi(argv[i]));
-			  i++;
-			}
-		      else
-			{
-			  break;
-			}
-		    }
-
-		  i--;
-		  break;//found the right flag for this argument so the flag loop can be stopped
-		}
-	      else if(fTypes[j] == "vector<long long>")
-		{
-		  i++;
-		  //as long as there are arguments left and no new flag is found (flags start with -) => read another value
-		  while(i < argc)
-		    {
-		      if(argv[i][0] != '-')
-			{
-              (*(static_cast<vector<long long>*>(fValues[j]))).push_back(atoll(argv[i]));
-			  i++;
-			}
-		      else
-			{
-			  break;
-			}
-		    }
-
-		  i--;
-		  break;//found the right flag for this argument so the flag loop can be stopped
-		}
-	      else if(fTypes[j] == "vector<double>")
-		{
-		  i++;
-		  //as long as there are arguments left and no new flag is found (flags start with -) => read another value
-		  while(i < argc)
-		    {
-		      if(argv[i][0] != '-')
-			{
-              (*(static_cast<vector<double>*>(fValues[j]))).push_back(atof(argv[i])*fFactors[j]);
-			  i++;
-			}
-		      else
-			{
-			  break;
-			}
-		    }
-
-		  i--;
-		  break;//found the right flag for this argument so the flag loop can be stopped
-		}
-	    }//if(argv[i] == flags[j])
-	}//for(j = 0; j < flags.size(); j++)
-
-      if(found == fFlags.size())//this means no matching flag was found
-	{
-	  cerr<<"flag "<<argv[i]<<" unknown"<<endl;
-	}
-      else if(Debug)
-	{
-	  cout<<"found flag "<<i<<" = "<<argv[i]<<endl;
-	}
-    }//for(i = 1; i < argc; i++)
-
-  if(Debug)
-    {
-      cout<<*this<<endl;
+    try {
+        sort_file_names(options.input.value());
+    } catch ( const std::exception &e ){
+        std::cerr << e.what() << std::endl;
+        throw e;
     }
 
-  return true;
-}
+    std::cout << options << std::endl;
 
-ostream& operator <<(ostream &os,const CommandLineInterface &obj)
-{
-  os<<"command line flags are:"<<endl;
-  for(size_t i = 0; i < obj.fValues.size(); i++)
-    {
-      if(obj.fTypes[i] == "bool")
-	{
-      cout<<obj.fFlags[i]<<": "<<*(static_cast<bool*>(obj.fValues[i]))<<endl;
-	}
-      else if(obj.fTypes[i] == "char*")
-	{
-      cout<<obj.fFlags[i]<<": "<<*(static_cast<char**>(obj.fValues[i]))<<endl;
-	}
-      else if(obj.fTypes[i] == "string")
-	{
-      cout<<obj.fFlags[i]<<": "<<*(static_cast<string*>(obj.fValues[i]))<<endl;
-	}
-      else if(obj.fTypes[i] == "int")
-	{
-      cout<<obj.fFlags[i]<<": "<<*(static_cast<int*>(obj.fValues[i]))<<endl;
-	}
-      else if(obj.fTypes[i] == "long long")
-	{
-      cout<<obj.fFlags[i]<<": "<<*(static_cast<long*>(obj.fValues[i]))<<endl;
-	}
-      else if(obj.fTypes[i] == "double")
-	{
-      cout<<obj.fFlags[i]<<": "<<*(static_cast<double*>(obj.fValues[i]))<<endl;
-	}
-      else if(obj.fTypes[i] == "vector<char*>")
-	{
-	  cout<<obj.fFlags[i]<<": ";
-      for (size_t j = 0 ; j < static_cast<vector<char*>*>(obj.fValues[i])->size() ; ++j)
-        {
-          cout<< (*static_cast<vector<char*>*>(obj.fValues[i]))[j] << " ";
+    if ( options.CalibrationFile.has_value() ){
+        if ( !SetCalibration(options.CalibrationFile.value().c_str()) ){
+            std::cerr << "Error reading calibration file." << std::endl;
+            throw std::runtime_error("Error reading calibration file");
         }
-	  cout<<endl;
-	}
-      else if(obj.fTypes[i] == "vector<string>")
-	{
-	  cout<<obj.fFlags[i]<<": ";
-      for (size_t j = 0 ; j < static_cast<vector<string>*>(obj.fValues[i])->size() ; ++j)
-        {
-          cout<< (*static_cast<vector<string>*>(obj.fValues[i]))[j] << " ";
-        }
-	  cout<<endl;
-	}
-      else if(obj.fTypes[i] == "vector<int>")
-	{
-	  cout<<obj.fFlags[i]<<": ";
-      for (size_t j = 0 ; j < static_cast<vector<int>*>(obj.fValues[i])->size() ; ++j)
-        {
-          cout<< (*static_cast<vector<int>*>(obj.fValues[i]))[j] << " ";
-        }
-	  cout<<endl;
-	}
-      else if(obj.fTypes[i] == "vector<long long>")
-	{
-	  cout<<obj.fFlags[i]<<": ";
-      for (size_t j = 0 ; j < static_cast<vector<long long>*>(obj.fValues[i])->size() ; ++j)
-        {
-          cout<< (*static_cast<vector<long long>*>(obj.fValues[i]))[j] << " ";
-        }
-	  cout<<endl;
-	}
-      else if(obj.fTypes[i] == "vector<double>")
-	{
-	  cout<<obj.fFlags[i]<<": ";
-      for (size_t j = 0 ; j < static_cast<vector<double>*>(obj.fValues[i])->size() ; ++j)
-	    {
-          cout<< (*static_cast<vector<double>*>(obj.fValues[i]))[j] << " ";
-	    }
-	  cout<<endl;
-	}
     }
 
-  return os;
-}
-
-void CommandLineInterface::Add(const char* comment)
-{
-  fFlags.push_back(string());
-  fValues.push_back(static_cast<void*>(nullptr));
-  fTypes.push_back(string());
-  if(strlen(comment) > fMaximumCommentLength)
-    fMaximumCommentLength = strlen(comment);
-  fComments.push_back(string(comment));
-  fFactors.push_back(1.);
-}
-
-void CommandLineInterface::Add(const char* flag, const char* comment, bool* value)
-{
-  if(strlen(flag) > fMaximumFlagLength)
-    fMaximumFlagLength = strlen(flag);
-  fFlags.push_back(string(flag));
-  fValues.push_back(static_cast<void*>(value));
-  if(strlen("bool") > fMaximumTypeLength)
-    fMaximumTypeLength = strlen("bool");
-  fTypes.push_back(string("bool"));
-  if(strlen(comment) > fMaximumCommentLength)
-    fMaximumCommentLength = strlen(comment);
-  fComments.push_back(string(comment));
-  fFactors.push_back(1.);
-}
-
-void CommandLineInterface::Add(const char* flag, const char* comment, char** value)
-{
-  if(strlen(flag) > fMaximumFlagLength)
-    fMaximumFlagLength = strlen(flag);
-  fFlags.push_back(string(flag));
-  fValues.push_back(static_cast<void*>(value));
-  if(strlen("char*") > fMaximumTypeLength)
-    fMaximumTypeLength = strlen("char*");
-  fTypes.push_back(string("char*"));
-  if(strlen(comment) > fMaximumCommentLength)
-    fMaximumCommentLength = strlen(comment);
-  fComments.push_back(string(comment));
-  fFactors.push_back(1.);
-}
-
-void CommandLineInterface::Add(const char* flag, const char* comment, string* value)
-{
-  if(strlen(flag) > fMaximumFlagLength)
-    fMaximumFlagLength = strlen(flag);
-  fFlags.push_back(string(flag));
-  fValues.push_back(static_cast<void*>(value));
-  if(strlen("string") > fMaximumTypeLength)
-    fMaximumTypeLength = strlen("string");
-  fTypes.push_back(string("string"));
-  if(strlen(comment) > fMaximumCommentLength)
-    fMaximumCommentLength = strlen(comment);
-  fComments.push_back(string(comment));
-  fFactors.push_back(1.);
-}
-
-void CommandLineInterface::Add(const char* flag, const char* comment, int* value)
-{
-  if(strlen(flag) > fMaximumFlagLength)
-    fMaximumFlagLength = strlen(flag);
-  fFlags.push_back(string(flag));
-  fValues.push_back(static_cast<void*>(value));
-  if(strlen("int") > fMaximumTypeLength)
-    fMaximumTypeLength = strlen("int");
-  fTypes.push_back(string("int"));
-  if(strlen(comment) > fMaximumCommentLength)
-    fMaximumCommentLength = strlen(comment);
-  fComments.push_back(string(comment));
-  fFactors.push_back(1.);
-}
-
-void CommandLineInterface::Add(const char* flag, const char* comment, size_t* value)
-{
-  if(strlen(flag) > fMaximumFlagLength)
-    fMaximumFlagLength = strlen(flag);
-  fFlags.push_back(string(flag));
-  fValues.push_back(static_cast<void*>(value));
-  if(strlen("int") > fMaximumTypeLength)
-    fMaximumTypeLength = strlen("size_t");
-  fTypes.push_back(string("size_t"));
-  if(strlen(comment) > fMaximumCommentLength)
-    fMaximumCommentLength = strlen(comment);
-  fComments.push_back(string(comment));
-  fFactors.push_back(1.);
-}
-
-void CommandLineInterface::Add(const char* flag, const char* comment, long long* value)
-{
-  if(strlen(flag) > fMaximumFlagLength)
-    fMaximumFlagLength = strlen(flag);
-  fFlags.push_back(string(flag));
-  fValues.push_back(static_cast<void*>(value));
-  if(strlen("long long") > fMaximumTypeLength)
-    fMaximumTypeLength = strlen("long long");
-  fTypes.push_back(string("long long"));
-  if(strlen(comment) > fMaximumCommentLength)
-    fMaximumCommentLength = strlen(comment);
-  fComments.push_back(string(comment));
-  fFactors.push_back(1.);
-}
-
-void CommandLineInterface::Add(const char* flag, const char* comment, double* value, double factor)
-{
-  if(strlen(flag) > fMaximumFlagLength)
-    fMaximumFlagLength = strlen(flag);
-  fFlags.push_back(string(flag));
-  fValues.push_back(static_cast<void*>(value));
-  if(strlen("double") > fMaximumTypeLength)
-    fMaximumTypeLength = strlen("double");
-  fTypes.push_back(string("double"));
-  if(strlen(comment) > fMaximumCommentLength)
-    fMaximumCommentLength = strlen(comment);
-  fComments.push_back(string(comment));
-  fFactors.push_back(factor);
-}
-
-void CommandLineInterface::Add(const char* flag, const char* comment, vector<char*>* value)
-{
-  if(strlen(flag) > fMaximumFlagLength)
-    fMaximumFlagLength = strlen(flag);
-  fFlags.push_back(string(flag));
-  fValues.push_back(static_cast<void*>(value));
-  if(strlen("vector<char*>") > fMaximumTypeLength)
-    fMaximumTypeLength = strlen("vector<char*>");
-  fTypes.push_back(string("vector<char*>"));
-  if(strlen(comment) > fMaximumCommentLength)
-    fMaximumCommentLength = strlen(comment);
-  fComments.push_back(string(comment));
-  fFactors.push_back(1.);
-}
-
-void CommandLineInterface::Add(const char* flag, const char* comment, vector<string>* value)
-{
-  if(strlen(flag) > fMaximumFlagLength)
-    fMaximumFlagLength = strlen(flag);
-  fFlags.push_back(string(flag));
-  fValues.push_back(static_cast<void*>(value));
-  if(strlen("vector<string>") > fMaximumTypeLength)
-    fMaximumTypeLength = strlen("vector<string>");
-  fTypes.push_back(string("vector<string>"));
-  if(strlen(comment) > fMaximumCommentLength)
-    fMaximumCommentLength = strlen(comment);
-  fComments.push_back(string(comment));
-  fFactors.push_back(1.);
-}
-
-void CommandLineInterface::Add(const char* flag, const char* comment, vector<int>* value)
-{
-  if(strlen(flag) > fMaximumFlagLength)
-    fMaximumFlagLength = strlen(flag);
-  fFlags.push_back(string(flag));
-  fValues.push_back(static_cast<void*>(value));
-  if(strlen("vector<int>") > fMaximumTypeLength)
-    fMaximumTypeLength = strlen("vector<int>");
-  fTypes.push_back(string("vector<int>"));
-  if(strlen(comment) > fMaximumCommentLength)
-    fMaximumCommentLength = strlen(comment);
-  fComments.push_back(string(comment));
-  fFactors.push_back(1.);
-}
-
-void CommandLineInterface::Add(const char* flag, const char* comment, vector<long long>* value)
-{
-  if(strlen(flag) > fMaximumFlagLength)
-    fMaximumFlagLength = strlen(flag);
-  fFlags.push_back(string(flag));
-  fValues.push_back(static_cast<void*>(value));
-  if(strlen("vector<long long>") > fMaximumTypeLength)
-    fMaximumTypeLength = strlen("vector<long long>");
-  fTypes.push_back(string("vector<long long>"));
-  if(strlen(comment) > fMaximumCommentLength)
-    fMaximumCommentLength = strlen(comment);
-  fComments.push_back(string(comment));
-  fFactors.push_back(1.);
-}
-
-void CommandLineInterface::Add(const char* flag, const char* comment, vector<double>* value, double factor)
-{
-  if(strlen(flag) > fMaximumFlagLength)
-    fMaximumFlagLength = strlen(flag);
-  fFlags.push_back(string(flag));
-  fValues.push_back(static_cast<void*>(value));
-  if(strlen("vector<double>") > fMaximumTypeLength)
-    fMaximumTypeLength = strlen("vector<double>");
-  fTypes.push_back(string("vector<double>"));
-  if(strlen(comment) > fMaximumCommentLength)
-    fMaximumCommentLength = strlen(comment);
-  fComments.push_back(string(comment));
-  fFactors.push_back(factor);
+    return options;
 }

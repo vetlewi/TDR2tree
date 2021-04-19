@@ -72,17 +72,17 @@ public:
 
     //! Build and fill events.
     template<class It, class TE>
-    static void BuildPGAndFill(It start, It stop, HistManager *hm, TreeManager<TE> *tm, Histogram2Dp ab_hist = nullptr, const DetectorType &trigger = eDet, double coins_time = 3000., ProgressUI *prog = nullptr);
+    static void BuildPGAndFill(It start, It stop, ROOT::HistManager *hm, ROOT::TreeManager<TE> *tm, Histogram2Dp ab_hist = nullptr, const DetectorType &trigger = eDet, double coins_time = 3000., ProgressUI *prog = nullptr);
 
     template<class It, class TE>
-    static void BuildAndFill(It start, It stop, HistManager *hm, TreeManager<TE> *tm, Histogram2Dp ab_hist = nullptr, double coins_time = 3000., ProgressUI *prog = nullptr);
+    static void BuildAndFill(It start, It stop, ROOT::HistManager *hm, ROOT::TreeManager<TE> *tm, Histogram2Dp ab_hist = nullptr, double coins_time = 3000., ProgressUI *prog = nullptr);
 
     inline Subevent &GetDetector(const DetectorType &type){ return type_bounds.at(type); }
 
 };
 
 template<class It, class TE>
-void Event::BuildPGAndFill(It _start, It _stop, HistManager *hm, TreeManager<TE> *tm, Histogram2Dp ab_hist,
+void Event::BuildPGAndFill(It _start, It _stop, ROOT::HistManager *hm, ROOT::TreeManager<TE> *tm, Histogram2Dp ab_hist,
                            const DetectorType &trigger, double coins_time, ProgressUI *prog)
 {
 
@@ -91,8 +91,8 @@ void Event::BuildPGAndFill(It _start, It _stop, HistManager *hm, TreeManager<TE>
     auto it = _start;
 
     size_t count = 0;
-    if ( prog )
-        progress.StartFillingTree(_stop-_start);
+    //if ( prog )
+    //    progress.StartFillingTree(_stop-_start);
 
     while ( it < end ){
 
@@ -123,21 +123,21 @@ void Event::BuildPGAndFill(It _start, It _stop, HistManager *hm, TreeManager<TE>
 
         it = stop;
 
-        if ( prog )
-            prog->UpdateTreeFillProgress(count++);
+        //if ( prog )
+        //    prog->UpdateTreeFillProgress(count++);
     }
 
 }
 
 template<class It, class TE>
-void Event::BuildAndFill(It _start, It _stop, HistManager *hm, TreeManager<TE> *tm, Histogram2Dp ab_hist, double coins_time, ProgressUI *prog)
+void Event::BuildAndFill(It _start, It _stop, ROOT::HistManager *hm, ROOT::TreeManager<TE> *tm, Histogram2Dp ab_hist, double coins_time, ProgressUI *prog)
 {
     auto begin = _start;
     auto it = _start;
     auto end = _stop;
 
-    if ( prog )
-        progress.StartFillingTree(_stop-_start);
+    //if ( prog )
+    //    progress.StartFillingTree(_stop-_start);
 
     while ( it < end - 1 ){
         if ( abs( double((it+1)->timestamp - it->timestamp) + ((it+1)->cfdcorr - it->cfdcorr) ) > coins_time ){
@@ -149,8 +149,8 @@ void Event::BuildAndFill(It _start, It _stop, HistManager *hm, TreeManager<TE> *
         }
         ++it;
 
-        if ( prog )
-            prog->UpdateTreeFillProgress(it - _start);
+        //if ( prog )
+        //    prog->UpdateTreeFillProgress(it - _start);
     }
 }
 

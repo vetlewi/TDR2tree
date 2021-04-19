@@ -80,6 +80,8 @@ void Histogram2D::Add(const Histogram2Dp &other, data_t scale)
         for(Axis::index_t x=0; x<xaxis.GetBinCountAll(); ++x )
             rows[y][x] += scale*other->rows[y][x];
 #endif
+  // Update total count
+  entries += scale * other->entries;
 }
 
 // ########################################################################

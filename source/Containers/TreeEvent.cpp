@@ -7,6 +7,7 @@
 
 #include "experimentsetup.h"
 #include "BasicStruct.h"
+#include "Event.h"
 
 enum type_map : char {
     char_array_type = 'C',
@@ -47,12 +48,12 @@ TreeData::TreeData(TTree *tree, const char *name)
 void TreeData::push_back(const word_t &event)
 {
     auto *detector = GetDetectorPtr(event.address);
-    ID.push_back(( detector->type == clover ) ? detector->detectorNum*NUM_CLOVER_CRYSTALS + detector->telNum : detector->detectorNum );
-    veto.push_back(event.veto);
-    cfd_fail.push_back(event.cfdfail);
-    energy.push_back(event.energy);
-    cfd_corr.push_back(event.cfdcorr);
-    timestamp.push_back(event.timestamp);
+    ID.push_back(( detector->type == clover ) ? detector->detectorNum*NUM_CLOVER_CRYSTALS + detector->telNum : detector->detectorNum, entries );
+    veto.push_back(event.veto, entries);
+    cfd_fail.push_back(event.cfdfail, entries);
+    energy.push_back(event.energy, entries);
+    cfd_corr.push_back(event.cfdcorr, entries);
+    timestamp.push_back(event.timestamp, entries);
     ++entries;
 }
 
@@ -66,16 +67,31 @@ TreeEvent::TreeEvent(TTree *tree)
     , back(tree, "back")
     , rf(tree, "rf"){}
 
-TreeEvent &TreeEvent::operator=(const Event &event)
+TreeData &TreeEvent::GetData(const DetectorType &type)
+{
+    switch ( type ) {
+        case DetectorType::clover : return clover;
+        case labr_3x8 : return labrL;
+        case labr_2x2_ss : return labrS;
+        case labr_2x2_fs : return labrF;
+        case de_ring : return ring;
+        case de_sect : return sect;
+        case eDet : return back;
+        case rfchan : return rf;
+        default: return rf;
+    }
+}
+
+TreeEvent &TreeEvent::operator=(Event &event)
 {
     // First we will clear everything
     clear();
 
     // Then we will go type by type and add events
     for ( auto &type : {labr_3x8, labr_2x2_ss, labr_2x2_fs, de_ring, de_sect, eDet, rfchan, DetectorType::clover} ){
-
+        auto data = event.GetDetector(type);
+        GetData(type).add(data.begin(), data.end());
     }
-
     return *this;
 }
 

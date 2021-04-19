@@ -1,50 +1,45 @@
-#ifndef __COMMAND_LINE_INTERFACE
-#define __COMMAND_LINE_INTERFACE
+#ifndef COMMAND_LINE_INTERFACE_H
+#define COMMAND_LINE_INTERFACE_H
 
-#include <iostream>
-#include <iomanip>
-#include <string>
 #include <vector>
-#include <cstdlib>
-#include <cstring>
+#include <string>
+#include <optional>
 
-using namespace std;
+#include "experimentsetup.h"
 
-class CommandLineInterface
-{
-public:
-  CommandLineInterface();
-  ~CommandLineInterface(){}
+namespace CLI {
 
-  //main functions to check all flags from command line
-  bool CheckFlags(int,char*[],const bool& Debug = false);
+    enum veto_action {
+        ignore,
+        keep,
+        remove
+    };
 
-  //functions to add flags
-  void Add(const char*);
-  void Add(const char*, const char*, bool*);
-  void Add(const char*, const char*, char**);
-  void Add(const char*, const char*, string*);
-  void Add(const char*, const char*, int*);
-  void Add(const char*, const char*, size_t*);
-  void Add(const char*, const char*, long long*);
-  void Add(const char*, const char*, double*, double factor = 1.);
-  void Add(const char*, const char*, vector<char*>*);
-  void Add(const char*, const char*, vector<string>*);
-  void Add(const char*, const char*, vector<int>*);
-  void Add(const char*, const char*, vector<long long>*);
-  void Add(const char*, const char*, vector<double>*, double factor = 1.);
+    enum sort_type {
+        coincidence,
+        gap
+    };
 
-  friend ostream& operator <<(ostream &,const CommandLineInterface &);
+    struct Options
+    {
+        // Required arguments
+        std::optional<std::vector<std::string>> input;
+        std::optional<std::string> output;
 
-private:
-  size_t fMaximumFlagLength;
-  vector<string> fFlags;
-  vector<void*>  fValues;
-  size_t fMaximumTypeLength;
-  vector<string> fTypes;
-  size_t fMaximumCommentLength;
-  vector<string> fComments;
-  vector<double> fFactors;
-};
+        // Optional arguments
+        std::optional<std::string> CalibrationFile;
+        std::optional<double> coincidenceTime = 1500;
+        std::optional<bool> tree = false;
+        std::optional<sort_type> sortType = sort_type::coincidence;
+        std::optional<DetectorType> Trigger = DetectorType::eDet;
+        std::optional<bool> addback = false;
+        std::optional<veto_action> VetoAction = veto_action::ignore;
+    };
 
-#endif
+    Options ParseCLA(const int &argc, char *argv[]);
+
+}
+
+std::ostream &operator<<(std::ostream &os, const CLI::Options &opt);
+
+#endif // COMMAND_LINE_INTERFACE_H

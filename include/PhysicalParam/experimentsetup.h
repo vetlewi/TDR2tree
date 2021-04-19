@@ -23,7 +23,7 @@ extern "C" {
 
 #include <stdint.h>
 
-enum DetectorType : int {
+enum DetectorType {
     invalid = 0,        //!< Invalid address
     labr_3x8 = 1,       //!< Is a 3.5x8 inch labr detector
     labr_2x2_ss = 2,    //!< Is a 2x2 labr detector, slow signal

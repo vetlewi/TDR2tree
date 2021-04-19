@@ -6,47 +6,55 @@
 #define TDR2TREE_PROGRESSUI_H
 
 #include <string>
+#include <thread>
+#include <atomic>
+#include <indicators/progress_spinner.hpp>
+#include <indicators/block_progress_bar.hpp>
 
-#define BARWIDTH 50
+
+class ProgressBar : public indicators::BlockProgressBar
+{
+private:
+    // We keep information about the file name and the total size
+    std::string filename;
+    size_t length;
+    size_t shown;
+
+public:
+    ProgressBar(const std::string &filename, const size_t &size);
+
+    void UpdateProgress(const size_t &pos);
+
+    void FinishProgress();
+
+};
+
+class SpinnerBar : public indicators::ProgressSpinner
+{
+private:
+    std::string filename;
+    std::atomic<bool> done{false};
+    std::thread runner;
+    void run();
+public:
+    SpinnerBar(const std::string &fname);
+    void Finish();
+
+};
 
 class ProgressUI {
-
-private:
-    std::string curr_fname; //!< Name of current file being processed.
-    size_t length;
-    int shown;
 
 public:
 
     //! Default ctor.
-    ProgressUI() : curr_fname( "" ), length( 0 ), shown( 0 ) {}
+    ProgressUI();
+    ~ProgressUI();
 
     //! Give the user feedback that we are starting the readout of a new file.
-    void StartNewFile(const std::string &fname, const size_t &flength);
-
-    //! Update read progress of the file.
-    void UpdateReadProgress(const size_t &curr_pos);
-
-    //! Give the user feedback that we will start building events.
-    void StartBuildingEvents(const size_t &length);
-
-    //! Update event building progress.
-    void UpdateEventBuildingProgress(const size_t &curr_pos);
-
-    //! Give the user feedback that we are filling histograms.
-    void StartFillingHistograms(const size_t &length);
-
-    //! Update the histogram filling progress.
-    void UpdateHistFillProgress(const size_t &curr_pos);
-
-    //! Give the user feedback that we are filling ROOT tree.
-    void StartFillingTree(const size_t &length);
-
-    //! Update the tree filling status.
-    void UpdateTreeFillProgress(const size_t &curr_pos);
+    ProgressBar StartNewFile(const std::string &fname, const size_t &flength){ return ProgressBar(fname, flength); }
 
     //! Notify the user that we are done sorting the file.
-    void Finish();
+    SpinnerBar FinishSort(const std::string &fname){ return SpinnerBar(fname); }
 };
 
 

@@ -36,21 +36,21 @@
 #include "Histogram2D.h"
 
 
-HistManager::Detector_Histograms_t::Detector_Histograms_t(RootFileManager *fm, const std::string &name, const size_t &num)
+ROOT::HistManager::Detector_Histograms_t::Detector_Histograms_t(RootFileManager *fm, const std::string &name, const size_t &num)
     : time( fm->Mat(std::string("time_"+name), std::string("Time spectra "+name), 3000, -1500, 1500, "Time [ns]", num, 0, num, std::string(name+" ID").c_str()) )
     , energy( fm->Mat(std::string("energy_"+name), std::string("Energy spectra "+name), 65536, 0, 65536, "Energy [ch]", num, 0, num, std::string(name+" ID").c_str()) )
     , energy_cal( fm->Mat(std::string("energy_cal_"+name), std::string("energy spectra "+name+" (cal)"), 16384, 0, 16384, "Energy [keV]", num, 0, num, std::string(name+" ID").c_str()) )
     , mult( fm->Spec(std::string("mult_"+name), std::string("Multiplicity " + name), 128, 0, 128, "Multiplicity") )
 {}
 
-void HistManager::Detector_Histograms_t::Fill(const word_t &word)
+void ROOT::HistManager::Detector_Histograms_t::Fill(const word_t &word)
 {
     auto dno = GetID(word.address);
     energy->Fill(word.adcdata, dno);
     energy_cal->Fill(CalibrateEnergy(word), dno);
 }
 
-void HistManager::Detector_Histograms_t::Fill(const Subevent &subvec, const word_t *start)
+void ROOT::HistManager::Detector_Histograms_t::Fill(const Subevent &subvec, const word_t *start)
 {
     int dno;
     mult->Fill(subvec.size());
@@ -64,7 +64,7 @@ void HistManager::Detector_Histograms_t::Fill(const Subevent &subvec, const word
 }
 
 
-HistManager::HistManager(RootFileManager *fm)
+ROOT::HistManager::HistManager(RootFileManager *fm)
     : ring( fm, "ring", NUM_SI_RING )
     , sect( fm, "sect", NUM_SI_SECT )
     , back( fm, "back", NUM_SI_BACK )
@@ -77,7 +77,7 @@ HistManager::HistManager(RootFileManager *fm)
 {
 }
 
-void HistManager::AddEntry(Event &buffer)
+void ROOT::HistManager::AddEntry(Event &buffer)
 {
 
     // LaBr 0 is our time reference. We only use it if there is only one of that type.
@@ -116,14 +116,14 @@ void HistManager::AddEntry(Event &buffer)
     }
 }
 
-void HistManager::AddEntry(const word_t &word)
+void ROOT::HistManager::AddEntry(const word_t &word)
 {
     auto *spec = GetSpec(GetDetector(word.address).type);
     if ( spec )
         spec->Fill(word);
 }
 
-HistManager::Detector_Histograms_t *HistManager::GetSpec(const DetectorType &type)
+ROOT::HistManager::Detector_Histograms_t *ROOT::HistManager::GetSpec(const DetectorType &type)
 {
     switch (type) {
         case DetectorType::labr_3x8 : return &labrL;
