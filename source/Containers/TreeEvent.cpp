@@ -37,7 +37,7 @@ std::string CLeaf(const char *base_name, const char *identifier, const char type
 TreeData::TreeData(TTree *tree, const char *name)
     : entries( 0 )
     , entries_branch( tree->Branch(CName(name, "Mult").c_str(), &entries, std::string(CName(name, "Mult") + "/I").c_str()) )
-    , ID( tree, CName(name, "ID").c_str(),  CLeaf(name, "ID", type_map::signed_short_type).c_str() )
+    , ID( tree, CName(name, "ID").c_str(),  CLeaf(name, "ID", type_map::unsigned_short_type).c_str() )
     , veto( tree, CName(name, "Veto").c_str(), CLeaf(name, "Veto", type_map::bool_type).c_str() )
     , cfd_fail( tree, CName(name, "CFDfail").c_str(), CLeaf(name, "CFDfail", type_map::bool_type).c_str() )
     , energy( tree, CName(name, "Energy").c_str(), CLeaf(name, "Energy", type_map::double_type).c_str() )
