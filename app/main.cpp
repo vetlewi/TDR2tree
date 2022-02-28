@@ -64,11 +64,15 @@ void sort_file_names(std::vector<std::string> &files){
     std::sort(files.begin(), files.end(), compare_run_files);
 }
 
-enum veto_action {
-    nothing,
-    remove,
-    keep
-};
+namespace TDR2tree {
+
+    enum veto_action {
+        nothing,
+        remove,
+        keep
+    };
+
+}
 
 enum sort_type {
     coincidence,
@@ -89,7 +93,7 @@ struct Options
     std::optional<sort_type> sortType = sort_type::singles;
     std::optional<DetectorType> Trigger = DetectorType::eDet;
     std::optional<bool> addback = false;
-    std::optional<veto_action> VetoAction = veto_action::nothing;
+    std::optional<TDR2tree::veto_action> VetoAction = TDR2tree::veto_action::nothing;
     std::optional<bool> batch_read = false;
 };
 
@@ -123,7 +127,7 @@ inline int64_t TSFactor(const ADCSamplingFreq &freq)
         return 10;
 }
 
-std::vector<word_t> TDRtoWord(const std::vector<TDR::Entry_t> &entries, const enum veto_action &action = veto_action::remove)
+std::vector<word_t> TDRtoWord(const std::vector<TDR::Entry_t> &entries, const enum TDR2tree::veto_action &action = TDR2tree::veto_action::remove)
 {
     const DetectorInfo_t *dinfo;
     std::vector<word_t> words;
@@ -135,10 +139,10 @@ std::vector<word_t> TDRtoWord(const std::vector<TDR::Entry_t> &entries, const en
     for ( auto &entry : entries ){
         // This is also the place where we will remove any events with adc larger than 16384.
         adc_data = entry.adc->ADC_data;
-        if ( action != veto_action::nothing && ( adc_data & 0x8000 ) == 0x8000 ) {
-            if ( action == veto_action::remove ){
+        if ( action != TDR2tree::veto_action::nothing && ( adc_data & 0x8000 ) == 0x8000 ) {
+            if ( action == TDR2tree::veto_action::remove ){
                 continue;
-            } else if ( action == veto_action::keep ){
+            } else if ( action == TDR2tree::veto_action::keep ){
                 adc_data &= 0x7FFF;
             }
         }
@@ -167,7 +171,7 @@ std::vector<word_t> TDRtoWord(const std::vector<TDR::Entry_t> &entries, const en
     return words;
 }
 
-std::vector<word_t> TDRtoWord_prog(const std::string &fname, const std::vector<TDR::Entry_t> &entries, const enum veto_action &action = veto_action::remove)
+std::vector<word_t> TDRtoWord_prog(const std::string &fname, const std::vector<TDR::Entry_t> &entries, const enum TDR2tree::veto_action &action = TDR2tree::veto_action::remove)
 {
     const DetectorInfo_t *dinfo;
     std::vector<word_t> words;
@@ -179,11 +183,11 @@ std::vector<word_t> TDRtoWord_prog(const std::string &fname, const std::vector<T
     for ( auto &entry : entries ){
         // This is also the place where we will remove any events with adc larger than 16384.
         adc_data = entry.adc->ADC_data;
-        if ( action != veto_action::nothing && ( adc_data & 0x8000 ) == 0x8000 ) {
-            if ( action == veto_action::remove ){
+        if ( action != TDR2tree::veto_action::nothing && ( adc_data & 0x8000 ) == 0x8000 ) {
+            if ( action == TDR2tree::veto_action::remove ){
                 ++pos;
                 continue;
-            } else if ( action == veto_action::keep ){
+            } else if ( action == TDR2tree::veto_action::keep ){
                 adc_data &= 0x7FFF;
             }
         }
