@@ -37,6 +37,7 @@ namespace ROOT {
 
         struct Detector_Histograms_t {
             Histogram2Dp time;          //! Time alignment spectra
+            Histogram2Dp time_cal;      //! Calibrated time alignment spectra
             Histogram2Dp energy;
             Histogram2Dp energy_cal;
             Histogram1Dp mult;
@@ -48,6 +49,9 @@ namespace ROOT {
                       const word_t *start = nullptr);
         };
 
+        DetectorType timeref;
+        int timeref_id;
+
         Detector_Histograms_t ring;
         Detector_Histograms_t sect;
         Detector_Histograms_t back;
@@ -56,6 +60,8 @@ namespace ROOT {
         Detector_Histograms_t labrS;
         Detector_Histograms_t labrF;
         Detector_Histograms_t clover;
+
+        Detector_Histograms_t rfhists;
 
         //! Time energy spectra for particles.
         Histogram2Dp time_energy_sect_back;
@@ -66,7 +72,9 @@ namespace ROOT {
     public:
 
         //! Constructor.
-        explicit HistManager(RootFileManager *fileManager    /*!< ROOT file where the histograms will reside.    */);
+        explicit HistManager(RootFileManager *fileManager    /*!< ROOT file where the histograms will reside.    */,
+                             const DetectorType &timeref = DetectorType::labr_2x2_fs,
+                             const int &timeref_id = 0);
 
         //! Fill spectra with an event.
         void AddEntry(Event &buffer  /*!< Event to read from    */);
