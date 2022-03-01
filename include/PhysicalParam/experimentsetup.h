@@ -11,6 +11,7 @@
 #define NUM_SI_RING 48           //!< Number of Si dE rings
 #define NUM_SI_SECT 16           //!< Number of Si dE sector
 #define NUM_SI_BACK 16             //!< Number of Si  E sector
+#define NUM_RF 1                //!< Number of channels for the RF signal
 
 #define MAX_WORDS_PER_DET 32    //!< Maximum number of words per detector in each event
 
