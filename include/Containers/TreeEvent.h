@@ -12,7 +12,7 @@
 #include <TTree.h>
 #include <TBranch.h>
 
-#include "experimentsetup.h"
+#include <experimentsetup.h>
 
 struct word_t;
 class Event;
