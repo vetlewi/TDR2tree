@@ -57,10 +57,10 @@ std::vector<std::string> TriggerSort(ProgressUI *ui, const CLI::Options &options
     Task::Splitter splitter(buffer.GetQueue(), options.coincidenceTime.value());
     Task::Trigger trigger(splitter.GetQueue(), options.coincidenceTime.value(), options.Trigger.value());
     Task::RootSort sorters[] = {
-            Task::RootSort(trigger.GetQueue(), outnames[0].c_str(), options.addback.value(), options.tree.value()),
-            Task::RootSort(trigger.GetQueue(), outnames[1].c_str(), options.addback.value(), options.tree.value()),
-            Task::RootSort(trigger.GetQueue(), outnames[2].c_str(), options.addback.value(), options.tree.value()),
-            Task::RootSort(trigger.GetQueue(), outnames[3].c_str(), options.addback.value(), options.tree.value())
+            Task::RootSort(trigger.GetQueue(), outnames[0].c_str(), options),
+            Task::RootSort(trigger.GetQueue(), outnames[1].c_str(), options),
+            Task::RootSort(trigger.GetQueue(), outnames[2].c_str(), options),
+            Task::RootSort(trigger.GetQueue(), outnames[3].c_str(), options)
     };
 
     // Spin up the worker threads
@@ -90,10 +90,10 @@ std::vector<std::string> GapSort(ProgressUI *ui, const CLI::Options &options)
     Task::Buffer buffer(converter.GetQueue());
     Task::Splitter splitter(buffer.GetQueue(), options.coincidenceTime.value());
     Task::RootSort sorters[] = {
-            Task::RootSort(splitter.GetQueue(), outnames[0].c_str(), options.addback.value(), options.tree.value()),
-            Task::RootSort(splitter.GetQueue(), outnames[1].c_str(), options.addback.value(), options.tree.value()),
-            Task::RootSort(splitter.GetQueue(), outnames[2].c_str(), options.addback.value(), options.tree.value()),
-            Task::RootSort(splitter.GetQueue(), outnames[3].c_str(), options.addback.value(), options.tree.value())
+            Task::RootSort(splitter.GetQueue(), outnames[0].c_str(), options),
+            Task::RootSort(splitter.GetQueue(), outnames[1].c_str(), options),
+            Task::RootSort(splitter.GetQueue(), outnames[2].c_str(), options),
+            Task::RootSort(splitter.GetQueue(), outnames[3].c_str(), options)
     };
 
     // Spin up the worker threads
@@ -113,6 +113,7 @@ std::vector<std::string> GapSort(ProgressUI *ui, const CLI::Options &options)
     }
     return outnames;
 }
+
 
 int main(int argc, char *argv[])
 {

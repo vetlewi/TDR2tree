@@ -29,7 +29,7 @@
 #include "Histogram2D.h"
 
 
-void ROOT::MergeFiles(const std::vector<std::string> &infiles, const std::string outname)
+void ROOT::MergeFiles(const std::vector<std::string> &infiles, const std::string &outname)
 {
     TFileMerger merger;
     merger.OutputFile(outname.c_str());

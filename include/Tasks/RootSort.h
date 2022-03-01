@@ -6,6 +6,7 @@
 #define TDR2TREE_ROOTSORT_H
 
 #include "Task.h"
+#include "CommandLineInterface.h"
 
 #include "RootFileManager.h"
 #include "HistManager.h"
@@ -28,6 +29,7 @@ namespace Task {
     public:
 
         RootSort(MCWordQueue_t &input, const char *fname, const bool &addback = true, const bool &tree = false);
+        RootSort(MCWordQueue_t &input, const char *fname, const CLI::Options &options);
         void Run() override;
 
     };

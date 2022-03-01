@@ -37,7 +37,7 @@ class TObject;
 
 namespace ROOT {
 
-    void MergeFiles(const std::vector<std::string> &infiles, const std::string outname);
+    void MergeFiles(const std::vector<std::string> &infiles, const std::string &outname);
 
     class RootFileManager
     {

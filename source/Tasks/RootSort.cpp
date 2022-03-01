@@ -17,6 +17,16 @@ RootSort::RootSort(MCWordQueue_t &input, const char *fname, const bool &addback,
 {
 }
 
+RootSort::RootSort(MCWordQueue_t &input, const char *fname, const CLI::Options &options)
+    : fileManager( fname )
+    , histManager( &fileManager, options.Trigger.value() )
+    , treeManager( &fileManager, "events", "events" )
+    , addback_hist( (options.addback.value()) ? fileManager.Mat("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr )
+    , tree( options.tree.value() )
+    , input_queue( input )
+{
+}
+
 void RootSort::Run()
 {
     std::vector<word_t> input;
