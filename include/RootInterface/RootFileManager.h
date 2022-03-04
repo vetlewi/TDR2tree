@@ -28,6 +28,7 @@
 
 class TH1;
 class TH2;
+class TH3;
 class TTree;
 class TObject;
 
@@ -122,6 +123,45 @@ namespace ROOT {
                          const std::string &ytitle)
         {
             return histograms.Create2D(name, title, xbins, xmin, xmax, xtitle, ybins, ymin, ymax, ytitle);
+        }
+
+        //! Creat a ROOT 3D histogram.
+        /*!
+         *
+         * \param name Name of the TH2 object.
+         * \param title Title of the histogram.
+         * \param xbin Number of bins on the x-axis.
+         * \param xmin Lower limit of the first bin on the x-axis.
+         * \param xmax Upper limit of the last bin on the x-axis.
+         * \param xtitle Title of the x-axis.
+         * \param ybin Number of bins on the y-axis.
+         * \param ymin Lower limit of the first bin on the y-axis.
+         * \param ymax Upper limit of the last bin on the y-axis.
+         * \param ytitle Title of the y-axis.
+         * \param zbin Number of bins on the y-axis.
+         * \param zmin Lower limit of the first bin on the y-axis.
+         * \param zmax Upper limit of the last bin on the y-axis.
+         * \param ztitle Title of the y-axis.
+         * \param dir Directory in the ROOT file to store the object.
+         * \return A pointer to the TH2 object.
+         */
+        TH3 *CreateTH3(const char *name, const char *title, int xbin, double xmin, double xmax, const char *xtitle,
+                       int ybin, double ymin, double ymax, const char *ytitle,
+                       int zbin, double zmin, double zmax, const char *ztitle, const char *dir = "");
+
+        //! Create a ROOT 2D histogram from a Histogram2Dp
+        TH3 *CreateTH3(Histogram3Dp h);
+
+        //! Create a matrix
+        Histogram3Dp Cube(const std::string &name, const std::string &title, const Axis::index_t &xbins,
+                          const Axis::bin_t &xmin, const Axis::bin_t &xmax, const std::string &xtitle,
+                          const Axis::index_t &ybins, const Axis::bin_t &ymin, const Axis::bin_t &ymax,
+                          const std::string &ytitle, const Axis::index_t &zbins, const Axis::bin_t &zmin,
+                          const Axis::bin_t &zmax, const std::string &ztitle)
+        {
+            return histograms.Create3D(name, title, xbins, xmin, xmax, xtitle,
+                                                    ybins, ymin, ymax, ytitle,
+                                                    zbins, zmin, zmax, ztitle);
         }
 
     };
