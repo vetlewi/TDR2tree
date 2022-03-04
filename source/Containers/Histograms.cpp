@@ -3,6 +3,7 @@
 
 #include "Histogram1D.h"
 #include "Histogram2D.h"
+#include "Histogram3D.h"
 
 #include <iostream>
 
@@ -41,6 +42,8 @@ Histograms::~Histograms()
       delete it.second;
   for(auto & it : map2d)
       delete it.second;
+  for(auto & it : map3d)
+      delete it.second;
 }
 
 // ########################################################################
@@ -66,11 +69,25 @@ Histogram2Dp Histograms::Create2D( const std::string& name, const std::string& t
 
 // ########################################################################
 
+Histogram3Dp Histograms::Create3D( const std::string& name, const std::string& title,
+                                   Axis::index_t ch1, Axis::bin_t l1, Axis::bin_t r1, const std::string& xtitle,
+                                   Axis::index_t ch2, Axis::bin_t l2, Axis::bin_t r2, const std::string& ytitle,
+                                   Axis::index_t ch3, Axis::bin_t l3, Axis::bin_t r3, const std::string& ztitle)
+{
+    Histogram3Dp h(new Histogram3D(name, title, ch1, l1, r1, xtitle, ch2, l2, r2, ytitle, ch3, l3, r3, ztitle));
+    map3d[ name ] = h;
+    return h;
+}
+
+// ########################################################################
+
 void Histograms::ResetAll()
 {
   for(auto & it : map1d)
     it.second->Reset();
   for(auto & it : map2d)
+    it.second->Reset();
+  for(auto & it : map3d)
     it.second->Reset();
 }
 
@@ -98,6 +115,17 @@ Histogram2Dp Histograms::Find2D( const std::string& name )
 
 // ########################################################################
 
+Histogram3Dp Histograms::Find3D( const std::string& name )
+{
+    auto it = map3d.find( name );
+    if( it != map3d.end() )
+        return it->second;
+    else
+        return nullptr;
+}
+
+// ########################################################################
+
 void Histograms::Merge(Histograms& other)
 {
   for(auto & it : map1d) {
@@ -112,6 +140,12 @@ void Histograms::Merge(Histograms& other)
     if( you )
       me->Add( you, 1 );
   }
+    for(auto & it : map3d) {
+        Histogram3Dp me = it.second;
+        Histogram3Dp you = other.Find3D( me->GetName() );
+        if( you )
+            me->Add( you, 1 );
+    }
 }
 
 // ########################################################################
@@ -133,3 +167,15 @@ Histograms::list2d_t Histograms::GetAll2D()
     list2d.push_back( it.second );
   return list2d;
 }
+
+// ########################################################################
+
+Histograms::list3d_t Histograms::GetAll3D()
+{
+    list3d_t list3d;
+    for(auto & it : map3d)
+        list3d.push_back( it.second );
+    return list3d;
+}
+
+// ########################################################################
