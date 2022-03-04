@@ -54,19 +54,21 @@ public:
     friend class TreeEvent;
 
 private:
-
+    word_t trigger; // Optional. If not set will be set to -1 or whatever
     std::vector<word_t> event_data;
     std::map<DetectorType, Subevent> type_bounds;
-
-    void index(Histogram2Dp ab_t_clover);
 
 public:
 
     //! Constructor.
     explicit Event(std::vector<word_t> event, Histogram2Dp ab_t_clover = nullptr);
+    explicit Event(word_t trigger, std::vector<word_t> event, Histogram2Dp ab_t_clover = nullptr);
 
     template<class It>
     Event(It begin, It end, Histogram2Dp ab_t_clover = nullptr) : event_data(begin, end){ index(ab_t_clover); }
+
+    // Make public such that we can rebuild the event whenever needed.
+    void index(Histogram2Dp ab_t_clover);
 
     //void RunAddback(Histogram2Dp ab_t_clover /*!< Matrix to fill in order to set propper time gates for clover addback */);
 
@@ -78,6 +80,9 @@ public:
     static void BuildAndFill(It start, It stop, ROOT::HistManager *hm, ROOT::TreeManager<TE> *tm, Histogram2Dp ab_hist = nullptr, double coins_time = 3000., ProgressUI *prog = nullptr);
 
     inline Subevent &GetDetector(const DetectorType &type){ return type_bounds.at(type); }
+
+    inline bool IsTriggered() const { return trigger.address != 0; }
+    inline word_t GetTrigger() const { return trigger; }
 
 };
 

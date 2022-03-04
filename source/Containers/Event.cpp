@@ -100,7 +100,15 @@ std::vector<word_t> RunAddback(std::vector<word_t> events, Histogram2Dp ab_t_clo
 }
 
 Event::Event(std::vector<word_t> event, Histogram2Dp ab_t_clover)
-    : event_data(std::move( event ))
+    : trigger( {0, 0, 0, false, false, 0, 0, 0, 0} )
+    , event_data(std::move( event ))
+{
+    index(ab_t_clover);
+}
+
+Event::Event(word_t trigger, std::vector<word_t> event, Histogram2Dp ab_t_clover)
+    : trigger( trigger )
+    , event_data(std::move( event ))
 {
     index(ab_t_clover);
 }
