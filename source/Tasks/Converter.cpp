@@ -55,11 +55,11 @@ std::vector<word_t> Converter::TDRtoWord(const std::vector<TDR::Entry_t> &entrie
         word.cfdfail = cfd_res.second;
 
         word.energy = CalibrateEnergy(word);
-        word.cfdcorr += CalibrateTime(word);
+        word.cfdcorr = CalibrateTime(word);
 
         word.timestamp *= TSFactor(dinfo->sfreq);
-        word.timestamp += int64_t(word.cfdcorr);
-        word.cfdcorr -= int64_t(word.cfdcorr);
+        //word.timestamp += int64_t(word.cfdcorr);
+        //word.cfdcorr -= int64_t(word.cfdcorr);
         words.push_back(word);
     }
     return words;
