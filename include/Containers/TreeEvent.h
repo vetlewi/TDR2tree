@@ -20,6 +20,24 @@ class Event;
 class TTree;
 class TBranch;
 
+enum type_map : char {
+    char_array_type = 'C',
+    signed_char_type = 'B',
+    unsigned_char_type = 'b',
+    signed_short_type = 'S',
+    unsigned_short_type = 's',
+    signed_integer_type = 'I',
+    unsigned_integer_type = 'i',
+    signed_long_type = 'L',
+    unsigned_long_type = 'l',
+    float_type = 'F',
+    double_type = 'D',
+    bool_type = 'O'
+};
+
+std::string CName(const char *base_name, const char *identifier);
+std::string CLeaf(const char *base_name, const char *identifier, const char type);
+
 
 template<typename T>
 class VecBranch {
