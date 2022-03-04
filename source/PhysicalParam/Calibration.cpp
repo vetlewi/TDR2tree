@@ -42,6 +42,15 @@ static Parameter shift_t_ring(calParam, "shift_t_ring", NUM_SI_RING, 0);
 static Parameter shift_t_sect(calParam, "shift_t_sect", NUM_SI_SECT, 0);
 static Parameter shift_t_back(calParam, "shift_t_back", NUM_SI_BACK, 0);
 
+//! Coarse alignment parameters
+/*static Parameter shift_coarse_t_labrL(calParam, "shift_coarse_t_labrL", NUM_LABR_3X8_DETECTORS, 0);
+static Parameter shift_coarse_t_labrS(calParam, "shift_coarse_t_labrS", NUM_LABR_2X2_DETECTORS, 0);
+static Parameter shift_coarse_t_labrF(calParam, "shift_coarse_t_labrF", NUM_LABR_2X2_DETECTORS, 0);
+static Parameter shift_coarse_t_clover(calParam, "shift_coarse_t_clover", NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS, 0);
+static Parameter shift_coarse_t_ring(calParam, "shift_coarse_t_ring", NUM_SI_RING, 0);
+static Parameter shift_coarse_t_sect(calParam, "shift_coarse_t_sect", NUM_SI_SECT, 0);
+static Parameter shift_coarse_t_back(calParam, "shift_coarse_t_back", NUM_SI_BACK, 0);*/
+
 //! Time gate for addback in clover detectors
 static Parameter clover_addback_gate(calParam, "clover_addback_gate", 2, 0);
 
@@ -111,6 +120,29 @@ double CalibrateEnergy(const word_t &detector)
 }
 
 double CalibrateTime(const word_t &detector)
+{
+    auto *dinfo = GetDetectorPtr(detector.address);
+    switch (dinfo->type) {
+        case labr_3x8 :
+            return detector.cfdcorr + shift_t_labrL[dinfo->detectorNum];
+        case labr_2x2_ss :
+            return detector.cfdcorr + shift_t_labrS[dinfo->detectorNum];
+        case labr_2x2_fs :
+            return detector.cfdcorr + shift_t_labrF[dinfo->detectorNum];
+        case clover :
+            return detector.cfdcorr + shift_t_clover[dinfo->detectorNum*NUM_CLOVER_CRYSTALS + dinfo->telNum];
+        case de_ring :
+            return detector.cfdcorr + shift_t_ring[dinfo->detectorNum];
+        case de_sect :
+            return detector.cfdcorr + shift_t_sect[dinfo->detectorNum];
+        case eDet :
+            return detector.cfdcorr + shift_t_back[dinfo->detectorNum];
+        default :
+            return detector.cfdcorr;
+    }
+}
+
+double CalibrateCoarseTime(const word_t &detector)
 {
     auto *dinfo = GetDetectorPtr(detector.address);
     switch (dinfo->type) {

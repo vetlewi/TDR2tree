@@ -7,7 +7,7 @@
 
 using namespace CLI;
 
-STRUCTOPT(Options, input, output, CalibrationFile, coincidenceTime, tree, sortType, Trigger, addback, VetoAction);
+STRUCTOPT(Options, input, output, CalibrationFile, coincidenceTime, SplitTime, tree, sortType, Trigger, addback, VetoAction);
 
 size_t extract_file_no(const std::string &str)
 {

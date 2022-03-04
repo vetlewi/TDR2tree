@@ -25,6 +25,7 @@
 #include "ProgressUI.h"
 
 #include "BasicStruct.h"
+#include "XIA_CFD.h"
 
 #include <cstdio>
 
@@ -37,11 +38,8 @@
 #include "Histogram2D.h"
 #include "Histogram3D.h"
 
-Histogram2Dp cfd_correction; //<---- This is a bad idea, it will give a race condition...
-
-
 ROOT::HistManager::Detector_Histograms_t::Detector_Histograms_t(RootFileManager *fm, const std::string &name, const size_t &num)
-    : time( fm->Mat(std::string("time_"+name), std::string("Time spectra "+name), 3000, -1500, 1500, "Time [ns]", num, 0, num, std::string(name+" ID")) )
+    : time( fm->Mat(std::string("time_"+name), std::string("Time spectra "+name), 30000, -1500, 1500, "Time [ns]", num, 0, num, std::string(name+" ID")) )
     , time_cube( fm->Cube(std::string("time_cube_"+name), std::string("Time spectra energy cube "+name), 800, -400, 400, "Time [ns]", 1000, 0, 10000, "Energy [keV]", num, 0, num, std::string(name+" ID")) )
     , time_cal( fm->Mat(std::string("time_cal_"+name), std::string("Calibrated time spectra "+name), 3000, -1500, 1500, "Time [ns]", num, 0, num, std::string(name+" ID")) )
     , energy( fm->Mat(std::string("energy_"+name), std::string("Energy spectra "+name), 65536, 0, 65536, "Energy [ch]", num, 0, num, std::string(name+" ID")) )
@@ -56,13 +54,6 @@ void ROOT::HistManager::Detector_Histograms_t::Fill(const word_t &word)
     energy_cal->Fill(CalibrateEnergy(word), dno);
 }
 
-static int less_n817 = 0, more_n817 = 0;
-
-struct tmp_struct {
-    unsigned low_bits : 13;
-    unsigned ts_source : 3;
-};
-
 void ROOT::HistManager::Detector_Histograms_t::Fill(const Subevent &subvec, const word_t *start)
 {
     int dno;
@@ -71,30 +62,18 @@ void ROOT::HistManager::Detector_Histograms_t::Fill(const Subevent &subvec, cons
         dno = GetID(entry.address);
         energy->Fill(entry.adcdata, dno);
         energy_cal->Fill(entry.energy, dno);
-        if ( start ) {
+        if ( start && !entry.cfdfail ) {
             double timediff = double(entry.timestamp - start->timestamp) + (entry.cfdcorr - start->cfdcorr);
 
-            // We will now test our theory... If start CFD is below 4294 then we will subtract 10 ns from
-            // the timestamp.
-            if ( start->cfddata < 7000 && timediff > 7 && timediff < 11 )
-                timediff -= 10;
+            double uncal_tdiff = double(entry.timestamp - start->timestamp);
+            auto stop_cfd = XIA::XIA_CFD_Decode(GetSamplingFrequency(entry.address), entry.cfddata);
+            auto start_cfd = XIA::XIA_CFD_Decode(GetSamplingFrequency(start->address), start->cfddata);
+            uncal_tdiff += stop_cfd.first - start_cfd.first;
 
-            double uncal_tdiff = timediff - CalibrateTime(entry) + CalibrateTime(*start);
+
             time->Fill(uncal_tdiff, dno);
             time_cube->Fill(timediff, entry.energy, dno);
             time_cal->Fill(timediff, dno);
-
-            if (GetDetectorPtr(entry.address)->type == labr_3x8 &&
-                dno == 1 && entry.energy > 4600 && !entry.cfdfail){
-                //time_cube->Fill(timediff, start->cfddata, dno);
-                if ( timediff > -1.8422532 && timediff < 0.31127920 ){
-                    cfd_correction->Fill(start->cfddata, 0);
-                    ++less_n817;
-                } else if (timediff > 7.7845338 && timediff < 9.9380662 ) {
-                    cfd_correction->Fill(start->cfddata, 1);
-                    ++more_n817;
-                }
-            }
 
         }
     }
@@ -115,7 +94,6 @@ ROOT::HistManager::HistManager(RootFileManager *fm, const DetectorType &reftype,
     , time_energy_sect_back( fm->Mat("time_energy_sect_back", "Energy vs. sector/back time", 1000, 0, 30000, "E energy [keV]", 3000, -1500, 1500, "t_{back} - t_{sector} [ns]") )
     , time_energy_ring_sect( fm->Mat("time_energy_ring_sect", "Energy vs. sector/back time", 1000, 0, 30000, "Sector energy [keV]", 3000, -1500, 1500, "t_{ring} - t_{sector} [ns]") )
 {
-    cfd_correction = fm->Mat("cfd_correction", "cfd_correction", 57345, 0, 57345, "CFD value", 2, 0, 2, "Before/after");
 }
 
 void ROOT::HistManager::AddEntry(Event &buffer)
