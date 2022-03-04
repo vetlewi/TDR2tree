@@ -30,17 +30,22 @@
 
 #include <TH1.h>
 #include <TH2.h>
+#include <TH3.h>
 #include <iostream>
 
 #include "Histogram1D.h"
 #include "Histogram2D.h"
+#include "Histogram3D.h"
+
+Histogram2Dp cfd_correction; //<---- This is a bad idea, it will give a race condition...
 
 
 ROOT::HistManager::Detector_Histograms_t::Detector_Histograms_t(RootFileManager *fm, const std::string &name, const size_t &num)
-    : time( fm->Mat(std::string("time_"+name), std::string("Time spectra "+name), 3000, -1500, 1500, "Time [ns]", num, 0, num, std::string(name+" ID").c_str()) )
-    , time_cal( fm->Mat(std::string("time_cal_"+name), std::string("Calibrated time spectra "+name), 3000, -1500, 1500, "Time [ns]", num, 0, num, std::string(name+" ID").c_str()) )
-    , energy( fm->Mat(std::string("energy_"+name), std::string("Energy spectra "+name), 65536, 0, 65536, "Energy [ch]", num, 0, num, std::string(name+" ID").c_str()) )
-    , energy_cal( fm->Mat(std::string("energy_cal_"+name), std::string("energy spectra "+name+" (cal)"), 16384, 0, 16384, "Energy [keV]", num, 0, num, std::string(name+" ID").c_str()) )
+    : time( fm->Mat(std::string("time_"+name), std::string("Time spectra "+name), 3000, -1500, 1500, "Time [ns]", num, 0, num, std::string(name+" ID")) )
+    , time_cube( fm->Cube(std::string("time_cube_"+name), std::string("Time spectra energy cube "+name), 800, -400, 400, "Time [ns]", 1000, 0, 10000, "Energy [keV]", num, 0, num, std::string(name+" ID")) )
+    , time_cal( fm->Mat(std::string("time_cal_"+name), std::string("Calibrated time spectra "+name), 3000, -1500, 1500, "Time [ns]", num, 0, num, std::string(name+" ID")) )
+    , energy( fm->Mat(std::string("energy_"+name), std::string("Energy spectra "+name), 65536, 0, 65536, "Energy [ch]", num, 0, num, std::string(name+" ID")) )
+    , energy_cal( fm->Mat(std::string("energy_cal_"+name), std::string("energy spectra "+name+" (cal)"), 16384, 0, 16384, "Energy [keV]", num, 0, num, std::string(name+" ID")) )
     , mult( fm->Spec(std::string("mult_"+name), std::string("Multiplicity " + name), 128, 0, 128, "Multiplicity") )
 {}
 
@@ -50,6 +55,13 @@ void ROOT::HistManager::Detector_Histograms_t::Fill(const word_t &word)
     energy->Fill(word.adcdata, dno);
     energy_cal->Fill(CalibrateEnergy(word), dno);
 }
+
+static int less_n817 = 0, more_n817 = 0;
+
+struct tmp_struct {
+    unsigned low_bits : 13;
+    unsigned ts_source : 3;
+};
 
 void ROOT::HistManager::Detector_Histograms_t::Fill(const Subevent &subvec, const word_t *start)
 {
@@ -61,9 +73,29 @@ void ROOT::HistManager::Detector_Histograms_t::Fill(const Subevent &subvec, cons
         energy_cal->Fill(entry.energy, dno);
         if ( start ) {
             double timediff = double(entry.timestamp - start->timestamp) + (entry.cfdcorr - start->cfdcorr);
+
+            // We will now test our theory... If start CFD is below 4294 then we will subtract 10 ns from
+            // the timestamp.
+            if ( start->cfddata < 7000 && timediff > 7 && timediff < 11 )
+                timediff -= 10;
+
             double uncal_tdiff = timediff - CalibrateTime(entry) + CalibrateTime(*start);
             time->Fill(uncal_tdiff, dno);
+            time_cube->Fill(timediff, entry.energy, dno);
             time_cal->Fill(timediff, dno);
+
+            if (GetDetectorPtr(entry.address)->type == labr_3x8 &&
+                dno == 1 && entry.energy > 4600 && !entry.cfdfail){
+                //time_cube->Fill(timediff, start->cfddata, dno);
+                if ( timediff > -1.8422532 && timediff < 0.31127920 ){
+                    cfd_correction->Fill(start->cfddata, 0);
+                    ++less_n817;
+                } else if (timediff > 7.7845338 && timediff < 9.9380662 ) {
+                    cfd_correction->Fill(start->cfddata, 1);
+                    ++more_n817;
+                }
+            }
+
         }
     }
 }
@@ -83,23 +115,26 @@ ROOT::HistManager::HistManager(RootFileManager *fm, const DetectorType &reftype,
     , time_energy_sect_back( fm->Mat("time_energy_sect_back", "Energy vs. sector/back time", 1000, 0, 30000, "E energy [keV]", 3000, -1500, 1500, "t_{back} - t_{sector} [ns]") )
     , time_energy_ring_sect( fm->Mat("time_energy_ring_sect", "Energy vs. sector/back time", 1000, 0, 30000, "Sector energy [keV]", 3000, -1500, 1500, "t_{ring} - t_{sector} [ns]") )
 {
+    cfd_correction = fm->Mat("cfd_correction", "cfd_correction", 57345, 0, 57345, "CFD value", 2, 0, 2, "Before/after");
 }
 
 void ROOT::HistManager::AddEntry(Event &buffer)
 {
 
-    // LaBr 0 is our time reference. We only use it if there is only one of that type.
-    const word_t *start = nullptr;
-    int ref_num = 0;
-    for ( auto &entry : buffer.GetDetector(timeref) ){
-        if ( GetID(entry.address) == timeref_id ){
-            ++ref_num;
-            start = &entry;
+    word_t trigger = buffer.GetTrigger();
+    word_t *start = &trigger;
+    if ( trigger.address == 0 ) {
+        int ref_num = 0;
+        for (auto &entry: buffer.GetDetector(timeref)) {
+            if (GetID(entry.address) == timeref_id) {
+                ++ref_num;
+                start = &entry;
+            }
         }
+        if (ref_num > 1)
+            start = nullptr;
     }
 
-    if (ref_num != 1)
-        start = nullptr;
 
     for (auto &type : {labr_3x8, labr_2x2_ss, labr_2x2_fs, de_ring, de_sect, eDet, rfchan, DetectorType::clover}){
         auto *hist = GetSpec(type);

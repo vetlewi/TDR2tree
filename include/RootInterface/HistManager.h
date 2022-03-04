@@ -37,6 +37,7 @@ namespace ROOT {
 
         struct Detector_Histograms_t {
             Histogram2Dp time;          //! Time alignment spectra
+            Histogram3Dp time_cube;     //! Time alignment spectra
             Histogram2Dp time_cal;      //! Calibrated time alignment spectra
             Histogram2Dp energy;
             Histogram2Dp energy_cal;
