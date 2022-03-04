@@ -16,12 +16,16 @@ std::string CName(const char *base_name, const char *identifier)
 
 std::string CLeaf(const char *base_name, const char *identifier, const char type)
 {
+    return CName(base_name, identifier) + "/" + std::string(1, type);
+}
+
+std::string CLeafs(const char *base_name, const char *identifier, const char type)
+{
     return CName(base_name, identifier) + "[" + CName(base_name, "Mult") + "]/" + std::string(1, type);
 }
 
 TreeData::TreeData(TTree *tree, const char *name)
-    : entries( 0 )
-    , entries_branch( tree->Branch(CName(name, "Mult").c_str(), &entries, std::string(CName(name, "Mult") + "/I").c_str()) )
+    : entries( tree, CName(name, "Mult").c_str(), CLeaf(name, "Mult", type_map::signed_integer_type).c_str() )
     , ID( tree, CName(name, "ID").c_str(),  CLeaf(name, "ID", type_map::unsigned_short_type).c_str() )
     , veto( tree, CName(name, "Veto").c_str(), CLeaf(name, "Veto", type_map::bool_type).c_str() )
     , cfd_fail( tree, CName(name, "CFDfail").c_str(), CLeaf(name, "CFDfail", type_map::bool_type).c_str() )

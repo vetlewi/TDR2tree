@@ -37,7 +37,37 @@ enum type_map : char {
 
 std::string CName(const char *base_name, const char *identifier);
 std::string CLeaf(const char *base_name, const char *identifier, const char type);
+std::string CLeafs(const char *base_name, const char *identifier, const char type);
 
+template<typename T>
+class ObjBranch {
+    T object;
+    TBranch *branch;
+
+public:
+
+    ObjBranch(TTree *tree, const char *name, const char *leaflist)
+        : object( 0 )
+        , branch( tree->Branch(name, &object, leaflist) ){}
+
+    ObjBranch &operator=(const T &obj)
+    {
+        object = obj;
+        return *this;
+    }
+
+    ObjBranch &operator+=(const T &obj)
+    {
+        object += obj;
+        return *this;
+    }
+
+    ObjBranch &operator++() { ++object; return *this; }
+
+    operator T() const { return object; }
+    T GetValue() const { return object; }
+
+};
 
 template<typename T>
 class VecBranch {
@@ -72,9 +102,7 @@ public:
 };
 
 class TreeData {
-    int entries;
-    TBranch *entries_branch;
-
+    ObjBranch<int> entries;
     VecBranch<uint16_t> ID;
     VecBranch<char> veto;
     VecBranch<char> cfd_fail;
