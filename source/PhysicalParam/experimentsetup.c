@@ -236,7 +236,7 @@ DetectorInfo_t pDetector[] =
     {222, f000MHz, unused, 0, 0},
     {223, f000MHz, unused, 0, 0},
     {224, f500MHz, unused, 0, 0},
-    {255, f500MHz, rfchan, 0, 0},
+    {225, f500MHz, rfchan, 0, 0},
     {226, f500MHz, unused, 0, 0},
     {227, f500MHz, unused, 0, 0},
     {228, f500MHz, unused, 0, 0},
