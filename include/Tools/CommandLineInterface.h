@@ -29,6 +29,7 @@ namespace CLI {
         // Optional arguments
         std::optional<std::string> CalibrationFile;
         std::optional<double> coincidenceTime = 1500;
+        std::optional<double> SplitTime = 1500;
         std::optional<bool> tree = false;
         std::optional<sort_type> sortType = sort_type::coincidence;
         std::optional<DetectorType> Trigger = DetectorType::eDet;

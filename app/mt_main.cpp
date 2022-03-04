@@ -54,7 +54,7 @@ std::vector<std::string> TriggerSort(ProgressUI *ui, const CLI::Options &options
     Task::Reader reader(options.input.value(), ui);
     Task::Converter converter(reader.GetQueue(), OptToTask(options.VetoAction.value()));
     Task::Buffer buffer(converter.GetQueue());
-    Task::Splitter splitter(buffer.GetQueue(), options.coincidenceTime.value());
+    Task::Splitter splitter(buffer.GetQueue(), options.SplitTime.value());
     Task::Trigger trigger(splitter.GetQueue(), options.coincidenceTime.value(), options.Trigger.value());
     Task::RootSort sorters[] = {
             Task::RootSort(trigger.GetQueue(), outnames[0].c_str(), options),
@@ -88,13 +88,13 @@ std::vector<std::string> RFTriggerSort(ProgressUI *ui, const CLI::Options &optio
     Task::Reader reader(options.input.value(), ui);
     Task::Converter converter(reader.GetQueue(), OptToTask(options.VetoAction.value()));
     Task::Buffer buffer(converter.GetQueue());
-    Task::Splitter splitter(buffer.GetQueue(), options.coincidenceTime.value());
+    Task::Splitter splitter(buffer.GetQueue(), options.SplitTime.value());
     Task::Trigger trigger(splitter.GetQueue(), options.coincidenceTime.value(), options.Trigger.value());
     Task::RFRootSort sorters[] = {
             Task::RFRootSort(trigger.GetQueue(), outnames[0].c_str(), options),
-            //Task::RFRootSort(trigger.GetQueue(), outnames[1].c_str(), options),
-            //Task::RFRootSort(trigger.GetQueue(), outnames[2].c_str(), options),
-            //Task::RFRootSort(trigger.GetQueue(), outnames[3].c_str(), options)
+            Task::RFRootSort(trigger.GetQueue(), outnames[1].c_str(), options),
+            Task::RFRootSort(trigger.GetQueue(), outnames[2].c_str(), options),
+            Task::RFRootSort(trigger.GetQueue(), outnames[3].c_str(), options)
     };
 
     // Spin up the worker threads

@@ -54,6 +54,7 @@ std::ostream &operator<<(std::ostream &os, const Options &opt)
     os << "\tOutput file: " << opt.output.value() << "\n";
     os << "\tCalibration file: " << opt.CalibrationFile.value_or("") << "\n";
     os << "\tCoincidence time: " << opt.coincidenceTime.value() << " ns\n";
+    os << "\tSplit time: " << opt.SplitTime.value() << " ns\n";
 
     os << "\tBuild tree: " << std::boolalpha << opt.tree.value() << "\n";
     os << "\tSort type: " << magic_enum::enum_name(opt.sortType.value()) << "\n";
