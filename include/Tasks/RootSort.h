@@ -12,6 +12,8 @@
 #include "HistManager.h"
 #include "TreeManager.h"
 #include "TreeEvent.h"
+#include "RFTreeEvent.h"
+#include "Event.h"
 
 namespace Task {
 
@@ -24,14 +26,35 @@ namespace Task {
         Histogram2Dp addback_hist;
 
         bool tree;
-        MCWordQueue_t &input_queue;
+        TEWordQueue_t &input_queue;
 
     public:
 
-        RootSort(MCWordQueue_t &input, const char *fname, const bool &addback = true, const bool &tree = false);
-        RootSort(MCWordQueue_t &input, const char *fname, const CLI::Options &options);
+        RootSort(TEWordQueue_t &input, const char *fname, const bool &addback = true, const bool &tree = false);
+        RootSort(TEWordQueue_t &input, const char *fname, const CLI::Options &options);
+
         void Run() override;
 
+    };
+
+
+    class RFRootSort : public Base {
+
+    private:
+        ROOT::RootFileManager fileManager;
+        ROOT::HistManager histManager;
+        ROOT::TreeManager<RFTreeEvent> treeManager;
+        Histogram2Dp addback_hist;
+
+        bool tree;
+        TEWordQueue_t &input_queue;
+
+    public:
+
+        RFRootSort(TEWordQueue_t &input, const char *fname, const bool &addback = true, const bool &tree = false);
+        RFRootSort(TEWordQueue_t &input, const char *fname, const CLI::Options &options);
+
+        void Run() override;
     };
 
 }
