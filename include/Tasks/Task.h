@@ -9,6 +9,8 @@
 #include <utility>
 #include <thread>
 #include <vector>
+#include <BasicStruct.h>
+#include <Event.h>
 
 #include <readerwritercircularbuffer.h>
 #include <blockingconcurrentqueue.h>
@@ -17,7 +19,7 @@ namespace TDR {
     struct Entry_t;
 }
 
-struct word_t;
+//struct word_t;
 
 namespace Task {
 
@@ -36,9 +38,15 @@ namespace Task {
         }
     };
 
+    struct Triggered_event {
+        word_t trigger;
+        std::vector<word_t> entries;
+    };
+
     typedef moodycamel::BlockingReaderWriterCircularBuffer<std::vector<TDR::Entry_t>> EntryQueue_t;
     typedef moodycamel::BlockingReaderWriterCircularBuffer<std::vector<word_t>> WordQueue_t;
     typedef moodycamel::BlockingConcurrentQueue<std::vector<word_t>> MCWordQueue_t;
+    typedef moodycamel::BlockingConcurrentQueue<Triggered_event> TEWordQueue_t;
 }
 
 #endif //TDR2TREE_TASK_H

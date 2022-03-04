@@ -6,7 +6,13 @@
 #include "timeval.h"
 #include "BasicStruct.h"
 
+#include <stdexcept>
+
 using namespace Task;
+
+void Base::Run() {
+    throw std::runtime_error("Not implemented");
+}
 
 Trigger::Trigger(MCWordQueue_t &input, const double &time, const DetectorType &trig, const size_t &cap)
     : input_queue( input )
@@ -70,7 +76,7 @@ void Trigger::Run()
                 auto evt_end = std::find_if_not(trigger_point, input.end(), [&triggerT, this](const word_t &word){
                     return std::abs(time_val_t({word.timestamp, word.cfdcorr}) - triggerT) < this->coincidence_time;
                 });
-                while ( !output_queue.try_enqueue({evt_begin, evt_end}) ) // Waiting and trying to enqueue...
+                while ( !output_queue.try_enqueue({*trigger_point, std::vector<word_t>(evt_begin, evt_end)}) ) // Waiting and trying to enqueue...
                     std::this_thread::yield();
                 trigger_point = std::find_if(trigger_point+1, input.end(), [&triggerT, this](const word_t &word){
                     return (GetDetectorPtr(word.address)->type == this->trigger) &&
