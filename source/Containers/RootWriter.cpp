@@ -10,9 +10,11 @@
 #include <TFile.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TH3.h>
 
 #include "Histogram1D.h"
 #include "Histogram2D.h"
+#include "Histogram3D.h"
 
 // ########################################################################
 
@@ -28,6 +30,10 @@ void RootWriter::Write( Histograms& histograms,
   Histograms::list2d_t list2d = histograms.GetAll2D();
   for(auto & it : list2d)
     CreateTH2( it );
+
+    Histograms::list3d_t list3d = histograms.GetAll3D();
+    for(auto & it : list3d)
+        CreateTH3( it );
 
   outfile.Write();
   outfile.Close();
@@ -99,3 +105,46 @@ TH2* RootWriter::CreateTH2(Histogram2Dp h)
 
   return mat;
 }
+
+// ########################################################################
+
+TH3* RootWriter::CreateTH3(Histogram3Dp h)
+{
+    const Axis& xax = h->GetAxisX();
+    const Axis& yax = h->GetAxisY();
+    const Axis& zax = h->GetAxisZ();
+    const auto xchannels = xax.GetBinCount();
+    const auto ychannels = yax.GetBinCount();
+    const auto zchannels = zax.GetBinCount();
+    TH3* cube = new TH3F( h->GetName().c_str(), h->GetTitle().c_str(),
+                          xchannels, xax.GetLeft(), xax.GetRight(),
+                          ychannels, yax.GetLeft(), yax.GetRight(),
+                         zchannels, zax.GetLeft(), zax.GetRight());
+    cube->SetOption( "colz" );
+    cube->SetContour( 64 );
+
+    TAxis* rxax = cube->GetXaxis();
+    rxax->SetTitle(xax.GetTitle().c_str());
+    rxax->SetTitleSize(0.03);
+    rxax->SetLabelSize(0.03);
+
+    TAxis* ryax = cube->GetYaxis();
+    ryax->SetTitle(yax.GetTitle().c_str());
+    ryax->SetTitleSize(0.03);
+    ryax->SetLabelSize(0.03);
+    ryax->SetTitleOffset(1.3);
+
+    TAxis* rzax = cube->GetZaxis();
+    rzax->SetTitle(zax.GetTitle().c_str());
+    rzax->SetLabelSize(0.025);
+
+    for(int iz=0; iz<zchannels+2; ++iz)
+        for(int iy=0; iy<ychannels+2; ++iy)
+            for(int ix=0; ix<xchannels+2; ++ix)
+                cube->SetBinContent(ix, iy, iz, h->GetBinContent(ix, iy, iz));
+    cube->SetEntries( h->GetEntries() );
+
+    return cube;
+}
+
+// ########################################################################

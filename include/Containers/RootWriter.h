@@ -15,15 +15,19 @@
 
 class TH1;
 class TH2;
+class TH3;
 
 typedef TH1* TH1p;
 typedef TH2* TH2p;
+typedef TH3* TH3p;
 
 class Histogram1D;
 class Histogram2D;
+class Histogram3D;
 
 typedef Histogram1D* Histogram1Dp;
 typedef Histogram2D* Histogram2Dp;
+typedef Histogram3D* Histogram3Dp;
 
 class Histograms;
 
@@ -56,6 +60,11 @@ public:
   /*! \return the ROOT 2D histogram.
    */
   static TH2p CreateTH2(Histogram2Dp m /*!< The Histogram2D to be cpoied. */);
+
+  //! Create a ROOT histogram from a Histogram2D.
+  /*! \return the ROOT 2D histogram.
+   */
+  static TH3p CreateTH3(Histogram3Dp m /*!< The Histogram2D to be cpoied. */);
 };
 
 #endif /* RootWriter_H_ */
