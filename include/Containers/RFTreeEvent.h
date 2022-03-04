@@ -17,6 +17,9 @@ class RFTreeData {
     VecBranch<char> cfd_fail;
     VecBranch<double> energy;
     VecBranch<double> time;
+    VecBranch<uint16_t> raw_cfd;
+    VecBranch<uint16_t> cfd_cross;
+    VecBranch<uint16_t> cfd_val;
 
 public:
 
@@ -37,6 +40,9 @@ public:
         cfd_fail.clear();
         energy.clear();
         time.clear();
+        cfd_fail.clear();
+        cfd_cross.clear();
+        cfd_val.clear();
     }
 
     inline void validate() {
@@ -45,6 +51,9 @@ public:
         cfd_fail.check_address();
         energy.check_address();
         time.check_address();
+        raw_cfd.check_address();
+        cfd_cross.check_address();
+        cfd_val.check_address();
     }
 
 };
@@ -58,6 +67,7 @@ private:
     RFTreeData ring;
     RFTreeData sect;
     RFTreeData back;
+    RFTreeData rf;
 
 public:
     explicit RFTreeEvent(TTree *tree);
@@ -76,6 +86,7 @@ public:
         ring.clear();
         sect.clear();
         back.clear();
+        rf.clear();
     }
 
     inline void validate()
@@ -87,6 +98,7 @@ public:
         ring.validate();
         sect.validate();
         back.validate();
+        rf.validate();
     }
 
 };
