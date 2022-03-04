@@ -14,16 +14,17 @@ struct cfd_decode {
 };
 
 RFTreeData::RFTreeData(TTree *tree, const char *name)
-        : entries( 0 )
-        , entries_branch( tree->Branch(CName(name, "Mult").c_str(), &entries, std::string(CName(name, "Mult") + "/I").c_str()) )
-        , ID( tree, CName(name, "ID").c_str(),  CLeaf(name, "ID", type_map::unsigned_short_type).c_str() )
-        , veto( tree, CName(name, "Veto").c_str(), CLeaf(name, "Veto", type_map::bool_type).c_str() )
-        , cfd_fail( tree, CName(name, "CFDfail").c_str(), CLeaf(name, "CFDfail", type_map::bool_type).c_str() )
-        , energy( tree, CName(name, "Energy").c_str(), CLeaf(name, "Energy", type_map::double_type).c_str() )
-        , time(tree, CName(name, "Time").c_str(), CLeaf(name, "Time", type_map::double_type).c_str() )
-        , raw_cfd(tree, CName(name, "CFDraw").c_str(), CLeaf(name, "CFDraw", type_map::unsigned_short_type).c_str() )
-        , cfd_cross(tree, CName(name, "CFDcross").c_str(), CLeaf(name, "CFDcross", type_map::unsigned_short_type).c_str() )
-        , cfd_val(tree, CName(name, "CFDval").c_str(), CLeaf(name, "CFDval", type_map::unsigned_short_type).c_str() )
+    : entries( tree, CName(name, "Mult").c_str(), CLeaf(name, "Mult", type_map::signed_integer_type).c_str() )
+    , ID( tree, CName(name, "ID").c_str(),  CLeafs(name, "ID", type_map::unsigned_short_type).c_str() )
+    , veto( tree, CName(name, "Veto").c_str(), CLeafs(name, "Veto", type_map::bool_type).c_str() )
+    , cfd_fail( tree, CName(name, "CFDfail").c_str(), CLeafs(name, "CFDfail", type_map::bool_type).c_str() )
+    , energy( tree, CName(name, "Energy").c_str(), CLeafs(name, "Energy", type_map::double_type).c_str() )
+    , time(tree, CName(name, "Time").c_str(), CLeafs(name, "Time", type_map::double_type).c_str() )
+    , timestamp(tree, CName(name, "Timestamp").c_str(), CLeafs(name, "Timestamp", type_map::signed_long_type).c_str() )
+    , cfdcorr(tree, CName(name, "CFDcorr").c_str(), CLeafs(name, "CFDcorr", type_map::double_type).c_str() )
+    , raw_cfd(tree, CName(name, "CFDraw").c_str(), CLeafs(name, "CFDraw", type_map::unsigned_short_type).c_str() )
+    , cfd_cross(tree, CName(name, "CFDcross").c_str(), CLeafs(name, "CFDcross", type_map::unsigned_short_type).c_str() )
+    , cfd_val(tree, CName(name, "CFDval").c_str(), CLeafs(name, "CFDval", type_map::unsigned_short_type).c_str() )
 {}
 
 void RFTreeData::push_back(const word_t &event, const word_t &rfevent)
@@ -58,6 +59,8 @@ void RFTreeData::push_back(const word_t &event, const word_t &rfevent)
     }
 
     time.push_back(timediff, entries);
+    timestamp.push_back(event.timestamp, entries);
+    cfdcorr.push_back(event.cfdcorr, entries);
     raw_cfd.push_back(cfdvalue, entries);
     auto cfdcoded = reinterpret_cast<const cfd_decode *>(&cfdvalue);
     cfd_cross.push_back(cfdcoded->cross, entries);
@@ -65,8 +68,35 @@ void RFTreeData::push_back(const word_t &event, const word_t &rfevent)
     ++entries;
 }
 
+TriggerData::TriggerData(TTree *tree, const char *name)
+    : ID( tree, CName(name, "ID").c_str(), CLeaf(name, "ID", type_map::unsigned_short_type).c_str() )
+    , veto( tree, CName(name, "Veto").c_str(), CLeaf(name, "Veto", type_map::bool_type).c_str() )
+    , cfd_fail( tree, CName(name, "CFDfail").c_str(), CLeaf(name, "CFDfail", type_map::bool_type).c_str() )
+    , energy( tree, CName(name, "Energy").c_str(), CLeaf(name, "Energy", type_map::double_type).c_str() )
+    , timestamp( tree, CName(name, "Timestamp").c_str(), CLeaf(name, "Timestamp", type_map::signed_long_type).c_str() )
+    , cfdcorr( tree, CName(name, "CFDcorr").c_str(), CLeaf(name, "CFDcorr", type_map::double_type).c_str() )
+    , raw_cfd( tree, CName(name, "CFDraw").c_str(), CLeaf(name, "CFDraw", type_map::unsigned_short_type).c_str() )
+    , cfd_cross( tree, CName(name, "CFDcross").c_str(), CLeaf(name, "CFDcross", type_map::unsigned_short_type).c_str() )
+    , cfd_val( tree, CName(name, "CFDcross").c_str(), CLeaf(name, "CFDcross", type_map::unsigned_short_type).c_str() )
+{}
+
+void TriggerData::Set(const word_t &word)
+{
+    ID = GetDetectorPtr(word.address)->detectorNum;
+    veto = word.veto;
+    cfd_fail = word.cfdfail;
+    energy = word.energy;
+    timestamp = word.timestamp;
+    cfdcorr = word.cfdcorr;
+    raw_cfd = word.cfddata;
+    auto cfdcoded = reinterpret_cast<const cfd_decode *>(&word.cfddata);
+    cfd_cross = cfdcoded->cross;
+    cfd_val = cfdcoded->val;
+}
+
 RFTreeEvent::RFTreeEvent(TTree *tree)
-        : clover(tree, "clover")
+        : trigger(tree, "trigger")
+        , clover(tree, "clover")
         , labrL(tree, "labrL")
         , labrS(tree, "labrS")
         , labrF(tree, "labrF")
@@ -96,49 +126,42 @@ RFTreeEvent &RFTreeEvent::operator=(Event &event)
     // First we will clear everything
     clear();
 
-    // Get the RF entry
-    auto rfentries = event.GetDetector(rfchan);
-    //assert(rfentries.size() == 0);
-    if ( rfentries.size() != 1 ){
-        // Should be some kind of error...
-        // For now we will do nothing :-/
-    }
-
+    trigger = event.GetTrigger();
 
     // Then we will go type by type and add events
     for ( auto &type : {labr_3x8, labr_2x2_ss, labr_2x2_fs, de_ring, de_sect, eDet, rfchan, DetectorType::clover} ){
         auto data = event.GetDetector(type);
-        GetData(type).add(data.begin(), data.end(), *rfentries.begin());
+        GetData(type).add(data.begin(), data.end(), event.GetTrigger());
     }
     return *this;
 }
 
-void RFTreeEvent::push_back(const word_t &event, const word_t &rfevent)
+void RFTreeEvent::push_back(const word_t &event, const word_t &_trigger)
 {
     switch ( GetDetectorPtr(event.address)->type ) {
         case DetectorType::clover :
-            clover.push_back(event, rfevent);
+            clover.push_back(event, _trigger);
             break;
         case DetectorType::labr_3x8 :
-            labrL.push_back(event, rfevent);
+            labrL.push_back(event, _trigger);
             break;
         case DetectorType::labr_2x2_ss :
-            labrS.push_back(event, rfevent);
+            labrS.push_back(event, _trigger);
             break;
         case DetectorType::labr_2x2_fs :
-            labrF.push_back(event, rfevent);
+            labrF.push_back(event, _trigger);
             break;
         case DetectorType::de_ring :
-            ring.push_back(event, rfevent);
+            ring.push_back(event, _trigger);
             break;
         case DetectorType::de_sect :
-            sect.push_back(event, rfevent);
+            sect.push_back(event, _trigger);
             break;
         case DetectorType::eDet :
-            back.push_back(event, rfevent);
+            back.push_back(event, _trigger);
             break;
         case DetectorType::rfchan :
-            rf.push_back(event, rfevent);
+            rf.push_back(event, _trigger);
         default:
             break;
     }
