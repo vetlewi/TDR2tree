@@ -59,6 +59,7 @@ add_library(TDR2treeLib
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/Event.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/Histogram1D.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/Histogram2D.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/Histogram3D.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/Histograms.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/MamaWriter.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/RFTreeEvent.cpp

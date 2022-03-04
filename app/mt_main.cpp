@@ -82,6 +82,40 @@ std::vector<std::string> TriggerSort(ProgressUI *ui, const CLI::Options &options
     return outnames;
 }
 
+std::vector<std::string> RFTriggerSort(ProgressUI *ui, const CLI::Options &options)
+{
+    std::vector<std::string> outnames = OutNames(RemovePost(options.output.value()), 4);
+    Task::Reader reader(options.input.value(), ui);
+    Task::Converter converter(reader.GetQueue(), OptToTask(options.VetoAction.value()));
+    Task::Buffer buffer(converter.GetQueue());
+    Task::Splitter splitter(buffer.GetQueue(), options.coincidenceTime.value());
+    Task::Trigger trigger(splitter.GetQueue(), options.coincidenceTime.value(), options.Trigger.value());
+    Task::RFRootSort sorters[] = {
+            Task::RFRootSort(trigger.GetQueue(), outnames[0].c_str(), options),
+            //Task::RFRootSort(trigger.GetQueue(), outnames[1].c_str(), options),
+            //Task::RFRootSort(trigger.GetQueue(), outnames[2].c_str(), options),
+            //Task::RFRootSort(trigger.GetQueue(), outnames[3].c_str(), options)
+    };
+
+    // Spin up the worker threads
+    std::vector<std::pair<std::thread, Task::Base *>> threads;
+    threads.push_back(reader.ConstructThread());
+    threads.push_back(converter.ConstructThread());
+    threads.push_back(buffer.ConstructThread());
+    threads.push_back(splitter.ConstructThread());
+    threads.push_back(trigger.ConstructThread());
+    for ( auto &sort : sorters ){ threads.push_back(sort.ConstructThread()); }
+
+    // Now we just wait for everything to finish running
+    for ( auto &runner : threads ){
+        runner.second->Finish();
+        if ( runner.first.joinable() ){
+            runner.first.join(); // Blocking until task is finished
+        }
+    }
+    return outnames;
+}
+/*
 std::vector<std::string> GapSort(ProgressUI *ui, const CLI::Options &options)
 {
     std::vector<std::string> outnames = OutNames(RemovePost(options.output.value()), 4);
@@ -113,9 +147,9 @@ std::vector<std::string> GapSort(ProgressUI *ui, const CLI::Options &options)
     }
     return outnames;
 }
+*/
 
-
-int main(int argc, char *argv[])
+int main_func(int argc, char *argv[])
 {
     CLI::Options options;
     try {
@@ -130,16 +164,33 @@ int main(int argc, char *argv[])
     std::vector<std::string> outfiles;
     switch ( options.sortType.value() ) {
         case CLI::sort_type::coincidence :
-            outfiles = TriggerSort(&progress, options);
+            if ( options.Trigger.value() == rfchan ){
+                outfiles = RFTriggerSort(&progress, options);
+            } else {
+                outfiles = RFTriggerSort(&progress, options);
+            }
             break;
         case CLI::sort_type::gap :
-            outfiles = GapSort(&progress, options);
+            //outfiles = GapSort(&progress, options);
             break;
     }
 
     // Merge files
     auto prog = progress.FinishSort(options.output.value());
     ROOT::MergeFiles(outfiles, options.output.value());
+    for ( const auto& outfile : outfiles ){
+        system(std::string("rm " + outfile).c_str());
+    }
     prog.Finish();
     return 0;
+}
+
+int main(int argc, char *argv[])
+{
+    try {
+        return main_func(argc, argv);
+    } catch (std::exception &e){
+        std::cerr << "Error, got exception '" << e.what() << "'" << std::endl;
+        return 1;
+    }
 }
