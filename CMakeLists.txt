@@ -117,8 +117,8 @@ target_compile_features(TDR2treeLib PUBLIC cxx_std_17)
 
 add_executable(TDR2tree app/main.cpp)
 add_executable(TDR2treeMT app/mt_main.cpp)
-add_executable(TDR2treeST app/st_main.cpp)
+#add_executable(TDR2treeST app/st_main.cpp)
 
 target_link_libraries(TDR2tree TDR2treeLib)
 target_link_libraries(TDR2treeMT TDR2treeLib readerwriterqueue concurrentqueue)
-target_link_libraries(TDR2treeST TDR2treeLib)
+#target_link_libraries(TDR2treeST TDR2treeLib)
