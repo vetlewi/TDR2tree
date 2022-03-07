@@ -41,7 +41,7 @@
 ROOT::HistManager::Detector_Histograms_t::Detector_Histograms_t(RootFileManager *fm, const std::string &name, const size_t &num)
     : time( fm->Mat(std::string("time_"+name), std::string("Time spectra "+name), 30000, -1500, 1500, "Time [ns]", num, 0, num, std::string(name+" ID")) )
     , time_cube( fm->Cube(std::string("time_cube_"+name), std::string("Time spectra energy cube "+name), 800, -400, 400, "Time [ns]", 1000, 0, 10000, "Energy [keV]", num, 0, num, std::string(name+" ID")) )
-    , time_cal( fm->Mat(std::string("time_cal_"+name), std::string("Calibrated time spectra "+name), 3000, -1500, 1500, "Time [ns]", num, 0, num, std::string(name+" ID")) )
+    , time_cal( fm->Mat(std::string("time_cal_"+name), std::string("Calibrated time spectra "+name), 3000, -150, 150, "Time [ns]", num, 0, num, std::string(name+" ID")) )
     , energy( fm->Mat(std::string("energy_"+name), std::string("Energy spectra "+name), 65536, 0, 65536, "Energy [ch]", num, 0, num, std::string(name+" ID")) )
     , energy_cal( fm->Mat(std::string("energy_cal_"+name), std::string("energy spectra "+name+" (cal)"), 16384, 0, 16384, "Energy [keV]", num, 0, num, std::string(name+" ID")) )
     , mult( fm->Spec(std::string("mult_"+name), std::string("Multiplicity " + name), 128, 0, 128, "Multiplicity") )
@@ -63,13 +63,13 @@ void ROOT::HistManager::Detector_Histograms_t::Fill(const Subevent &subvec, cons
         energy->Fill(entry.adcdata, dno);
         energy_cal->Fill(entry.energy, dno);
         if ( start && !entry.cfdfail ) {
-            double timediff = double(entry.timestamp - start->timestamp) + (entry.cfdcorr - start->cfdcorr);
-
-            double uncal_tdiff = double(entry.timestamp - start->timestamp);
+            double uncal_tdiff = double(entry.timestamp_raw - start->timestamp_raw);
             auto stop_cfd = XIA::XIA_CFD_Decode(GetSamplingFrequency(entry.address), entry.cfddata);
             auto start_cfd = XIA::XIA_CFD_Decode(GetSamplingFrequency(start->address), start->cfddata);
             uncal_tdiff += stop_cfd.first - start_cfd.first;
 
+            // Now we can calibrate this beach
+            double timediff = uncal_tdiff + CalibrateTime(entry) - CalibrateTime(*start);
 
             time->Fill(uncal_tdiff, dno);
             time_cube->Fill(timediff, entry.energy, dno);
