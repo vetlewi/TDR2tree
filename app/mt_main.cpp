@@ -137,7 +137,6 @@ std::vector<std::string> GapSort(ProgressUI *ui, const CLI::Options &options)
     threads.push_back(converter.ConstructThread());
     threads.push_back(buffer.ConstructThread());
     threads.push_back(splitter.ConstructThread());
-    threads.push_back(trigger.ConstructThread());
     for ( auto &sort : sorters ){ threads.push_back(sort.ConstructThread()); }
 
     // Now we just wait for everything to finish running
