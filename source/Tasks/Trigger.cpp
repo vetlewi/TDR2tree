@@ -20,44 +20,24 @@ Trigger::Trigger(MCWordQueue_t &input, const double &time, const DetectorType &t
     , coincidence_time( time )
     , trigger( trig ){}
 
-/* void Trigger::work()
-{
-    auto begin = std::find_if(buffer.begin(), buffer.end(), [this](const word_t &evt){
-        return GetDetectorPtr(evt.address)->type == this->trigger;
-    });
-
-    while ( begin < buffer.end() ){
-
-        begin = std::find_if(buffer.begin(), buffer.end(), [this](const word_t &evt){
-            return GetDetectorPtr(evt.address)->type == this->trigger; });
-        if ( begin == buffer.end() ){
-            break;
-        }
-
-        time_val_t trigger_time = {begin->timestamp, begin->cfdcorr};
-        auto evt_begin = std::make_reverse_iterator(std::find_if_not(std::make_reverse_iterator(begin),
-                                                                     std::make_reverse_iterator(buffer.begin()),
-                                           [&trigger_time, this](const word_t &evt){
-            return std::abs(time_val_t({evt.timestamp, evt.cfdcorr}) - trigger_time) < this->coincidence_time;
-        })) + 1;
-
-        auto evt_end = std::find_if_not(begin, buffer.end(), [&trigger_time, this](const word_t &evt){
-            return std::abs(time_val_t({evt.timestamp, evt.cfdcorr}) - trigger_time) < this->coincidence_time;
-        });
-
-        if ( evt_end == buffer.end() ){
-            break;
-            // Delete everything up until the point where our trigger was than leave
-            event
-        }
-    }
-
-    // Once outside the loop we will remove everything in the buffer that has a time difference
-}*/
-
 void Trigger::Run()
 {
     std::vector<word_t> input;
+    word_t null_trigger = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    if ( trigger == DetectorType::any && coincidence_time <= 0 ){
+        while ( true ){
+            if ( input_queue.wait_dequeue_timed(input, std::chrono::microseconds(100)) ){
+                while ( !output_queue.enqueue({null_trigger, input}) ){
+                    std::this_thread::yield();
+                }
+            } else if ( done ){
+                return; // At this point we can return
+                break;
+            } else {
+                std::this_thread::yield();
+            }
+        }
+    }
 
     while ( true ){
         if ( input_queue.wait_dequeue_timed(input, std::chrono::microseconds(100)) ){
@@ -84,6 +64,7 @@ void Trigger::Run()
                 });
             }
         } else if ( done ){
+            return; // at this point we have nothing left to do in this function.
             break;
         } else {
             std::this_thread::yield();
