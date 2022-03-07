@@ -22,9 +22,11 @@ RFTreeData::RFTreeData(TTree *tree, const char *name)
     , time(tree, CName(name, "Time").c_str(), CLeafs(name, "Time", type_map::double_type).c_str() )
     , timestamp(tree, CName(name, "Timestamp").c_str(), CLeafs(name, "Timestamp", type_map::signed_long_type).c_str() )
     , cfdcorr(tree, CName(name, "CFDcorr").c_str(), CLeafs(name, "CFDcorr", type_map::double_type).c_str() )
+#ifdef CFD_DIAGNOSIS
     , raw_cfd(tree, CName(name, "CFDraw").c_str(), CLeafs(name, "CFDraw", type_map::unsigned_short_type).c_str() )
     , cfd_cross(tree, CName(name, "CFDcross").c_str(), CLeafs(name, "CFDcross", type_map::unsigned_short_type).c_str() )
     , cfd_val(tree, CName(name, "CFDval").c_str(), CLeafs(name, "CFDval", type_map::unsigned_short_type).c_str() )
+#endif // CFD_DIAGNOSIS
 {}
 
 void RFTreeData::push_back(const word_t &event, const word_t &trigger)
@@ -37,17 +39,17 @@ void RFTreeData::push_back(const word_t &event, const word_t &trigger)
     double tdiff = double(event.timestamp_raw - trigger.timestamp_raw);
     tdiff += event.cfdcorr - trigger.cfdcorr;
     tdiff += CalibrateTime(event) - CalibrateTime(trigger);
-    uint16_t cfdvalue = event.cfddata;
-
-
 
     time.push_back(tdiff, entries);
-    timestamp.push_back(event.timestamp, entries);
-    cfdcorr.push_back(event.cfdcorr, entries);
+    timestamp.push_back(event.timestamp_raw, entries);
+    cfdcorr.push_back(event.cfdcorr+CalibrateTime(event), entries);
+#ifdef CFD_DIAGNOSIS
+    uint16_t cfdvalue = event.cfddata;
     raw_cfd.push_back(cfdvalue, entries);
     auto cfdcoded = reinterpret_cast<const cfd_decode *>(&cfdvalue);
     cfd_cross.push_back(cfdcoded->cross, entries);
     cfd_val.push_back(cfdcoded->val, entries);
+#endif // CFD_DIAGNOSIS
     ++entries;
 }
 
@@ -58,9 +60,11 @@ TriggerData::TriggerData(TTree *tree, const char *name)
     , energy( tree, CName(name, "Energy").c_str(), CLeaf(name, "Energy", type_map::double_type).c_str() )
     , timestamp( tree, CName(name, "Timestamp").c_str(), CLeaf(name, "Timestamp", type_map::signed_long_type).c_str() )
     , cfdcorr( tree, CName(name, "CFDcorr").c_str(), CLeaf(name, "CFDcorr", type_map::double_type).c_str() )
+#ifdef CFD_DIAGNOSIS
     , raw_cfd( tree, CName(name, "CFDraw").c_str(), CLeaf(name, "CFDraw", type_map::unsigned_short_type).c_str() )
     , cfd_cross( tree, CName(name, "CFDcross").c_str(), CLeaf(name, "CFDcross", type_map::unsigned_short_type).c_str() )
     , cfd_val( tree, CName(name, "CFDval").c_str(), CLeaf(name, "CFDval", type_map::unsigned_short_type).c_str() )
+#endif // CFD_DIAGNOSIS
 {}
 
 void TriggerData::Set(const word_t &word)
@@ -71,10 +75,12 @@ void TriggerData::Set(const word_t &word)
     energy = word.energy;
     timestamp = word.timestamp;
     cfdcorr = word.cfdcorr;
+#ifdef CFD_DIAGNOSIS
     raw_cfd = word.cfddata;
     auto cfdcoded = reinterpret_cast<const cfd_decode *>(&word.cfddata);
     cfd_cross = cfdcoded->cross;
     cfd_val = cfdcoded->val;
+#endif // CFD_DIAGNOSIS
 }
 
 RFTreeEvent::RFTreeEvent(TTree *tree)
