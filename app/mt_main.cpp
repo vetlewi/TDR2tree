@@ -176,12 +176,12 @@ int main_func(int argc, char *argv[])
     }
 
     // Merge files
-    auto prog = progress.FinishSort(options.output.value());
+    //auto prog = progress.FinishSort(options.output.value());
     ROOT::MergeFiles(outfiles, options.output.value());
     for ( const auto& outfile : outfiles ){
         system(std::string("rm " + outfile).c_str());
     }
-    prog.Finish();
+    //prog.Finish();
     return 0;
 }
 

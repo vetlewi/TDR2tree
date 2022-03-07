@@ -36,7 +36,7 @@ void ROOT::MergeFiles(const std::vector<std::string> &infiles, const std::string
     TFileMerger merger;
     merger.OutputFile(outname.c_str());
     for ( auto &file : infiles )
-        merger.AddFile(file.c_str(), false);
+        merger.AddFile(file.c_str(), true);
     merger.Merge();
 }
 
