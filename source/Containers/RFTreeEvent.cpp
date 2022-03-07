@@ -34,47 +34,14 @@ void RFTreeData::push_back(const word_t &event, const word_t &trigger)
     veto.push_back(event.veto, entries);
     cfd_fail.push_back(event.cfdfail, entries);
     energy.push_back(event.energy, entries);
-    double timediff = double(event.timestamp - trigger.timestamp);
-    timediff += event.cfdcorr - trigger.cfdcorr;
+    double tdiff = double(event.timestamp_raw - trigger.timestamp_raw);
+    tdiff += event.cfdcorr - trigger.cfdcorr;
+    tdiff += CalibrateTime(event) - CalibrateTime(trigger);
     uint16_t cfdvalue = event.cfddata;
 
-    /*if ( detector->sfreq == f500MHz && detector->type != rfchan && !event.cfdfail ){
-        // We add 3072. If overflow then we will need to subtract 10 ns from the time
-        //cfdvalue = event.cfddata + 3500;
-        // If we become larger
-        auto cfdcoded_old = reinterpret_cast<const cfd_decode *>(&event.cfddata);
-        auto cfdcoded = reinterpret_cast<cfd_decode *>(&cfdvalue);
-
-        if ( cfdcoded->cross > 4 && reinterpret_cast<const cfd_decode *>(&rfevent.cfddata)->cross == 0 ){ // This actually means overflow.
-            //cfdcoded->cross = 0; // Manually set the cross value to ensure that we got an actual overflow
-            //timediff -= 10;
-        }
-
-        // Re-evaluate the cfd correction
-        double cfdcorr = (cfdcoded->cross - 1 + cfdcoded->val/8192.) * 2;
-        cfdcorr += CalibrateTime(event);
-        //timediff = double(event.timestamp - rfevent.timestamp) +
-        //cfdvalue = event.cfddata;
-        //if ( cfdvalue < event.cfddata )
-        //    timediff -= 10;
-    }*/
-    /*auto _timestamp = event.timestamp;
-    if ( detector->type == labr_2x2_fs && detector->detectorNum == 0 && !event.cfdfail ){
-
-        //cfdvalue += 2720;
-
-        // If the CFD value becomes larger than first is 4, then we 1) inc timestamp, 2) set the top to zero.
-        auto cfdcoded = reinterpret_cast<cfd_decode *>(&cfdvalue);
-
-        if ( cfdcoded->cross > 4 ){
-            cfdcoded->cross = 0;
-            _timestamp += 10;
-        }
 
 
-    }*/
-
-    time.push_back(timediff, entries);
+    time.push_back(tdiff, entries);
     timestamp.push_back(event.timestamp, entries);
     cfdcorr.push_back(event.cfdcorr, entries);
     raw_cfd.push_back(cfdvalue, entries);
@@ -145,13 +112,6 @@ RFTreeEvent &RFTreeEvent::operator=(Event &event)
     //trigger = event.GetTrigger();
 
     word_t trigger_data = event.GetTrigger();
-    //trigger_data.cfdcorr -= 2723 / 2;
-    /*auto cfdcoded = reinterpret_cast<cfd_decode *>(&trigger_data.cfdcorr);
-    if ( cfdcoded->cross == 7 ){
-        cfdcoded->cross = 4;
-        trigger_data.timestamp -= 10; // Should be correct. Maybe not do anyting... We will see.
-    }*/
-
     trigger = trigger_data;
 
     // Then we will go type by type and add events
