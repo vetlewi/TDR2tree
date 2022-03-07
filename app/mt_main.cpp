@@ -171,7 +171,7 @@ int main_func(int argc, char *argv[])
             }
             break;
         case CLI::sort_type::gap :
-            //outfiles = GapSort(&progress, options);
+            outfiles = GapSort(&progress, options);
             break;
     }
 
