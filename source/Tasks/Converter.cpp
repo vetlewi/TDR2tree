@@ -31,7 +31,8 @@ std::vector<word_t> Converter::TDRtoWord(const std::vector<TDR::Entry_t> &entrie
     XIA::XIA_CFD_t cfd_res;
 
     for ( auto &entry : entries ){
-        // This is also the place where we will remove any events with adc larger than 16384.
+        // This is also the place where we will remove any events with the top bit set
+        // These have been veto'ed due to the Compton shield.
         adc_data = entry.adc->ADC_data;
         if ( vetoAction != VetoAction::ignore && ( adc_data & 0x8000 ) == 0x8000 ) {
             if ( vetoAction == VetoAction::remove ){
@@ -55,11 +56,11 @@ std::vector<word_t> Converter::TDRtoWord(const std::vector<TDR::Entry_t> &entrie
         word.cfdfail = cfd_res.second;
 
         word.energy = CalibrateEnergy(word);
-        word.cfdcorr = CalibrateTime(word);
-
+        //word.cfdcorr += CalibrateTime(word);
         word.timestamp *= TSFactor(dinfo->sfreq);
-        //word.timestamp += int64_t(word.cfdcorr);
-        //word.cfdcorr -= int64_t(word.cfdcorr);
+        word.timestamp_raw = word.timestamp;
+        word.timestamp = word.timestamp + CalibrateTime(word);
+
         words.push_back(word);
     }
     return words;

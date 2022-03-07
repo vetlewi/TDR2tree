@@ -7,9 +7,11 @@ extern bool SetCalibration(const char *calfile);
 
 extern double CalibrateEnergy(const word_t &detector);
 
+//! Calibrate the time (± a few ns)
 extern double CalibrateTime(const word_t &detector);
 
-extern double CalibrateCoarseTime(const word_t &detector);
+//! Align the time with a contant integer
+extern int CalibrateCoarseTime(const word_t &detector);
 
 extern bool CheckTimeGateAddback(const double &timediff);
 
