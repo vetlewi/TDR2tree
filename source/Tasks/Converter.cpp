@@ -31,6 +31,11 @@ std::vector<word_t> Converter::TDRtoWord(const std::vector<TDR::Entry_t> &entrie
     XIA::XIA_CFD_t cfd_res;
 
     for ( auto &entry : entries ){
+
+        // Only for PR271, we will skip no. 6 in E since this is also a pulser
+        if ( entry.GetAddress() == 486 )
+            continue;
+
         // This is also the place where we will remove any events with the top bit set
         // These have been veto'ed due to the Compton shield.
         adc_data = entry.adc->ADC_data;
