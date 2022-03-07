@@ -102,6 +102,7 @@ void ROOT::HistManager::AddEntry(Event &buffer)
     word_t trigger = buffer.GetTrigger();
     word_t *start = &trigger;
     if ( trigger.address == 0 ) {
+        start = nullptr;
         int ref_num = 0;
         for (auto &entry: buffer.GetDetector(timeref)) {
             if (GetID(entry.address) == timeref_id) {
