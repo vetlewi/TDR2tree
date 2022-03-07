@@ -26,7 +26,10 @@ void Splitter::SplitEntries(){
         if ( end == buffer.end() )
             break;
 
-        output_queue.try_enqueue(std::vector(begin, end));
+        while ( !output_queue.try_enqueue(std::vector(begin, end)) ){
+            std::this_thread::yield();
+        }
+
         begin = end;
     }
     // Then we will remove everything up to begin (but not including)
