@@ -41,7 +41,7 @@
 ROOT::HistManager::Detector_Histograms_t::Detector_Histograms_t(RootFileManager *fm, const std::string &name, const size_t &num)
     : time( fm->Mat(std::string("time_"+name), std::string("Time spectra "+name), 30000, -1500, 1500, "Time [ns]", num, 0, num, std::string(name+" ID")) )
     , time_cube( fm->Cube(std::string("time_cube_"+name), std::string("Time spectra energy cube "+name), 800, -400, 400, "Time [ns]", 1000, 0, 10000, "Energy [keV]", num, 0, num, std::string(name+" ID")) )
-    , time_cal( fm->Mat(std::string("time_cal_"+name), std::string("Calibrated time spectra "+name), 3000, -150, 150, "Time [ns]", num, 0, num, std::string(name+" ID")) )
+    , time_cal( fm->Mat(std::string("time_cal_"+name), std::string("Calibrated time spectra "+name), 30000, -1500, 1500, "Time [ns]", num, 0, num, std::string(name+" ID")) )
     , energy( fm->Mat(std::string("energy_"+name), std::string("Energy spectra "+name), 65536, 0, 65536, "Energy [ch]", num, 0, num, std::string(name+" ID")) )
     , energy_cal( fm->Mat(std::string("energy_cal_"+name), std::string("energy spectra "+name+" (cal)"), 16384, 0, 16384, "Energy [keV]", num, 0, num, std::string(name+" ID")) )
     , mult( fm->Spec(std::string("mult_"+name), std::string("Multiplicity " + name), 128, 0, 128, "Multiplicity") )
