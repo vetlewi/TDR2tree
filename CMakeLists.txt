@@ -88,6 +88,7 @@ add_library(TDR2treeLib
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Tasks/Sort.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Tasks/Splitter.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Tasks/Trigger.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/Tasks/XIAReader.cpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Tools/CommandLineInterface.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Tools/ProgressUI.cpp)
