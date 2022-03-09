@@ -30,7 +30,11 @@ void Reader::RunWithUI()
         auto *header = TDR::FindHeader(file->GetPtr(), end);
         while ( header < end ){
             auto *next_header = TDR::FindNextHeader(header, end);
+#ifdef USE_ATOMIC_QUEUE
+            output_queue.push(parser.ParseBuffer(header, last && !(next_header < end)));
+#else
             output_queue.wait_enqueue(parser.ParseBuffer(header, last && !(next_header < end)));
+#endif // USE_ATOMIC_QUEUE
             bar.UpdateProgress(header - file->GetPtr());
             header = next_header;
         }
@@ -47,7 +51,11 @@ void Reader::RunWithoutUI()
         auto *header = TDR::FindHeader(file->GetPtr(), end);
         while ( header < end ){
             auto *next_header = TDR::FindNextHeader(header, end);
+#ifdef USE_ATOMIC_QUEUE
+            output_queue.push(parser.ParseBuffer(header, last && !(next_header < end)));
+#else
             output_queue.wait_enqueue(parser.ParseBuffer(header, last && !(next_header < end)));
+#endif // USE_ATOMIC_QUEUE
             header = next_header;
         }
     }

@@ -22,7 +22,7 @@ namespace Task {
 
     public:
 
-        Buffer(WordQueue_t &input, const size_t &buf_size = 196608, const size_t &cap = 256);
+        Buffer(WordQueue_t &input, const size_t &buf_size = 196608, const size_t &cap = 1024);
         WordQueue_t &GetQueue(){ return output_queue; }
         void Run() override;
 

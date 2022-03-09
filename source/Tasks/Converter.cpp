@@ -70,10 +70,20 @@ void Converter::Run()
 {
     std::vector<TDR::Entry_t> input;
     while ( true ){
+#ifndef USE_ATOMIC_QUEUE
         if ( input_queue.wait_dequeue_timed(input, std::chrono::microseconds(100)) ){
             output_queue.wait_enqueue(TDRtoWord(input));
         } else if ( done ){
             break;
         }
+#else
+        if ( input_queue.was_empty() && done )
+            break;
+        else {
+            input = input_queue.pop();
+            //output_queue.wait_enqueue(TDRtoWord(input));
+            output_queue.push(TDRtoWord(input));
+        }
+#endif // USE_ATOMIC_QUEUE
     }
 }

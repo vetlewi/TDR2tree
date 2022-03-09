@@ -12,8 +12,11 @@
 #include <BasicStruct.h>
 #include <Event.h>
 
+#include <atomic_queue.h>
 #include <readerwritercircularbuffer.h>
 #include <blockingconcurrentqueue.h>
+
+#define USE_ATOMIC_QUEUE
 
 namespace TDR {
     struct Entry_t;
@@ -43,8 +46,20 @@ namespace Task {
         std::vector<word_t> entries;
     };
 
+#ifdef USE_ATOMIC_QUEUE
+    typedef std::vector<TDR::Entry_t> entry_buffer_t;
+    typedef atomic_queue::AtomicQueueB2<entry_buffer_t, std::allocator<entry_buffer_t>, true, true, true> EntryQueue_t;
+#else
     typedef moodycamel::BlockingReaderWriterCircularBuffer<std::vector<TDR::Entry_t>> EntryQueue_t;
+#endif // USE_ATOMIC_QUEUE
+
+#ifdef USE_ATOMIC_QUEUE
+    typedef std::vector<word_t> word_buffer_t;
+    typedef atomic_queue::AtomicQueueB2<word_buffer_t, std::allocator<word_buffer_t>, true, true, true> WordQueue_t;
+#else
     typedef moodycamel::BlockingReaderWriterCircularBuffer<std::vector<word_t>> WordQueue_t;
+#endif // USE_ATOMIC_QUEUE
+
     typedef moodycamel::BlockingConcurrentQueue<std::vector<word_t>> MCWordQueue_t;
     typedef moodycamel::BlockingConcurrentQueue<Triggered_event> TEWordQueue_t;
 }

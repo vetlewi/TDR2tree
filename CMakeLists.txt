@@ -48,6 +48,17 @@ CPMAddPackage(
         DOWNLOAD_ONLY YES
 )
 
+CPMAddPackage(
+        NAME atomic_queue
+        GITHUB_REPOSITORY max0x7ba/atomic_queue
+        GIT_TAG 1d4f144d4eb6f589c1dc8ef8c484f879b3cb84fd
+)
+
+if ( atomic_queue_ADDED )
+    add_library(atomic_queue INTERFACE IMPORTED)
+    target_include_directories(atomic_queue INTERFACE ${atomic_queue_SOURCE_DIR}/include/atomic_queue)
+endif()
+
 if ( sanitizers-cmake_ADDED )
     set(CMAKE_MODULE_PATH "${sanitizers-cmake_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
     find_package(Sanitizers)
@@ -110,6 +121,7 @@ target_link_libraries(TDR2treeLib
         ROOT::Tree
         readerwriterqueue
         concurrentqueue
+        atomic_queue
         structopt::structopt
         indicators::indicators
         fmt::fmt)
@@ -121,5 +133,5 @@ add_executable(TDR2treeMT app/mt_main.cpp)
 add_executable(TDR2treeST app/st_main.cpp)
 
 target_link_libraries(TDR2tree TDR2treeLib)
-target_link_libraries(TDR2treeMT TDR2treeLib readerwriterqueue concurrentqueue)
+target_link_libraries(TDR2treeMT TDR2treeLib readerwriterqueue concurrentqueue atomic_queue)
 target_link_libraries(TDR2treeST TDR2treeLib)
