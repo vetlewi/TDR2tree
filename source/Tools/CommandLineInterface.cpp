@@ -5,19 +5,95 @@
 #include <structopt/app.hpp>
 #include <structopt/third_party/magic_enum/magic_enum.hpp>
 
+
 using namespace CLI;
 
 STRUCTOPT(Options, input, output, CalibrationFile, coincidenceTime, SplitTime, tree, sortType, Trigger, addback, VetoAction);
+
+class parse_exception : public std::runtime_error
+{
+public:
+    enum what_error {
+        run,
+        filenumber,
+        both
+    };
+
+    explicit parse_exception(const what_error &_error_type, const std::string &filename = "")
+        : std::runtime_error("Could not parse file")
+        , error_type( _error_type )
+        , fname( filename )
+    {}
+
+    virtual ~parse_exception() throw () {}
+
+    [[nodiscard]] what_error GetError() const { return error_type; }
+    [[nodiscard]] std::string Filename() const { return fname; }
+
+private:
+    what_error error_type;
+    std::string fname;
+};
+
+std::ostream &operator<<(std::ostream &os, const parse_exception &ex)
+{
+    switch ( ex.GetError() ) {
+        case parse_exception::run :
+            os << "Unable to find run number in file '" << ex.Filename() << "'";
+            break;
+        case parse_exception::filenumber :
+            os << "Unable to find file number in file '" << ex.Filename() << "'";
+            break;
+        case parse_exception::both :
+            os << "Unable to parse files";
+            break;
+        default :
+            throw std::runtime_error("Unexpected error in parse_exception");
+    }
+    return os;
+}
+
+size_t extract_run_no(const std::string &str)
+{
+    auto fno_start = str.find_last_of('R');
+    auto fno_end = str.find_last_of('_');
+    if ( fno_start == std::string::npos || fno_end == std::string::npos ){
+        throw parse_exception(parse_exception::run, str);
+    } else {
+        fno_start += 1;
+        fno_end += 1;
+    }
+    try {
+        return std::stoi(std::string(str.begin() + fno_start, str.begin() + fno_end));
+    } catch ( const std::invalid_argument &ex ){
+        throw parse_exception(parse_exception::run, str);
+    }
+}
 
 size_t extract_file_no(const std::string &str)
 {
     auto fno_start = str.find_last_of('_');
     if ( fno_start == std::string::npos ){
-        throw std::runtime_error("Could not find file number");
+        throw parse_exception(parse_exception::filenumber, str);
     } else {
         fno_start += 1;
     }
-    return std::stoi(std::string(str.begin()+fno_start, str.end()));
+    try {
+        return std::stoi(std::string(str.begin() + fno_start, str.end()));
+    } catch ( const std::invalid_argument &ex ) {
+        throw parse_exception(parse_exception::filenumber, str);
+    }
+}
+
+size_t get_run_no(const std::string &str)
+{
+    auto fname_start = str.find_last_of('/');
+    if ( fname_start == std::string::npos ){
+        fname_start = 0;
+    } else {
+        fname_start += 1;
+    }
+    return extract_run_no(std::string(str.begin()+fname_start, str.end()));
 }
 
 size_t get_file_no(const std::string &str)
@@ -28,20 +104,39 @@ size_t get_file_no(const std::string &str)
     } else {
         fname_start += 1;
     }
-    try {
-        return extract_file_no(std::string(str.begin() + fname_start, str.end()));
-    } catch ( std::exception &ex ){
-        throw std::runtime_error("Error parsing file path '" + str + "', got error: " + ex.what());
-    }
+    return extract_file_no(std::string(str.begin() + fname_start, str.end()));
 }
 
 bool compare_run_files(const std::string &lhs, const std::string &rhs)
 {
-    return get_file_no(lhs) < get_file_no(rhs);
+    try {
+        return (get_run_no(lhs) == get_run_no(rhs)) ? (get_file_no(lhs) < get_file_no(rhs)) : (get_run_no(lhs) < get_run_no(rhs));
+    } catch ( const parse_exception &ex ){
+        std::cerr << ex << std::endl;
+        if ( ex.GetError() == parse_exception::run ){
+            try {
+                return (get_file_no(lhs) < get_file_no(rhs));
+            } catch ( const parse_exception &ex2 ){
+                std::cerr << ex2 << std::endl;
+                throw parse_exception(parse_exception::both);
+            }
+        } else {
+            try {
+                return (get_run_no(lhs) < get_run_no(rhs));
+            } catch ( const parse_exception &ex2 ){
+                std::cerr << ex2 << std::endl;
+                throw parse_exception(parse_exception::both);
+            }
+        }
+    }
 }
 
 void sort_file_names(std::vector<std::string> &files){
-    std::sort(files.begin(), files.end(), compare_run_files);
+    try {
+        std::sort(files.begin(), files.end(), compare_run_files);
+    } catch ( const parse_exception &ex ){
+        std::cerr << "Unable to parse filename. Will not be sorted." << std::endl;
+    }
 }
 
 std::ostream &operator<<(std::ostream &os, const Options &opt)
