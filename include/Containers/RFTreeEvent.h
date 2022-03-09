@@ -8,6 +8,8 @@
 #include <TreeEvent.h>
 #include <BasicStruct.h>
 
+// #define CFD_DIAGNOSIS
+
 class RFTreeData {
     ObjBranch<int> entries;
     //int entries;
@@ -20,9 +22,11 @@ class RFTreeData {
     VecBranch<double> time;
     VecBranch<int64_t> timestamp;
     VecBranch<double> cfdcorr;
+#ifdef CFD_DIAGNOSIS
     VecBranch<uint16_t> raw_cfd;
     VecBranch<uint16_t> cfd_cross;
     VecBranch<uint16_t> cfd_val;
+#endif // CFD_DIAGNOSIS
 
 public:
 
@@ -45,9 +49,11 @@ public:
         time.clear();
         timestamp.clear();
         cfdcorr.clear();
-        cfd_fail.clear();
+#ifdef CFD_DIAGNOSIS
+        raw_cfd.clear();
         cfd_cross.clear();
         cfd_val.clear();
+#endif // CFD_DIAGNOSIS
     }
 
     inline void validate() {
@@ -58,9 +64,11 @@ public:
         time.check_address();
         timestamp.check_address();
         cfdcorr.check_address();
+#ifdef CFD_DIAGNOSIS
         raw_cfd.check_address();
         cfd_cross.check_address();
         cfd_val.check_address();
+#endif // CFD_DIAGNOSIS
     }
 
 };
@@ -73,9 +81,11 @@ private:
     ObjBranch<double> energy;
     ObjBranch<int64_t> timestamp;
     ObjBranch<double> cfdcorr;
+#ifdef CFD_DIAGNOSIS
     ObjBranch<uint16_t> raw_cfd;
     ObjBranch<uint16_t> cfd_cross;
     ObjBranch<uint16_t> cfd_val;
+#endif // CFD_DIAGNOSIS
 
 public:
     TriggerData(TTree *tree, const char *name);
@@ -89,9 +99,11 @@ public:
         energy = 0;
         timestamp = 0;
         cfdcorr = 0;
+#ifdef CFD_DIAGNOSIS
         raw_cfd = 0;
         cfd_cross = 0;
         cfd_val = 0;
+#endif // CFD_DIAGNOSIS
     }
 
     inline void validate(){ /* nop */ }
