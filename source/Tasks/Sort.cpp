@@ -7,11 +7,12 @@
 #include "Histogram1D.h"
 #include "Histogram2D.h"
 #include "BasicStruct.h"
-#include "Event.h"
+#include "ThreadSafeEvent.h"
+#include "CommandLineInterface.h"
 
 using namespace Task;
 
-Detector_Histograms_t::Detector_Histograms_t(Histograms &hm, const std::string &name, const size_t &num)
+Detector_Histograms_t::Detector_Histograms_t(ThreadSafeHistograms &hm, const std::string &name, const size_t &num)
         : time( hm.Create2D(std::string("time_"+name), std::string("Time spectra "+name), 3000, -1500, 1500, "Time [ns]", num, 0, num, std::string(name+" ID").c_str()) )
         , energy( hm.Create2D(std::string("energy_"+name), std::string("Energy spectra "+name), 65536, 0, 65536, "Energy [ch]", num, 0, num, std::string(name+" ID").c_str()) )
         , energy_cal( hm.Create2D(std::string("energy_cal_"+name), std::string("energy spectra "+name+" (cal)"), 16384, 0, 16384, "Energy [keV]", num, 0, num, std::string(name+" ID").c_str()) )
@@ -21,27 +22,25 @@ Detector_Histograms_t::Detector_Histograms_t(Histograms &hm, const std::string &
 void Detector_Histograms_t::Fill(const word_t &word)
 {
     auto dno = GetID(word.address);
-    energy->Fill(word.adcdata, dno);
-    energy_cal->Fill(word.energy, dno);
+    energy.Fill(word.adcdata, dno);
+    energy_cal.Fill(word.energy, dno);
 }
 
 void Detector_Histograms_t::Fill(const Subevent &subvec, const word_t *start)
 {
     int dno;
-    mult->Fill(subvec.size());
+    mult.Fill(subvec.size());
     for ( auto &entry : subvec ){
         dno = GetID(entry.address);
-        energy->Fill(entry.adcdata, dno);
-        energy_cal->Fill(entry.energy, dno);
+        energy.Fill(entry.adcdata, dno);
+        energy_cal.Fill(entry.energy, dno);
         if ( start )
-            time->Fill(double(entry.timestamp - start->timestamp) + (entry.cfdcorr - start->cfdcorr), dno);
+            time.Fill(double(entry.timestamp - start->timestamp) + (entry.cfdcorr - start->cfdcorr), dno);
     }
 }
 
-#include <iostream>
-Task::HistManager::HistManager()
-        : histograms( )
-        , clover( histograms, "clover", NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS )
+Task::HistManager::HistManager(ThreadSafeHistograms &histograms)
+        : clover( histograms, "clover", NUM_CLOVER_DETECTORS*NUM_CLOVER_CRYSTALS )
         , labrL( histograms, "labrL", NUM_LABR_3X8_DETECTORS )
         , labrS( histograms, "labrS", NUM_LABR_2X2_DETECTORS )
         , labrF( histograms, "labrF", NUM_LABR_2X2_DETECTORS )
@@ -67,7 +66,7 @@ Detector_Histograms_t *Task::HistManager::GetSpec(const DetectorType &type)
     }
 }
 
-void Task::HistManager::AddEntry(Event &buffer)
+void Task::HistManager::AddEntry(ThreadSafeEvent &buffer)
 {
 
     // LaBr 0 is our time reference. We only use it if there is only one of that type.
@@ -92,13 +91,13 @@ void Task::HistManager::AddEntry(Event &buffer)
     for ( auto sect_evt : buffer.GetDetector(DetectorType::de_sect) ){
 
         for ( auto ring_evt : buffer.GetDetector(DetectorType::de_ring) ){
-            time_energy_ring_sect->Fill(
+            time_energy_ring_sect.Fill(
                     ring_evt.energy,
                     double(ring_evt.timestamp - sect_evt.timestamp) + (ring_evt.cfdcorr - sect_evt.cfdcorr));
         }
 
         for ( auto back_evt : buffer.GetDetector(DetectorType::eDet) ){
-            time_energy_sect_back->Fill(
+            time_energy_sect_back.Fill(
                     back_evt.energy,
                     double(back_evt.timestamp - sect_evt.timestamp) + (back_evt.cfdcorr - sect_evt.cfdcorr));
         }
@@ -113,18 +112,19 @@ void Task::HistManager::AddEntry(const word_t &word)
         spec->Fill(word);
 }
 
-Sort::Sort(MCWordQueue_t &input, const bool &addback)
+Sort::Sort(TEWordQueue_t &input, ThreadSafeHistograms &histograms, const bool &addback)
     : input_queue( input )
-    , hm( )
-    , addback_hist( ( addback ) ? hm.GetHistograms().Create2D("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") : nullptr )
+    , hm( histograms )
+    , do_addback( addback )
+    , addback_hist( histograms.Create2D("time_self_clover", "Time spectra, clover self timing", 3000, -1500, 1500, "Time [ns]", NUM_CLOVER_DETECTORS, 0, NUM_CLOVER_DETECTORS, "Clover detector") )
 {}
 
 void Sort::Run()
 {
-    std::vector<word_t> input;
+    Triggered_event input;
     while ( true ){
         if ( input_queue.wait_dequeue_timed(input, std::chrono::microseconds(100)) ){
-            Event event(input, addback_hist);
+            ThreadSafeEvent event(input.trigger, input.entries, ( do_addback ) ? &addback_hist : nullptr);
             hm.AddEntry(event);
         } else if ( done ){
             break;
@@ -132,4 +132,20 @@ void Sort::Run()
             std::this_thread::yield();
         }
     }
+}
+
+Sorters::Sorters(TEWordQueue_t &input, const CLI::Options &options, const size_t &no_workers)
+    : input_queue( input )
+    , histograms( )
+    , sorters( no_workers )
+{
+    for ( int n = 0 ; n < no_workers ; ++n ){
+        sorters[n] = new Sort(input, histograms, options.addback.value());
+    }
+}
+
+Sorters::~Sorters()
+{
+    for ( auto s : sorters )
+        delete s;
 }

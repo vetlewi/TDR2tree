@@ -16,7 +16,7 @@
 #include <readerwritercircularbuffer.h>
 #include <blockingconcurrentqueue.h>
 
-#define USE_ATOMIC_QUEUE
+//#define USE_ATOMIC_QUEUE
 
 namespace TDR {
     struct Entry_t;

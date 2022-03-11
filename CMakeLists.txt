@@ -75,6 +75,7 @@ add_library(TDR2treeLib
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/MamaWriter.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/RFTreeEvent.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/RootWriter.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/ThreadSafeEvent.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/TreeEvent.cpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/source/FileReader/MemoryMap.cpp
@@ -99,6 +100,7 @@ add_library(TDR2treeLib
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Tasks/Sort.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Tasks/Splitter.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Tasks/Trigger.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/Tasks/Triggers.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Tasks/XIAReader.cpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Tools/CommandLineInterface.cpp
@@ -130,8 +132,10 @@ target_compile_features(TDR2treeLib PUBLIC cxx_std_17)
 
 add_executable(TDR2tree app/main.cpp)
 add_executable(TDR2treeMT app/mt_main.cpp)
-add_executable(TDR2treeST app/st_main.cpp)
+#add_executable(TDR2treeST app/st_main.cpp)
+add_executable(TDR2Hist app/tdr2hist.cpp)
 
 target_link_libraries(TDR2tree TDR2treeLib)
 target_link_libraries(TDR2treeMT TDR2treeLib readerwriterqueue concurrentqueue atomic_queue)
-target_link_libraries(TDR2treeST TDR2treeLib)
+target_link_libraries(TDR2Hist TDR2treeLib)
+#target_link_libraries(TDR2treeST TDR2treeLib)

@@ -1,22 +1,19 @@
 //
-// Created by Vetle Wegner Ingeberg on 16/04/2021.
+// Created by Vetle Wegner Ingeberg on 11/03/2022.
 //
 
-#include "Trigger.h"
+#include "Triggers.h"
 #include "timeval.h"
-#include "BasicStruct.h"
-
-#include <stdexcept>
 
 using namespace Task;
 
-Trigger::Trigger(MCWordQueue_t &input, const double &time, const DetectorType &trig, const size_t &cap)
-    : input_queue( input )
-    , output_queue( cap )
-    , coincidence_time( time )
-    , trigger( trig ){}
+Trigger_worker::Trigger_worker(MCWordQueue_t &input, TEWordQueue_t &output, const double &time, const DetectorType &trig)
+        : input_queue( input )
+        , output_queue( output )
+        , coincidence_time( time )
+        , trigger( trig ){}
 
-void Trigger::Run()
+void Trigger_worker::Run()
 {
     std::vector<word_t> input;
     word_t null_trigger = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -65,5 +62,22 @@ void Trigger::Run()
         } else {
             std::this_thread::yield();
         }
+    }
+}
+
+Triggers::Triggers(MCWordQueue_t &input, const size_t &workers, const double &time, const DetectorType &trigger, const size_t &cap)
+    : input_queue( input )
+    , output_queue( cap )
+    , triggers( workers )
+{
+    for ( int n = 0 ; n < workers ; ++n ){
+        triggers[n] = new Trigger_worker(input_queue, output_queue, time, trigger);
+    }
+}
+
+Triggers::~Triggers()
+{
+    for ( auto trigger : triggers ){
+        delete trigger;
     }
 }

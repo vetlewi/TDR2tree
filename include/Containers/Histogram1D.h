@@ -8,11 +8,9 @@
 #define HISTOGRAM1D_H_
 
 #include <Histograms.h>
-
-#define H1D_USE_BUFFER 1
-#ifdef H1D_USE_BUFFER
 #include <vector>
-#endif
+
+//#define H1D_USE_BUFFER 1
 
 // ########################################################################
 
@@ -21,6 +19,14 @@ class Histogram1D : public Named {
 public:
   //! The type used to count in each bin.
   typedef size_t data_t;
+
+  //! Typedef if buffer is used.
+    struct buf_t {
+        Axis::bin_t x;
+        data_t w;
+        buf_t(Axis::bin_t xx, data_t ww) : x(xx), w(ww) { }
+    };
+    typedef std::vector<buf_t> buffer_t;
 
   //! Construct a 1D histogram.
   Histogram1D( const std::string& name,  /*!< The name of the new histogram. */
@@ -67,6 +73,13 @@ public:
   //! Clear all bins of the histogram.
   void Reset();
 
+  //! Directly increment the histogram. Inlined for optimal performance.
+  inline void FillDirect(const buf_t &element)
+  {
+      entries += 1;
+      data[xaxis.FindBin( element.x )] += element.w;
+  }
+
 private:
   //! Increment a histogram bin directly, bypassing the buffer.
   void FillDirect(Axis::bin_t x,  /*!< The x axis value. */
@@ -75,9 +88,6 @@ private:
 #ifdef H1D_USE_BUFFER
   //! Flush the data buffer.
   void FlushBuffer();
-
-  //! Flush the data buffer.
-  void MTFlushBuffer();
 #endif /* H1D_USE_BUFFER */
 
   //! The x axis of the histogram;
@@ -90,12 +100,6 @@ private:
   data_t *data;
 
 #ifdef H1D_USE_BUFFER
-  struct buf_t {
-    Axis::bin_t x;
-    data_t w;
-    buf_t(Axis::bin_t xx, data_t ww) : x(xx), w(ww) { }
-  };
-  typedef std::vector<buf_t> buffer_t;
   buffer_t buffer;
   static const unsigned int buffer_max = 1024;
 #endif /* H1D_USE_BUFFER */

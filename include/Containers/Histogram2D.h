@@ -9,18 +9,23 @@
 #define HISTOGRAM2D_H_
 
 #include <Histograms.h>
+#include <vector>
 
 #define USE_ROWS 1
-#define H2D_USE_BUFFER 1
-#ifdef H2D_USE_BUFFER
-#include <vector>
-#endif
+//#define H2D_USE_BUFFER 1
 
 //! A two-dimensional histogram.
 class Histogram2D : public Named {
 public:
   //! The type used to count in each bin.
   typedef size_t data_t;
+
+  struct buf_t {
+      Axis::bin_t x, y;
+      data_t w;
+      buf_t(Axis::bin_t xx, Axis::bin_t yy, data_t ww) : x(xx), y(yy), w(ww) { }
+  };
+  typedef std::vector<buf_t> buffer_t;
 
   //! Construct a 2D histogram.
   Histogram2D( const std::string& name,   /*!< The name of the new histogram. */
@@ -84,6 +89,19 @@ public:
   //! Clear all bins of the histogram.
   void Reset();
 
+  //! Directly increment the histogram. Inlined for optimal performance.
+  inline void FillDirect(const buf_t &element)
+  {
+      Axis::index_t xbin = xaxis.FindBin( element.x );
+      Axis::index_t ybin = yaxis.FindBin( element.y );
+#ifndef USE_ROWS
+      data[xaxis.GetBinCountAll()*ybin + xbin] += element.w;
+#else
+      rows[ybin][xbin] += element.w;
+#endif
+      entries += 1;
+  }
+
 private:
   //! Increment a histogram bin directly, bypassing the buffer.
   void FillDirect(Axis::bin_t x,  /*!< The x axis value. */
@@ -112,12 +130,6 @@ private:
 #endif
 
 #ifdef H2D_USE_BUFFER
-  struct buf_t {
-    Axis::bin_t x, y;
-    data_t w;
-    buf_t(Axis::bin_t xx, Axis::bin_t yy, data_t ww) : x(xx), y(yy), w(ww) { }
-  };
-  typedef std::vector<buf_t> buffer_t;
   buffer_t buffer;
   static const unsigned int buffer_max = 4096;
 #endif /* H2D_USE_BUFFER */

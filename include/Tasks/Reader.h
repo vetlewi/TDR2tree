@@ -12,13 +12,10 @@
 #include "Task.h"
 #include "TDRParser.h"
 
+#include <MemoryMap.h>
 #include <readerwritercircularbuffer.h>
 
 class ProgressUI;
-
-namespace IO {
-    class MemoryMap;
-}
 
 namespace Task {
 
