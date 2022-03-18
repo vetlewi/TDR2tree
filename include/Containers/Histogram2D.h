@@ -37,7 +37,8 @@ public:
                Axis::index_t ychannels,   /*!< The number of regular bins on the y axis. */
                Axis::bin_t yleft,         /*!< The lower edge of the lowest bin on the y axis. */
                Axis::bin_t yright,        /*!< The upper edge of the highest bin on the y axis. */
-               const std::string& ytitle  /*!< The title of the y axis. */);
+               const std::string& ytitle, /*!< The title of the y axis. */
+               const std::string& path="" /*!< Path if in directories within root file */);
 
   //! Deallocate memory.
   ~Histogram2D();

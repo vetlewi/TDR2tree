@@ -29,12 +29,13 @@ public:
     typedef std::vector<buf_t> buffer_t;
 
   //! Construct a 1D histogram.
-  Histogram1D( const std::string& name,  /*!< The name of the new histogram. */
-               const std::string& title, /*!< The title of teh new histogram. */
-               Axis::index_t channels,   /*!< The number of regular bins. */
-               Axis::bin_t left,         /*!< The lower edge of the lowest bin.  */
-               Axis::bin_t right,        /*!< The upper edge of the highest bin. */
-               const std::string& xtitle /*!< The title of the x axis. */);
+  Histogram1D( const std::string& name,   /*!< The name of the new histogram. */
+               const std::string& title,  /*!< The title of teh new histogram. */
+               Axis::index_t channels,    /*!< The number of regular bins. */
+               Axis::bin_t left,          /*!< The lower edge of the lowest bin.  */
+               Axis::bin_t right,         /*!< The upper edge of the highest bin. */
+               const std::string& xtitle, /*!< The title of the x axis. */
+               const std::string& path="" /*!< Path if in directories within root file */);
 
   //! Deallocate memory.
   ~Histogram1D();

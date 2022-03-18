@@ -40,7 +40,8 @@ public:
                 Axis::index_t zchannels,   /*!< The number of regular bins on the y axis. */
                 Axis::bin_t zleft,         /*!< The lower edge of the lowest bin on the y axis. */
                 Axis::bin_t zright,        /*!< The upper edge of the highest bin on the y axis. */
-                const std::string& ztitle  /*!< The title of the y axis. */);
+                const std::string& ztitle, /*!< The title of the y axis. */
+                const std::string& path="" /*!< Path if in directories within root file */);
 
     //! Deallocate memory.
     ~Histogram3D();

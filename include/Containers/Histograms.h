@@ -20,8 +20,9 @@
 class Named {
 protected:
   //! Construct a 1D histogram.
-  Named( const std::string& name, /*!< The name of the object. */
-         const std::string& title /*!< The title of the object. */);
+  Named( const std::string& name,   /*!< The name of the object.                         */
+         const std::string& title,  /*!< The title of the object.                        */
+         const std::string& path="" /*!< The path to store object when exported to root. */);
 
 public:
   //! Get the name of the object.
@@ -36,12 +37,21 @@ public:
   [[nodiscard]] std::string GetTitle() const
   { return title; }
 
+    //! Get the path of the object.
+    /*! \return The object's path.
+     */
+    [[nodiscard]] std::string GetPath() const
+    { return path; }
+
 private:
   //! The name of the object.
   const std::string name;
 
-  //! The title of the object;
+  //! The title of the object.
   const std::string title;
+
+  //! The path of the object.
+  const std::string path;
 
 };
 
@@ -162,12 +172,13 @@ public:
    *
    * \return the new histogram.
    */
-  Histogram1Dp Create1D( const std::string& name,  /*!< The name of the new histogram. */
-                         const std::string& title, /*!< The title of teh new histogram. */
-                         Axis::index_t channels,   /*!< The number of regular bins. */
-                         Axis::bin_t left,         /*!< The lower edge of the lowest bin.  */
-                         Axis::bin_t right,        /*!< The upper edge of the highest bin. */
-                         const std::string& xtitle /*!< The title of the x axis. */);
+  Histogram1Dp Create1D( const std::string& name,   /*!< The name of the new histogram. */
+                         const std::string& title,  /*!< The title of teh new histogram. */
+                         Axis::index_t channels,    /*!< The number of regular bins. */
+                         Axis::bin_t left,          /*!< The lower edge of the lowest bin.  */
+                         Axis::bin_t right,         /*!< The upper edge of the highest bin. */
+                         const std::string& xtitle, /*!< The title of the x axis. */
+                         const std::string& path="" /*!< Path if in directories within root file */);
 
   //! Create a 2D histogram.
   /*! It will be added to this set of histograms and deleted when the set is destroyed.
@@ -183,7 +194,8 @@ public:
                          Axis::index_t ychannels,   /*!< The number of regular bins on the y axis. */
                          Axis::bin_t yleft,         /*!< The lower edge of the lowest bin on the y axis. */
                          Axis::bin_t yright,        /*!< The upper edge of the highest bin on the y axis. */
-                         const std::string& ytitle  /*!< The title of the y axis. */);
+                         const std::string& ytitle, /*!< The title of the y axis. */
+                         const std::string& path="" /*!< Path if in directories within root file */);
 
   //! Create a 3D histogram.
   /*! It will be added to this set of histograms and deleted when the set is destroyed.
@@ -203,7 +215,8 @@ public:
                          Axis::index_t zchannels,   /*!< The number of regular bins on the z axis. */
                          Axis::bin_t zleft,         /*!< The lower edge of the lowest bin on the z axis. */
                          Axis::bin_t zright,        /*!< The upper edge of the highest bin on the z axis. */
-                         const std::string& ztitle  /*!< The title of the z axis. */);
+                         const std::string& ztitle, /*!< The title of the z axis. */
+                         const std::string& path="" /*!< Path if in directories within root file */);
 
   //! Get a list of all 1D histograms.
   list1d_t GetAll1D();
