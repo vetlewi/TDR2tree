@@ -149,7 +149,7 @@ public:
         rf.clear();
     }
 
-    inline void validate()
+    inline bool validate()
     {
         trigger.validate();
         clover.validate();
@@ -160,6 +160,7 @@ public:
         sect.validate();
         back.validate();
         rf.validate();
+        return true;
     }
 
 };
