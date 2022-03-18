@@ -16,11 +16,13 @@
 class TH1;
 class TH2;
 class TH3;
+class TFile;
 
 typedef TH1* TH1p;
 typedef TH2* TH2p;
 typedef TH3* TH3p;
 
+class Named;
 class Histogram1D;
 class Histogram2D;
 class Histogram3D;
@@ -43,6 +45,13 @@ class Histograms;
  * \copyright GNU Public License v. 3
  */
 class RootWriter {
+
+private:
+
+    //! Modify the root file to be in the correct directory before creating the histogram.
+    static void Navigate( Named *named, /*!< Named object where we will find the directory. */
+                          TFile *file   /*!< ROOT file we are writing to.                   */);
+
 public:
   //! Write many histograms at once.
   /*! All of the histograms in the list will be written. The output
