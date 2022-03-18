@@ -46,7 +46,7 @@ void Splitter::Run()
             std::sort(buffer.begin(), buffer.end(), [](const word_t &lhs, const word_t &rhs)
             { return (double(rhs.timestamp - lhs.timestamp) + (rhs.cfdcorr - lhs.cfdcorr)) > 0; });
             SplitEntries();
-        } else if ( done ){
+        } else if ( input_queue.done ){
             output_queue.enqueue(std::move(buffer));
             break;
         } else {
@@ -65,4 +65,5 @@ void Splitter::Run()
         }
 #endif // USE_ATOMIC_QUEUE
     }
+    output_queue.done = true;
 }

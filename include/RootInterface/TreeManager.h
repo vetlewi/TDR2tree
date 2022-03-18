@@ -58,8 +58,8 @@ namespace ROOT {
         inline void AddEntry(V &entry)
         {
             entry_obj = entry;
-            entry_obj.validate(); // Method that ensures that addresses of the branches are correct.
-            tree->Fill();
+            if ( entry_obj.validate() ) // Method that ensures that addresses of the branches are correct.
+                tree->Fill();
         }
 
         //! Add entries.

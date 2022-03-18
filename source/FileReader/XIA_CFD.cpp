@@ -73,19 +73,21 @@ XIA::XIA_CFD_t XIA::XIA_CFD_Decode(const ADCSamplingFreq &frequency, const uint1
         default :
             break;
 
-        case f100MHz : {
+        [[likely]] case f100MHz : {
             auto *cfd = reinterpret_cast<const XIA_CFD_100MHz_t *>(&CFDvalue);
             return std::make_pair(cfd->get_time(), cfd->get_fail());
         }
 
-        case f250MHz : {
+        [[unlikely]] case f250MHz : {
             auto *cfd = reinterpret_cast<const XIA_CFD_250MHz_t *>(&CFDvalue);
             return std::make_pair(cfd->get_time(), cfd->get_fail());
         }
 
-        case f500MHz :
+        [[likely]] case f500MHz :
             auto *cfd = reinterpret_cast<const XIA_CFD_500MHz_t *>(&CFDvalue);
             return std::make_pair(cfd->get_time(), cfd->get_fail());
     }
-    throw std::invalid_argument("Unknown frequency");
+    //throw std::invalid_argument("Unknown frequency");
+    auto *cfd = reinterpret_cast<const XIA_CFD_100MHz_t *>(&CFDvalue);
+    return std::make_pair(cfd->get_time(), cfd->get_fail());
 }

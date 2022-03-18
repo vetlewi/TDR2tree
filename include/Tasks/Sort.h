@@ -37,8 +37,6 @@ namespace Task {
 
     private:
 
-        //Histograms histograms;
-
         Detector_Histograms_t clover;
         Detector_Histograms_t labrL;
         Detector_Histograms_t labrS;
@@ -52,7 +50,13 @@ namespace Task {
         ThreadSafeHistogram2D time_energy_sect_back;
         ThreadSafeHistogram2D time_energy_ring_sect;
 
+        ThreadSafeHistogram2D particle_range, particle_range_aligned;
+        ThreadSafeHistogram3D front_back;
+        ThreadSafeHistogram3D front_back_gated;
+
         Detector_Histograms_t *GetSpec(const DetectorType &type);
+
+        void FillSectorTrigger(ThreadSafeEvent &buffer);
 
     public:
 

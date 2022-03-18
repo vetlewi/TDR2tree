@@ -67,4 +67,7 @@ void Reader::Run()
         RunWithUI();
     else
         RunWithoutUI();
+
+    // Once done, we will just
+    output_queue.done = true;
 }

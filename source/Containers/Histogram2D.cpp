@@ -15,8 +15,9 @@ const unsigned int Histogram2D::buffer_max;
 
 Histogram2D::Histogram2D( const std::string& name, const std::string& title,
                           Axis::index_t ch1, Axis::bin_t l1, Axis::bin_t r1, const std::string& xt,
-                          Axis::index_t ch2, Axis::bin_t l2, Axis::bin_t r2, const std::string& yt)
-    : Named( name, title )
+                          Axis::index_t ch2, Axis::bin_t l2, Axis::bin_t r2, const std::string& yt,
+                          const std::string& path)
+    : Named( name, title, path )
     , xaxis( name+"_xaxis", ch1, l1, r1, xt )
     , yaxis( name+"_yaxis", ch2, l2, r2, yt )
     , entries( 0 )

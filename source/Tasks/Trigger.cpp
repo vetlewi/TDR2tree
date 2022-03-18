@@ -23,11 +23,10 @@ void Trigger::Run()
     if ( trigger == DetectorType::any && coincidence_time <= 0 ){
         while ( true ){
             if ( input_queue.wait_dequeue_timed(input, std::chrono::microseconds(100)) ){
-                while ( !output_queue.enqueue({null_trigger, input}) ){
+                while ( !output_queue.enqueue(Triggered_event(null_trigger, std::move(input))) ){
                     std::this_thread::yield();
                 }
-            } else if ( done ){
-                return; // At this point we can return
+            } else if ( input_queue.done ){
                 break;
             } else {
                 std::this_thread::yield();
@@ -52,18 +51,18 @@ void Trigger::Run()
                 auto evt_end = std::find_if_not(trigger_point, input.end(), [&triggerT, this](const word_t &word){
                     return std::abs(time_val_t({word.timestamp, word.cfdcorr}) - triggerT) < this->coincidence_time;
                 });
-                while ( !output_queue.try_enqueue({*trigger_point, std::vector<word_t>(evt_begin, evt_end)}) ) // Waiting and trying to enqueue...
+                while ( !output_queue.try_enqueue(Triggered_event(*trigger_point, std::vector<word_t>(evt_begin, evt_end))) ) // Waiting and trying to enqueue...
                     std::this_thread::yield();
                 trigger_point = std::find_if(trigger_point+1, input.end(), [&triggerT, this](const word_t &word){
                     return (GetDetectorPtr(word.address)->type == this->trigger) &&
                            std::abs(time_val_t({word.timestamp, word.cfdcorr}) - triggerT) > this->coincidence_time;
                 });
             }
-        } else if ( done ){
-            return; // at this point we have nothing left to do in this function.
+        } else if ( input_queue.done ){
             break;
         } else {
             std::this_thread::yield();
         }
     }
+    output_queue.done = true;
 }

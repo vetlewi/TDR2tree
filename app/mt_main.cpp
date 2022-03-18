@@ -24,6 +24,68 @@
 #include <TROOT.h>
 #include <fmt/format.h>
 
+template<typename T>
+class ThreadPool
+{
+private:
+    std::vector<std::pair<T, Task::Base *>> threads;
+
+    void end_all()
+    {
+        for ( auto &thread : threads ) {
+            thread.second->Finish();
+        }
+
+        // Then we will try to join all the threads.
+        for ( auto &thread : threads ) {
+            if ( thread.first.joinable() )
+                thread.first.join();
+        }
+
+    }
+
+public:
+    ThreadPool() = default;
+
+    void AddTask(Task::Base *task)
+    {
+        threads.push_back(task->ConstructThread());
+    }
+
+    void Wait()
+    {
+        while ( true ) {
+            for ( auto &thread : threads ) {
+                try {
+                    if ( thread.second->check_status() ) {
+                        end_all();
+                        return;
+                    }
+                } catch ( std::exception &ex ) {
+                    std::cerr << "Got an exception. Aborting." << std::endl;
+                    end_all();
+                    return;
+                }
+            }
+            std::this_thread::yield();
+        }
+    }
+
+    void DoEnd()
+    {
+        end_all();
+        try {
+            for ( auto &thread : threads )
+                thread.second->check_status();
+        } catch (std::exception &ex) {
+            std::cerr << "Got an exception. Aborting." << std::endl;
+
+        }
+    }
+
+
+};
+
 // Function to extract name before the .root
 std::string RemovePost(const std::string &str)
 {
@@ -63,22 +125,14 @@ std::vector<std::string> TriggerSort(ProgressUI *ui, const CLI::Options &options
             Task::RootSort(trigger.GetQueue(), outnames[3].c_str(), options)
     };
 
-    // Spin up the worker threads
-    std::vector<std::pair<std::thread, Task::Base *>> threads;
-    threads.push_back(reader.ConstructThread());
-    threads.push_back(converter.ConstructThread());
-    threads.push_back(buffer.ConstructThread());
-    threads.push_back(splitter.ConstructThread());
-    threads.push_back(trigger.ConstructThread());
-    for ( auto &sort : sorters ){ threads.push_back(sort.ConstructThread()); }
-
-    // Now we just wait for everything to finish running
-    for ( auto &runner : threads ){
-        runner.second->Finish();
-        if ( runner.first.joinable() ){
-            runner.first.join(); // Blocking until task is finished
-        }
-    }
+    ThreadPool<std::thread> pool;
+    pool.AddTask(&reader);
+    pool.AddTask(&converter);
+    pool.AddTask(&buffer);
+    pool.AddTask(&splitter);
+    pool.AddTask(&trigger);
+    for ( auto &sort : sorters ){ pool.AddTask(&sort); }
+    pool.Wait();
     return outnames;
 }
 
@@ -97,22 +151,45 @@ std::vector<std::string> RFTriggerSort(ProgressUI *ui, const CLI::Options &optio
             Task::RFRootSort(trigger.GetQueue(), outnames[3].c_str(), options)
     };
 
-    // Spin up the worker threads
-    std::vector<std::pair<std::thread, Task::Base *>> threads;
-    threads.push_back(reader.ConstructThread());
-    threads.push_back(converter.ConstructThread());
-    threads.push_back(buffer.ConstructThread());
-    threads.push_back(splitter.ConstructThread());
-    threads.push_back(trigger.ConstructThread());
-    for ( auto &sort : sorters ){ threads.push_back(sort.ConstructThread()); }
+    ThreadPool<std::thread> pool;
+    pool.AddTask(&reader);
+    pool.AddTask(&converter);
+    pool.AddTask(&buffer);
+    pool.AddTask(&splitter);
+    pool.AddTask(&trigger);
+    for ( auto &sort : sorters ){ pool.AddTask(&sort); }
+    //reader.Run();
+    pool.Wait();
+    return outnames;
+}
+template <class SortType>
+std::vector<std::string> TriggeredSort(ProgressUI *ui, const CLI::Options &options)
+{
+    std::vector<std::string> outnames = OutNames(RemovePost(options.output.value()), 4);
+    Task::Reader reader(options.input.value(), ui);
+    Task::Converter converter(reader.GetQueue(), OptToTask(options.VetoAction.value()));
+    Task::Buffer buffer(converter.GetQueue());
+    Task::Splitter splitter(buffer.GetQueue(), options.SplitTime.value());
+    Task::Trigger trigger(splitter.GetQueue(), options.coincidenceTime.value(), options.Trigger.value());
+    SortType sorters[] = {
+            SortType(trigger.GetQueue(), outnames[0].c_str(), options),
+            SortType(trigger.GetQueue(), outnames[1].c_str(), options),
+            SortType(trigger.GetQueue(), outnames[2].c_str(), options),
+            SortType(trigger.GetQueue(), outnames[3].c_str(), options)
+    };
 
-    // Now we just wait for everything to finish running
-    for ( auto &runner : threads ){
-        runner.second->Finish();
-        if ( runner.first.joinable() ){
-            runner.first.join(); // Blocking until task is finished
-        }
-    }
+    // Spin up the worker threads
+    ThreadPool<std::thread> pool;
+    //pool.AddTask(&reader);
+    pool.AddTask(&converter);
+    pool.AddTask(&buffer);
+    pool.AddTask(&splitter);
+    pool.AddTask(&trigger);
+    for ( auto &sort : sorters ){ pool.AddTask(&sort); }
+    reader.Run();
+    //auto prog = ui->FinishSort("");
+    pool.DoEnd();
+    //prog.Finish();
     return outnames;
 }
 
@@ -132,21 +209,15 @@ std::vector<std::string> GapSort(ProgressUI *ui, const CLI::Options &options)
     };
 
     // Spin up the worker threads
-    std::vector<std::pair<std::thread, Task::Base *>> threads;
-    threads.push_back(reader.ConstructThread());
-    threads.push_back(converter.ConstructThread());
-    threads.push_back(buffer.ConstructThread());
-    threads.push_back(splitter.ConstructThread());
-    threads.push_back(trigger.ConstructThread());
-    for ( auto &sort : sorters ){ threads.push_back(sort.ConstructThread()); }
-
-    // Now we just wait for everything to finish running
-    for ( auto &runner : threads ){
-        runner.second->Finish();
-        if ( runner.first.joinable() ){
-            runner.first.join(); // Blocking until task is finished
-        }
-    }
+    // Spin up the worker threads
+    ThreadPool<std::thread> pool;
+    pool.AddTask(&reader);
+    pool.AddTask(&converter);
+    pool.AddTask(&buffer);
+    pool.AddTask(&splitter);
+    pool.AddTask(&trigger);
+    for ( auto &sort : sorters ){ pool.AddTask(&sort); }
+    pool.DoEnd();
     return outnames;
 }
 
@@ -167,6 +238,8 @@ int main_func(int argc, char *argv[])
         case CLI::sort_type::coincidence :
             if ( options.Trigger.value() == rfchan ){
                 outfiles = RFTriggerSort(&progress, options);
+            } else if ( options.Trigger.value() == de_sect ){
+                outfiles = TriggeredSort<Task::ParticleRootSort>(&progress, options);
             } else {
                 outfiles = RFTriggerSort(&progress, options);
             }

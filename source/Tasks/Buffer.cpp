@@ -12,7 +12,7 @@ Buffer::Buffer(WordQueue_t &input, const size_t &buf_size, const size_t &cap)
     , output_queue( cap )
     , size( buf_size )
 {
-    buffer.reserve( 2*size );
+    //buffer.reserve( 2*size );
 }
 
 void Buffer::Run()
@@ -25,17 +25,21 @@ void Buffer::Run()
 #ifdef USE_ATOMIC_QUEUE
             output_queue.push(std::vector(buffer.begin(), buffer.begin()+buffer.size()-size));
 #else
-            output_queue.try_enqueue(std::vector(buffer.begin(), buffer.begin()+buffer.size()-size));
+            auto end = std::adjacent_find(buffer.begin()+size, buffer.end(), [](const word_t &lhs, const word_t &rhs)
+            { return  (double(rhs.timestamp - lhs.timestamp) + (rhs.cfdcorr - lhs.cfdcorr)) > 50000; });
+            output_queue.wait_enqueue(std::vector(buffer.begin(), end));
+            //output_queue.try_enqueue(std::vector(buffer.begin(), buffer.begin()+buffer.size()-size));
 #endif // USE_ATOMIC_QUEUE
-            buffer.erase(buffer.begin(), buffer.begin()+buffer.size()-size);
+            buffer.erase(buffer.begin(), end);
+            //buffer.erase(buffer.begin(), buffer.begin()+buffer.size()-size);
         }
 #ifndef USE_ATOMIC_QUEUE
         if ( input_queue.wait_dequeue_timed(input, std::chrono::milliseconds(10)) ){
             buffer.insert(buffer.end(), input.begin(), input.end());
             std::sort(buffer.begin(), buffer.end(), [](const word_t &lhs, const word_t &rhs)
             { return (double(rhs.timestamp - lhs.timestamp) + (rhs.cfdcorr - lhs.cfdcorr)) > 0; });
-        } else if ( done ){
-            output_queue.wait_enqueue(std::move(buffer));
+        } else if ( input_queue.done ){
+            output_queue.wait_enqueue(std::vector(buffer.begin(), buffer.end()));
             break;
         } else {
             std::this_thread::yield();
@@ -52,4 +56,5 @@ void Buffer::Run()
         }
 #endif // USE_ATOMIC_QUEUE
     }
+    output_queue.done = true;
 }

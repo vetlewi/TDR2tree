@@ -3,6 +3,7 @@
 #include "experimentsetup.h"
 #include "BasicStruct.h"
 #include "Parameters.h"
+#include "ParticleRange.h"
 
 #include <fstream>
 #include <string>
@@ -12,6 +13,7 @@
 #include <cstdint>
 
 static Parameters calParam;
+static ParticleRange range;
 
 //! Parameters for energy calibration of the LaBr detectors
 static Parameter gain_labrL(calParam, "gain_labrL", NUM_LABR_3X8_DETECTORS, 1);
@@ -126,6 +128,22 @@ bool SetCalibration(const char *calfile)
     // Make sure we have time calibration on the correct format.
     //BuildTimeCal();
     return true;
+}
+
+bool SetRangeFile(const char *rangefile)
+{
+    try {
+        range.Read(rangefile);
+    } catch ( const std::exception &ex ){
+        std::cerr << "Error initializing particle range, got '" << ex.what() << "'" << std::endl;
+        return false;
+    }
+    return true;
+}
+
+double GetRange(const double &energy)
+{
+    return range(energy);
 }
 
 double CalibrateEnergy(const word_t &detector)

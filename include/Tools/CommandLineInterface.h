@@ -28,6 +28,7 @@ namespace CLI {
 
         // Optional arguments
         std::optional<std::string> CalibrationFile;
+        std::optional<std::string> RangeFile;
         std::optional<double> coincidenceTime = 1500;
         std::optional<double> SplitTime = 1500;
         std::optional<bool> tree = false;

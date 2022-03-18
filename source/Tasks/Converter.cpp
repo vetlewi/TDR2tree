@@ -73,7 +73,7 @@ void Converter::Run()
 #ifndef USE_ATOMIC_QUEUE
         if ( input_queue.wait_dequeue_timed(input, std::chrono::microseconds(100)) ){
             output_queue.wait_enqueue(TDRtoWord(input));
-        } else if ( done ){
+        } else if ( input_queue.done ){
             break;
         }
 #else
@@ -86,4 +86,5 @@ void Converter::Run()
         }
 #endif // USE_ATOMIC_QUEUE
     }
+    output_queue.done = true;
 }

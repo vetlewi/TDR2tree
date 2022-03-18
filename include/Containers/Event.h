@@ -80,6 +80,7 @@ public:
     static void BuildAndFill(It start, It stop, ROOT::HistManager *hm, ROOT::TreeManager<TE> *tm, Histogram2Dp ab_hist = nullptr, double coins_time = 3000., ProgressUI *prog = nullptr);
 
     inline Subevent &GetDetector(const DetectorType &type){ return type_bounds.at(type); }
+    inline Subevent &GetDetector(const DetectorType &type) const { return const_cast<Subevent &>(type_bounds.at(type)); }
 
     inline bool IsTriggered() const { return trigger.address != 0; }
     inline word_t GetTrigger() const { return trigger; }

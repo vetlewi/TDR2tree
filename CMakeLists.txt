@@ -73,6 +73,7 @@ add_library(TDR2treeLib
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/Histogram3D.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/Histograms.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/MamaWriter.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/ParticleTreeEvent.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/RFTreeEvent.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/RootWriter.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/Containers/ThreadSafeEvent.cpp
@@ -88,6 +89,7 @@ add_library(TDR2treeLib
         ${CMAKE_CURRENT_SOURCE_DIR}/source/PhysicalParam/Calibration.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/PhysicalParam/experimentsetup.c
         ${CMAKE_CURRENT_SOURCE_DIR}/source/PhysicalParam/Parameters.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/PhysicalParam/ParticleRange.cpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/source/RootInterface/HistManager.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/RootInterface/RootFileManager.cpp
@@ -108,6 +110,7 @@ add_library(TDR2treeLib
 
 target_include_directories(TDR2treeLib PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include/Containers
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/external
         ${CMAKE_CURRENT_SOURCE_DIR}/include/FileReader
         ${CMAKE_CURRENT_SOURCE_DIR}/include/PhysicalParam
         ${CMAKE_CURRENT_SOURCE_DIR}/include/RootInterface
@@ -128,7 +131,7 @@ target_link_libraries(TDR2treeLib
         indicators::indicators
         fmt::fmt)
 
-target_compile_features(TDR2treeLib PUBLIC cxx_std_17)
+target_compile_features(TDR2treeLib PUBLIC cxx_std_20)
 
 add_executable(TDR2tree app/main.cpp)
 add_executable(TDR2treeMT app/mt_main.cpp)

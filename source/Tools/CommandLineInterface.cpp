@@ -8,7 +8,7 @@
 
 using namespace CLI;
 
-STRUCTOPT(Options, input, output, CalibrationFile, coincidenceTime, SplitTime, tree, sortType, Trigger, addback, VetoAction);
+STRUCTOPT(Options, input, output, CalibrationFile, RangeFile, coincidenceTime, SplitTime, tree, sortType, Trigger, addback, VetoAction);
 
 class parse_exception : public std::runtime_error
 {
@@ -148,6 +148,7 @@ std::ostream &operator<<(std::ostream &os, const Options &opt)
     }
     os << "\tOutput file: " << opt.output.value() << "\n";
     os << "\tCalibration file: " << opt.CalibrationFile.value_or("") << "\n";
+    os << "\tRange file: " << opt.RangeFile.value_or("") << "\n";
     os << "\tCoincidence time: " << opt.coincidenceTime.value() << " ns\n";
     os << "\tSplit time: " << opt.SplitTime.value() << " ns\n";
 
@@ -192,6 +193,13 @@ Options CLI::ParseCLA(const int &argc, char *argv[])
         if ( !SetCalibration(options.CalibrationFile.value().c_str()) ){
             std::cerr << "Error reading calibration file." << std::endl;
             throw std::runtime_error("Error reading calibration file");
+        }
+    }
+
+    if ( options.RangeFile.has_value() ){
+        if ( !SetRangeFile(options.RangeFile.value().c_str()) ){
+            std::cerr << "Error reading particle range file." << std::endl;
+            throw std::runtime_error("Error reading particle range file");
         }
     }
 

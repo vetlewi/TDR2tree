@@ -18,22 +18,49 @@
 
 // ########################################################################
 
+void RootWriter::Navigate(Named *named, TFile *file)
+{
+    // Ensure we are at the top.
+    file->cd();
+    auto path = named->GetPath();
+    if ( path.empty() )
+        return;
+    auto title = path;
+    if ( path.find_last_of( '/') < path.npos ){
+        title = path.substr(path.find_last_of('/')+1);
+    }
+    if ( file->mkdir(path.c_str(), title.c_str(), true) == nullptr ){
+        throw std::runtime_error("Error, could not create directory '"+path+"'.");
+    }
+
+    // Navigate to the folder and return
+    file->cd(path.c_str());
+}
+
+// ########################################################################
+
 void RootWriter::Write( Histograms& histograms,
                         const std::string& filename )
 {
   TFile outfile( filename.c_str(), "recreate" );
 
   Histograms::list1d_t list1d = histograms.GetAll1D();
-  for(auto & it : list1d)
-    CreateTH1( it );
+  for(auto & it : list1d) {
+      Navigate(it, &outfile);
+      CreateTH1(it);
+  }
 
   Histograms::list2d_t list2d = histograms.GetAll2D();
-  for(auto & it : list2d)
-    CreateTH2( it );
+  for(auto & it : list2d) {
+      Navigate(it, &outfile);
+      CreateTH2(it);
+  }
 
     Histograms::list3d_t list3d = histograms.GetAll3D();
-    for(auto & it : list3d)
-        CreateTH3( it );
+    for(auto & it : list3d) {
+        Navigate(it, &outfile);
+        CreateTH3(it);
+    }
 
   outfile.Write();
   outfile.Close();

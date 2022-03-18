@@ -7,9 +7,10 @@
 
 #include <iostream>
 
-Named::Named( const std::string& nm, const std::string& ttl)
+Named::Named( const std::string& nm, const std::string& ttl, const std::string& pth)
     : name( nm )
     , title( ttl )
+    , path( pth )
 {
 }
 
@@ -49,9 +50,10 @@ Histograms::~Histograms()
 // ########################################################################
 
 Histogram1Dp Histograms::Create1D( const std::string& name, const std::string& title,
-                                   Axis::index_t c, Axis::bin_t l, Axis::bin_t r, const std::string& xtitle )
+                                   Axis::index_t c, Axis::bin_t l, Axis::bin_t r, const std::string& xtitle,
+                                   const std::string& path)
 {
-  Histogram1Dp h(new Histogram1D(name, title, c, l, r, xtitle));
+  Histogram1Dp h(new Histogram1D(name, title, c, l, r, xtitle, path));
   map1d[ name ] = h;
   return h;
 }
@@ -60,9 +62,10 @@ Histogram1Dp Histograms::Create1D( const std::string& name, const std::string& t
 
 Histogram2Dp Histograms::Create2D( const std::string& name, const std::string& title,
                                    Axis::index_t ch1, Axis::bin_t l1, Axis::bin_t r1, const std::string& xtitle,
-                                   Axis::index_t ch2, Axis::bin_t l2, Axis::bin_t r2, const std::string& ytitle)
+                                   Axis::index_t ch2, Axis::bin_t l2, Axis::bin_t r2, const std::string& ytitle,
+                                   const std::string& path)
 {
-  Histogram2Dp h(new Histogram2D(name, title, ch1, l1, r1, xtitle, ch2, l2, r2, ytitle));
+  Histogram2Dp h(new Histogram2D(name, title, ch1, l1, r1, xtitle, ch2, l2, r2, ytitle, path));
   map2d[ name ] = h;
   return h;
 }
@@ -72,9 +75,10 @@ Histogram2Dp Histograms::Create2D( const std::string& name, const std::string& t
 Histogram3Dp Histograms::Create3D( const std::string& name, const std::string& title,
                                    Axis::index_t ch1, Axis::bin_t l1, Axis::bin_t r1, const std::string& xtitle,
                                    Axis::index_t ch2, Axis::bin_t l2, Axis::bin_t r2, const std::string& ytitle,
-                                   Axis::index_t ch3, Axis::bin_t l3, Axis::bin_t r3, const std::string& ztitle)
+                                   Axis::index_t ch3, Axis::bin_t l3, Axis::bin_t r3, const std::string& ztitle,
+                                   const std::string& path)
 {
-    Histogram3Dp h(new Histogram3D(name, title, ch1, l1, r1, xtitle, ch2, l2, r2, ytitle, ch3, l3, r3, ztitle));
+    Histogram3Dp h(new Histogram3D(name, title, ch1, l1, r1, xtitle, ch2, l2, r2, ytitle, ch3, l3, r3, ztitle, path));
     map3d[ name ] = h;
     return h;
 }

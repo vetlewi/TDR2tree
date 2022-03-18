@@ -12,6 +12,7 @@
 #include "HistManager.h"
 #include "TreeManager.h"
 #include "TreeEvent.h"
+#include "ParticleTreeEvent.h"
 #include "RFTreeEvent.h"
 #include "Event.h"
 
@@ -40,21 +41,39 @@ namespace Task {
 
     class RFRootSort : public Base {
 
-    private:
-        ROOT::RootFileManager fileManager;
-        ROOT::HistManager histManager;
-        ROOT::TreeManager<RFTreeEvent> treeManager;
-        Histogram2Dp addback_hist;
+        private:
+            ROOT::RootFileManager fileManager;
+            ROOT::HistManager histManager;
+            ROOT::TreeManager<RFTreeEvent> treeManager;
+            Histogram2Dp addback_hist;
 
-        bool tree;
-        TEWordQueue_t &input_queue;
+            bool tree;
+            TEWordQueue_t &input_queue;
 
-    public:
+        public:
 
-        RFRootSort(TEWordQueue_t &input, const char *fname, const bool &addback = true, const bool &tree = false);
-        RFRootSort(TEWordQueue_t &input, const char *fname, const CLI::Options &options);
+            RFRootSort(TEWordQueue_t &input, const char *fname, const bool &addback = true, const bool &tree = false);
+            RFRootSort(TEWordQueue_t &input, const char *fname, const CLI::Options &options);
 
-        void Run() override;
+            void Run() override;
+    };
+
+    class ParticleRootSort : public Base {
+        private:
+            ROOT::RootFileManager fileManager;
+            ROOT::HistManager histManager;
+            ROOT::TreeManager<ParticleTreeEvent> treeManager;
+            Histogram2Dp addback_hist;
+
+            bool tree;
+            TEWordQueue_t &input_queue;
+
+        public:
+
+            ParticleRootSort(TEWordQueue_t &input, const char *fname, const bool &addback = true, const bool &tree = false);
+            ParticleRootSort(TEWordQueue_t &input, const char *fname, const CLI::Options &options);
+
+            void Run() override;
     };
 
 }

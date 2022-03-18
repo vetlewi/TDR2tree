@@ -17,8 +17,9 @@ const unsigned int Histogram1D::buffer_max;
 // ########################################################################
 
 Histogram1D::Histogram1D( const std::string& name, const std::string& title,
-                          Axis::index_t c, Axis::bin_t l, Axis::bin_t r, const std::string& xt )
-    : Named( name, title )
+                          Axis::index_t c, Axis::bin_t l, Axis::bin_t r, const std::string& xt,
+                          const std::string& path)
+    : Named( name, title, path )
     , xaxis( name+"_xaxis", c, l, r, xt )
     , data( 0 )
 {

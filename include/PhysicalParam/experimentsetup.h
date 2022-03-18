@@ -49,8 +49,8 @@ struct DetectorInfo_ {
     uint16_t address;           //!< ADC address of the detector
     enum ADCSamplingFreq sfreq; //!< ADC sampling frequency
     enum DetectorType type;     //!< Type of detector
-    int16_t detectorNum;            //!< 'Linear' number of the detector
-    int16_t telNum;                 //!< Telescope number (ie. E back detector for the dE front detector)
+    uint16_t detectorNum;            //!< 'Linear' number of the detector
+    uint16_t telNum;                 //!< Telescope number (ie. E back detector for the dE front detector)
 };
 
 typedef struct DetectorInfo_ DetectorInfo_t;
