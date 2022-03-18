@@ -93,8 +93,8 @@ public:
     // Essentially we need to ensure that the address of the underlying container (vector) isn't changed,
     // and if so we will need to change it to the correct address.
     inline void check_address() {
-        size_t addr = size_t(reinterpret_cast<const char *>(container));
-        size_t baddr = size_t(branch->GetAddress());
+        //size_t addr = size_t(reinterpret_cast<const char *>(container));
+        //size_t baddr = size_t(branch->GetAddress());
         if ( reinterpret_cast<const char *>(container) != branch->GetAddress() )
             std::cout << "Got addresses: " << size_t(reinterpret_cast<const char *>(container)) << " " << size_t(branch->GetAddress()) << std::endl;
     }
@@ -174,7 +174,7 @@ public:
         rf.clear();
     }
 
-    inline void validate()
+    inline bool validate()
     {
         clover.validate();
         labrL.validate();
@@ -184,6 +184,7 @@ public:
         sect.validate();
         back.validate();
         rf.validate();
+        return true;
     }
 
 };
