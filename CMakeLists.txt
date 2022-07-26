@@ -9,6 +9,7 @@ include(cmake/CPM.cmake)
 
 find_package(Threads REQUIRED)
 find_package(ROOT REQUIRED COMPONENTS RIO Tree Hist)
+find_package(ZLIB REQUIRED)
 
 CPMAddPackage(
         NAME structopt
@@ -118,6 +119,14 @@ target_compile_features(TDR2treeLib PUBLIC cxx_std_17)
 #add_executable(TDR2tree app/main.cpp)
 add_executable(TDR2tree app/mt_main.cpp)
 #add_executable(TDR2treeST app/st_main.cpp)
+
+add_executable(CSV_exporter app/csv_exporter.cpp)
+target_include_directories(CSV_exporter PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/external)
+target_link_libraries(CSV_exporter PRIVATE
+        ROOT::RIO
+        ROOT::Hist
+        ROOT::Tree
+        ZLIB::ZLIB)
 
 #target_link_libraries(TDR2tree TDR2treeLib)
 target_link_libraries(TDR2tree TDR2treeLib readerwriterqueue concurrentqueue)
